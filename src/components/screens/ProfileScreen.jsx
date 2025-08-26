@@ -1,4 +1,3 @@
-// src/components/screens/ProfileScreen.jsx
 import React from 'react';
 import { ICONS } from '../icons';
 import EditProfileScreen from './profile/EditProfileScreen';
@@ -204,13 +203,13 @@ const ProfileScreen = ({
         <div className="flex items-center mb-6">
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mr-4"
-            style={{ backgroundColor: userProfile.avatarColor }}
+            style={{ backgroundColor: userProfile?.avatarColor }}
           >
-            {userProfile.avatar}
+            {userProfile?.avatar}
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{userProfile.name}</h3>
-            <p className="text-gray-500 dark:text-gray-400">{userProfile.email}</p>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{userProfile?.name}</h3>
+            <p className="text-gray-500 dark:text-gray-400">{userProfile?.email}</p>
           </div>
         </div>
         <motion.button

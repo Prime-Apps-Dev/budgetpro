@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { ICONS } from './components/icons';
 import MainNavigation from './components/ui/MainNavigation';
@@ -484,6 +483,9 @@ const App = () => {
           />
         );
       case 'profile':
+        if (!isDataLoaded) {
+          return null; // Don't render until data is loaded
+        }
         return (
           <ProfileScreen
             key="profile"
