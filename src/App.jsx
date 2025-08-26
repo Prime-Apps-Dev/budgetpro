@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { ICONS } from './components/icons';
 import MainNavigation from './components/ui/MainNavigation';
@@ -336,7 +337,6 @@ const App = () => {
 
 
   const renderScreen = () => {
-    // Удаляем рендеринг модальных окон как отдельных страниц
     if (currentScreen === 'add-financial-item' || currentScreen === 'edit-financial-item') {
       return (
         <AddFinancialItemScreen
