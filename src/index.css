@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+.dark {
+  background-color: #1a202c;
+  color: #a0aec0;
+}
