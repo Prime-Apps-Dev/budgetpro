@@ -68,24 +68,24 @@ const TransactionItem = ({
 
     pressTimer.current = setTimeout(() => {
       handleDelete();
-      setIsPressing(false); // Сбросить состояние после выполнения действия
+      setIsPressing(false); 
     }, longPressThreshold);
   };
 
   const handlePressEnd = () => {
-    clearTimeout(pressTimer.current);
-    pressTimer.current = null;
-    setIsPressing(false);
-  };
-  
-  const handleEdit = () => {
     if (pressTimer.current) {
         clearTimeout(pressTimer.current);
         pressTimer.current = null;
-        setIsPressing(false);
+        setIsPressing(false); // Мгновенный возврат к исходному состоянию
+        // Это был короткий клик, открываем редактирование
         setEditingTransaction(transaction);
         setShowAddTransaction(true);
     }
+  };
+  
+  const handleEdit = () => {
+    // В этом обработчике ничего не делаем, так как всю логику перенесли в handlePressEnd
+    // Это предотвращает двойное срабатывание при клике.
   };
 
   return (

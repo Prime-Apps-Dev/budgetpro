@@ -336,34 +336,7 @@ const App = () => {
 
 
   const renderScreen = () => {
-    if (showAddTransaction || editingTransaction) {
-      return (
-        <AddEditTransactionScreen
-          key="add-edit-transaction"
-          transactions={transactions}
-          setTransactions={handleSetTransactions}
-          editingTransaction={editingTransaction}
-          setEditingTransaction={handleSetEditingTransaction}
-          setShowAddTransaction={handleSetShowAddTransaction}
-          newTransaction={newTransaction}
-          setNewTransaction={handleSetNewTransaction}
-          categories={categories}
-          accounts={accounts}
-          setActiveTab={handleSetActiveTab}
-          loans={loansWithBalance}
-          setLoans={handleSetLoans}
-          deposits={depositsWithBalance}
-          setDeposits={handleSetDeposits}
-          selectedFinancialItem={selectedFinancialItem}
-          setSelectedFinancialItem={handleSetSelectedFinancialItem}
-          loanTransactions={loanTransactions}
-          setLoanTransactions={handleSetLoanTransactions}
-          depositTransactions={depositTransactions}
-          setDepositTransactions={handleSetDepositTransactions}
-        />
-      );
-    }
-    
+    // Удаляем рендеринг модальных окон как отдельных страниц
     if (currentScreen === 'add-financial-item' || currentScreen === 'edit-financial-item') {
       return (
         <AddFinancialItemScreen
@@ -484,7 +457,7 @@ const App = () => {
         );
       case 'profile':
         if (!isDataLoaded) {
-          return null; // Don't render until data is loaded
+          return null;
         }
         return (
           <ProfileScreen
