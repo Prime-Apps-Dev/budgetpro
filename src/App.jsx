@@ -8,16 +8,15 @@ import SavingsScreen from './components/screens/SavingsScreen';
 import ProfileScreen from './components/screens/ProfileScreen';
 import AddEditTransactionScreen from './components/screens/AddEditTransactionScreen';
 import DebtsScreen from './components/screens/DebtsScreen';
-import MyLoansScreen from './components/screens/MyLoansScreen';
 import MyLoansListScreen from './components/screens/MyLoansListScreen';
 import MyDepositsListScreen from './components/screens/MyDepositsListScreen';
 import LoanDepositDetailScreen from './components/screens/LoanDepositDetailScreen';
 import AddFinancialItemScreen from './components/screens/AddFinancialItemScreen';
 import MyFinancialProductsScreen from './components/screens/MyFinancialProductsScreen';
-import CurrencyScreen from './components/screens/profile/CurrencyScreen';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeInOut } from './utils/motion';
-import { CURRENCIES } from './constants/currencies';
+import { CURRENCIES, getCurrencySymbolByCode } from './constants/currencies';
+import CurrencyScreen from './components/screens/profile/CurrencyScreen';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
@@ -50,7 +49,7 @@ const App = () => {
     description: ''
   });
   const [userProfile, setUserProfile] = useState({});
-  const [currency, setCurrency] = useState('₽');
+  const [currencyCode, setCurrencyCode] = useState('RUB');
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   const defaultState = useMemo(() => ({
@@ -85,8 +84,10 @@ const App = () => {
     deposits: [],
     loanTransactions: [],
     depositTransactions: [],
-    currency: '₽'
+    currencyCode: 'RUB'
   }), []);
+
+  const currencySymbol = useMemo(() => getCurrencySymbolByCode(currencyCode), [currencyCode]);
 
   // Load state from localStorage on initial render
   useEffect(() => {
@@ -105,7 +106,7 @@ const App = () => {
         setFinancialGoals(savedState.financialGoals || defaultState.financialGoals);
         setUserProfile(savedState.userProfile || defaultState.userProfile);
         setIsDarkMode(savedState.isDarkMode || false);
-        setCurrency(savedState.currency || '₽');
+        setCurrencyCode(savedState.currencyCode || 'RUB');
       } else {
         // Initialize with default state if nothing is found in localStorage
         setTransactions(defaultState.transactions);
@@ -119,7 +120,7 @@ const App = () => {
         setAccounts(defaultState.accounts);
         setFinancialGoals(defaultState.financialGoals);
         setUserProfile(defaultState.userProfile);
-        setCurrency(defaultState.currency);
+        setCurrencyCode(defaultState.currencyCode);
       }
     } catch (error) {
       console.error("Failed to load state from localStorage:", error);
@@ -135,7 +136,7 @@ const App = () => {
       setAccounts(defaultState.accounts);
       setFinancialGoals(defaultState.financialGoals);
       setUserProfile(defaultState.userProfile);
-      setCurrency(defaultState.currency);
+      setCurrencyCode(defaultState.currencyCode);
     } finally {
       setIsDataLoaded(true);
     }
@@ -157,14 +158,14 @@ const App = () => {
       financialGoals,
       userProfile,
       isDarkMode,
-      currency
+      currencyCode
     };
     try {
       localStorage.setItem('financialAppState', JSON.stringify(stateToSave));
     } catch (error) {
       console.error("Failed to save state to localStorage:", error);
     }
-  }, [transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, userProfile, isDarkMode, isDataLoaded, currency]);
+  }, [transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, userProfile, isDarkMode, isDataLoaded, currencyCode]);
 
   const getAccountByName = (name) => {
     const account = accounts.find(acc => acc.name === name) || accounts[0];
@@ -343,10 +344,9 @@ const App = () => {
     setDepositTransactions(newDepositTransactions);
   };
 
-  const handleSetCurrency = (newCurrency) => {
-    setCurrency(newCurrency);
+  const handleSetCurrencyCode = (newCurrencyCode) => {
+    setCurrencyCode(newCurrencyCode);
   };
-
 
   const renderScreen = () => {
     if (currentScreen === 'add-financial-item' || currentScreen === 'edit-financial-item') {
@@ -360,7 +360,7 @@ const App = () => {
           setCurrentScreen={handleSetCurrentScreen}
           editingItem={selectedFinancialItem}
           accounts={accounts}
-          currency={currency}
+          currencySymbol={currencySymbol}
         />
       );
     }
@@ -385,7 +385,7 @@ const App = () => {
           setEditingTransaction={handleSetEditingTransaction}
           getAccountByName={getAccountByName}
           accounts={accounts}
-          currency={currency}
+          currencySymbol={currencySymbol}
         />
       );
     }
@@ -400,7 +400,7 @@ const App = () => {
           setLoanTransactions={handleSetLoanTransactions}
           setCurrentScreen={handleSetCurrentScreen}
           setSelectedFinancialItem={handleSetSelectedFinancialItem}
-          currency={currency}
+          currencySymbol={currencySymbol}
         />
       );
     }
@@ -415,17 +415,7 @@ const App = () => {
           setDepositTransactions={handleSetDepositTransactions}
           setCurrentScreen={handleSetCurrentScreen}
           setSelectedFinancialItem={handleSetSelectedFinancialItem}
-          currency={currency}
-        />
-      );
-    }
-    if (currentScreen === 'select-currency') {
-      return (
-        <CurrencyScreen
-          key="select-currency"
-          setCurrentScreen={handleSetCurrentScreen}
-          currency={currency}
-          setCurrency={handleSetCurrency}
+          currencySymbol={currencySymbol}
         />
       );
     }
@@ -443,7 +433,6 @@ const App = () => {
             getAccountByName={getAccountByName}
             setEditingTransaction={handleSetEditingTransaction}
             setShowAddTransaction={handleSetShowAddTransaction}
-            setTransactions={handleSetTransactions}
             deposits={depositsWithBalance}
             setDeposits={handleSetDeposits}
             loans={loansWithBalance}
@@ -452,7 +441,7 @@ const App = () => {
             setDepositTransactions={handleSetDepositTransactions}
             loanTransactions={loanTransactions}
             setLoanTransactions={handleSetLoanTransactions}
-            currency={currency}
+            currencySymbol={currencySymbol}
           />
         );
       case 'analytics':
@@ -469,7 +458,7 @@ const App = () => {
             setSelectedPeriod={handleSetSelectedPeriod}
             dateRange={dateRange}
             setDateRange={handleSetDateRange}
-            currency={currency}
+            currencySymbol={currencySymbol}
           />
         );
       case 'savings':
@@ -481,7 +470,7 @@ const App = () => {
             transactions={transactions}
             setTransactions={handleSetTransactions}
             totalSavingsBalance={totalSavingsBalance}
-            currency={currency}
+            currencySymbol={currencySymbol}
           />
         );
       case 'profile':
@@ -521,11 +510,12 @@ const App = () => {
             setLoanTransactions={handleSetLoanTransactions}
             depositTransactions={depositTransactions}
             setDepositTransactions={handleSetDepositTransactions}
-            setShowAddTransaction={handleSetShowAddTransaction}
-            setEditingTransaction={handleSetEditingTransaction}
+            setShowAddTransaction={setShowAddTransaction}
+            setEditingTransaction={editingTransaction}
             totalPlannedBudget={totalPlannedBudget}
             totalSpentOnBudgets={totalSpentOnBudgets}
-            currency={currency}
+            currencyCode={currencyCode}
+            setCurrencyCode={handleSetCurrencyCode}
           />
         );
       default:
@@ -592,7 +582,7 @@ const App = () => {
             setLoanTransactions={handleSetLoanTransactions}
             depositTransactions={depositTransactions}
             setDepositTransactions={handleSetDepositTransactions}
-            currency={currency}
+            currencySymbol={currencySymbol}
           />
         )}
       </AnimatePresence>

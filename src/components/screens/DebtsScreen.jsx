@@ -4,7 +4,7 @@ import { ICONS } from '../icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { spring, whileTap, zoomInOut } from '../../utils/motion';
 
-const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions }) => {
+const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions, currencySymbol }) => {
   const [showAddDebt, setShowAddDebt] = useState(false);
   const [editingDebt, setEditingDebt] = useState(null);
   const [newDebt, setNewDebt] = useState({
@@ -129,7 +129,7 @@ const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions }) => 
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="font-semibold text-red-600">
-                      {debt.amount.toLocaleString()} ₽
+                      {debt.amount.toLocaleString()} {currencySymbol}
                     </div>
                     <motion.button
                       onClick={() => handlePayBackDebt(debt)}
@@ -192,7 +192,7 @@ const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions }) => 
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="font-semibold text-green-600">
-                      {debt.amount.toLocaleString()} ₽
+                      {debt.amount.toLocaleString()} {currencySymbol}
                     </div>
                     <motion.button
                       onClick={() => handleWriteOffDebt(debt)}

@@ -5,7 +5,7 @@ import TransactionItem from '../../ui/TransactionItem';
 import { motion } from 'framer-motion';
 import { whileTap, spring, zoomInOut } from '../../../utils/motion';
 
-const TransactionHistoryScreen = ({ transactions, setTransactions, setEditingTransaction, setCurrentScreen, getAccountByName, depositTransactions, setDepositTransactions, loans, setLoans, deposits, setDeposits, loanTransactions, setLoanTransactions, setShowAddTransaction }) => {
+const TransactionHistoryScreen = ({ transactions, setTransactions, setEditingTransaction, setCurrentScreen, getAccountByName, depositTransactions, setDepositTransactions, loans, setLoans, deposits, setDeposits, loanTransactions, setLoanTransactions, setShowAddTransaction, currencySymbol }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
 
@@ -98,6 +98,7 @@ const TransactionHistoryScreen = ({ transactions, setTransactions, setEditingTra
                 setLoanTransactions={setLoanTransactions}
                 loanTransactions={loanTransactions}
                 setShowAddTransaction={setShowAddTransaction}
+                currencySymbol={currencySymbol}
               />
             </motion.div>
           ))

@@ -4,7 +4,7 @@ import { ICONS } from '../icons';
 import { motion } from 'framer-motion';
 import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
 
-const MyDepositsListScreen = ({ deposits, setCurrentScreen, setSelectedFinancialItem, setDeposits, setTransactions, depositTransactions, setDepositTransactions }) => {
+const MyDepositsListScreen = ({ deposits, setCurrentScreen, setSelectedFinancialItem, setDeposits, setTransactions, depositTransactions, setDepositTransactions, currencySymbol }) => {
   const [isLongPress, setIsLongPress] = useState(false);
   const pressTimer = useRef(null);
 
@@ -94,8 +94,8 @@ const MyDepositsListScreen = ({ deposits, setCurrentScreen, setSelectedFinancial
                   <IconComponent className="w-8 h-8 text-green-500 mr-4" />
                   <div>
                     <div className="font-medium text-gray-800 dark:text-gray-200">{deposit.name}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Доход: {deposit.totalInterest.toLocaleString()} ₽</div>
-                    <div className="text-xs text-gray-400 dark:text-gray-500">Баланс: {deposit.currentAmount.toLocaleString()} ₽</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Доход: {deposit.totalInterest.toLocaleString()} {currencySymbol}</div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500">Баланс: {deposit.currentAmount.toLocaleString()} {currencySymbol}</div>
                   </div>
                 </div>
               </motion.div>

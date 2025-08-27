@@ -3,13 +3,19 @@ import React from 'react';
 import { ICONS } from '../../icons';
 import { motion } from 'framer-motion';
 import { whileTap, jiggle, spring } from '../../../utils/motion';
+import { CURRENCIES } from '../../../constants/currencies';
 
-const SettingsScreen = ({ setCurrentScreen, isDarkMode, setIsDarkMode }) => {
+const SettingsScreen = ({ setCurrentScreen, isDarkMode, setIsDarkMode, currencyCode, setCurrencyCode }) => {
+  const getCurrencyName = (code) => {
+    const currencyObj = CURRENCIES.find(c => c.code === code);
+    return currencyObj ? `${currencyObj.name} (${currencyObj.code})` : 'Неизвестно';
+  };
+
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center mb-8">
         <motion.button
-          onClick={() => setCurrentScreen('')}
+          onClick={() => setCurrentScreen('profile')}
           className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
           whileTap={whileTap}
           transition={spring}
@@ -49,6 +55,22 @@ const SettingsScreen = ({ setCurrentScreen, isDarkMode, setIsDarkMode }) => {
           </div>
         </div>
 
+        <motion.button
+          onClick={() => setCurrentScreen('select-currency')}
+          className="w-full bg-white p-6 rounded-2xl shadow-sm flex items-center justify-between dark:bg-gray-800"
+          whileTap={whileTap}
+          transition={spring}
+        >
+          <div className="flex items-center">
+            <ICONS.DollarSign className="w-6 h-6 text-blue-500 mr-4" />
+            <span className="font-medium text-gray-800 dark:text-gray-200">Валюта</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-gray-500 dark:text-gray-400 mr-2">{currencyCode}</span>
+            <ICONS.ChevronLeft className="w-5 h-5 text-gray-400 transform rotate-180" />
+          </div>
+        </motion.button>
+        
         <motion.div 
           className="bg-white rounded-2xl p-6 shadow-sm dark:bg-gray-800"
           whileTap={whileTap}

@@ -18,7 +18,8 @@ const TransactionItem = ({
   deposits,
   setDeposits,
   loanTransactions,
-  setLoanTransactions
+  setLoanTransactions,
+  currencySymbol
 }) => {
   const account = getAccountByName(transaction.account);
   const IconComponent = getAccountByName(transaction.account).icon;
@@ -124,7 +125,7 @@ const TransactionItem = ({
       </div>
       <div className="flex items-center">
         <div className={`font-semibold mr-4 ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-          {transaction.type === 'income' ? '+' : '-'}{transaction.amount.toLocaleString()} ₽
+          {transaction.type === 'income' ? '+' : '-'}{transaction.amount.toLocaleString()} {currencySymbol}
         </div>
       </div>
     </motion.div>

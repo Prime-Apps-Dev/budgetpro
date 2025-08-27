@@ -5,7 +5,7 @@ import TransactionItem from '../ui/TransactionItem';
 import { motion } from 'framer-motion';
 import { whileHover, whileTap, spring, zoomInOut } from '../../utils/motion';
 
-const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalance, transactions, getAccountByName, setEditingTransaction, setShowAddTransaction, deposits, setDeposits, loans, setLoans, depositTransactions, setDepositTransactions, loanTransactions, setLoanTransactions, setTransactions, currency }) => {
+const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalance, transactions, getAccountByName, setEditingTransaction, setShowAddTransaction, deposits, setDeposits, loans, setLoans, depositTransactions, setDepositTransactions, loanTransactions, setLoanTransactions, setTransactions, currencySymbol }) => {
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="grid grid-cols-2 gap-4 mb-8">
@@ -23,7 +23,7 @@ const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalan
             <ICONS.ArrowUpCircle className="w-6 h-6 mr-3" />
             <span className="text-sm opacity-90">Доходы</span>
           </div>
-          <div className="text-2xl font-bold">{totalIncome.toLocaleString()} {currency}</div>
+          <div className="text-2xl font-bold">{totalIncome.toLocaleString()} {currencySymbol}</div>
         </motion.div>
         <motion.div
           className="bg-gradient-to-r from-red-500 to-red-600 rounded-2xl p-6 text-white"
@@ -39,7 +39,7 @@ const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalan
             <ICONS.ArrowDownCircle className="w-6 h-6 mr-3" />
             <span className="text-sm opacity-90">Расходы</span>
           </div>
-          <div className="text-2xl font-bold">{totalExpenses.toLocaleString()} {currency}</div>
+          <div className="text-2xl font-bold">{totalExpenses.toLocaleString()} {currencySymbol}</div>
         </motion.div>
       </div>
 
@@ -58,7 +58,7 @@ const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalan
             <ICONS.Wallet className="w-6 h-6 mr-3" />
             <span className="text-sm opacity-90">Бюджет</span>
           </div>
-          <div className="text-2xl font-bold">{totalBudget.toLocaleString()} {currency}</div>
+          <div className="text-2xl font-bold">{totalBudget.toLocaleString()} {currencySymbol}</div>
         </motion.div>
         <motion.div
           className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl p-6 text-white"
@@ -74,7 +74,7 @@ const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalan
             <ICONS.PiggyBank className="w-6 h-6 mr-3" />
             <span className="text-sm opacity-90">Копилка</span>
           </div>
-          <div className="text-2xl font-bold">{totalSavingsBalance.toLocaleString()} {currency}</div>
+          <div className="text-2xl font-bold">{totalSavingsBalance.toLocaleString()} {currencySymbol}</div>
         </motion.div>
       </div>
 
@@ -98,7 +98,7 @@ const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalan
                 setDepositTransactions={setDepositTransactions}
                 loanTransactions={loanTransactions}
                 setLoanTransactions={setLoanTransactions}
-                currency={currency}
+                currencySymbol={currencySymbol}
               />
             </motion.div>
           ))}

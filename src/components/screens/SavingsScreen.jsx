@@ -4,7 +4,7 @@ import { ICONS } from '../icons';
 import { motion } from 'framer-motion';
 import { whileTap, whileHover, spring, zoomInOut } from '../../utils/motion';
 
-const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTransactions, totalSavingsBalance, currency }) => {
+const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTransactions, totalSavingsBalance, currencySymbol }) => {
   const [savingsAction, setSavingsAction] = useState(null);
   const [savingsAmount, setSavingsAmount] = useState('');
   const [selectedGoal, setSelectedGoal] = useState(null);
@@ -79,7 +79,7 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
                   transition={spring}
                 >
                   <div className="font-medium">{goal.title}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{goal.current.toLocaleString()} {currency} из {goal.target.toLocaleString()} {currency}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{goal.current.toLocaleString()} {currencySymbol} из {goal.target.toLocaleString()} {currencySymbol}</div>
                 </motion.button>
               ))}
             </div>
@@ -136,7 +136,7 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
             <span className="text-lg">Общий баланс копилок</span>
           </div>
         </div>
-        <div className="text-3xl font-bold">{totalSavingsBalance.toLocaleString()} {currency}</div>
+        <div className="text-3xl font-bold">{totalSavingsBalance.toLocaleString()} {currencySymbol}</div>
       </motion.div>
 
       <div className="grid grid-cols-2 gap-4 mb-8">
@@ -179,12 +179,12 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
               </div>
               <div className="mb-3">
                 <div className="flex justify-between text-sm text-gray-600 mb-2 dark:text-gray-400">
-                  <span>{goal.current.toLocaleString()} {currency}</span>
-                  <span>{goal.target.toLocaleString()} {currency}</span>
+                  <span>{goal.current.toLocaleString()} {currencySymbol}</span>
+                  <span>{goal.target.toLocaleString()} {currencySymbol}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
                   <div
-                    className="bg-purple-500 h-3 rounded-full"
+                    className={`h-3 rounded-full ${goal.isSavings ? 'bg-purple-500' : 'bg-blue-500'}`}
                     style={{ width: `${Math.min(progress, 100)}%` }}
                   ></div>
                 </div>

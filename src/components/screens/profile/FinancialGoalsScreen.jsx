@@ -4,7 +4,7 @@ import { ICONS } from '../../icons';
 import { motion } from 'framer-motion';
 import { whileTap, whileHover, spring, zoomInOut } from '../../../utils/motion';
 
-const FinancialGoalsScreen = ({ financialGoals, setFinancialGoals, setCurrentScreen }) => {
+const FinancialGoalsScreen = ({ financialGoals, setFinancialGoals, setCurrentScreen, currencySymbol }) => {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [newGoal, setNewGoal] = useState({ title: '', target: '', deadline: '', isSavings: false });
 
@@ -163,8 +163,8 @@ const FinancialGoalsScreen = ({ financialGoals, setFinancialGoals, setCurrentScr
                 </div>
                 <div className="mb-3">
                   <div className="flex justify-between text-sm text-gray-600 mb-2 dark:text-gray-400">
-                    <span>{goal.current.toLocaleString()} ₽</span>
-                    <span>{goal.target.toLocaleString()} ₽</span>
+                    <span>{goal.current.toLocaleString()} {currencySymbol}</span>
+                    <span>{goal.target.toLocaleString()} {currencySymbol}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
                     <div

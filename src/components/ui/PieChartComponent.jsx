@@ -1,6 +1,6 @@
 import React from 'react';
 
-const PieChartComponent = ({ data, title, colors, currency }) => {
+const PieChartComponent = ({ data, title, colors, currencySymbol }) => {
   if (!data || data.length === 0) return null;
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
@@ -46,7 +46,7 @@ const PieChartComponent = ({ data, title, colors, currency }) => {
               ></div>
               <div className="text-sm">
                 <div className="font-medium">{item.name}</div>
-                <div className="text-gray-500">{item.value.toLocaleString()} {currency}</div>
+                <div className="text-gray-500">{item.value.toLocaleString()} {currencySymbol}</div>
               </div>
             </div>
           ))}

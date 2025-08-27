@@ -4,7 +4,7 @@ import { ICONS } from '../icons';
 import { motion } from 'framer-motion';
 import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
 
-const MyLoansListScreen = ({ loans, setCurrentScreen, setSelectedFinancialItem, setLoans, setTransactions, loanTransactions, setLoanTransactions }) => {
+const MyLoansListScreen = ({ loans, setCurrentScreen, setSelectedFinancialItem, setLoans, setTransactions, loanTransactions, setLoanTransactions, currencySymbol }) => {
   const [isLongPress, setIsLongPress] = useState(false);
   const pressTimer = useRef(null);
 
@@ -73,11 +73,11 @@ const MyLoansListScreen = ({ loans, setCurrentScreen, setSelectedFinancialItem, 
             const IconComponent = getIconComponent(loan.iconName);
             let monthlyPaymentText = '';
             if (loan.loanPaymentType === 'annuity') {
-              monthlyPaymentText = `${loan.monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} ₽/мес.`;
+              monthlyPaymentText = `${loan.monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currencySymbol}/мес.`;
             } else if (loan.paymentSchedule && loan.paymentSchedule.length > 0) {
               const firstPayment = loan.paymentSchedule[0].monthlyPayment;
               const lastPayment = loan.paymentSchedule[loan.paymentSchedule.length - 1].monthlyPayment;
-              monthlyPaymentText = `${firstPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} - ${lastPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} ₽`;
+              monthlyPaymentText = `${firstPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} - ${lastPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currencySymbol}`;
             }
 
             return (
@@ -104,7 +104,7 @@ const MyLoansListScreen = ({ loans, setCurrentScreen, setSelectedFinancialItem, 
                   <div>
                     <div className="font-medium text-gray-800 dark:text-gray-200">{loan.name}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">{monthlyPaymentText}</div>
-                    <div className="text-xs text-gray-400 dark:text-gray-500">Остаток: {loan.currentBalance.toLocaleString()} ₽</div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500">Остаток: {loan.currentBalance.toLocaleString()} {currencySymbol}</div>
                   </div>
                 </div>
               </motion.div>

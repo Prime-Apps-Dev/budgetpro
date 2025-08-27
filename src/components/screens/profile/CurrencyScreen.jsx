@@ -3,13 +3,19 @@ import { ICONS } from '../../icons';
 import { CURRENCIES } from '../../../constants/currencies';
 import { motion } from 'framer-motion';
 import { spring, whileTap, zoomInOut } from '../../../utils/motion';
+import ReactCountryFlag from 'react-country-flag';
 
-const CurrencyScreen = ({ setCurrentScreen, currency, setCurrency }) => {
+const CurrencyScreen = ({ setCurrentScreen, currencyCode, setCurrencyCode }) => {
+  const handleCurrencyChange = (newCurrencyCode) => {
+    setCurrencyCode(newCurrencyCode);
+    setCurrentScreen('settings');
+  };
+
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center mb-8">
         <motion.button
-          onClick={() => setCurrentScreen('profile')}
+          onClick={() => setCurrentScreen('settings')}
           className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
           whileTap={whileTap}
           transition={spring}
@@ -23,11 +29,8 @@ const CurrencyScreen = ({ setCurrentScreen, currency, setCurrency }) => {
         {CURRENCIES.map(c => (
           <motion.button
             key={c.code}
-            onClick={() => {
-              setCurrency(c.symbol);
-              setCurrentScreen('profile');
-            }}
-            className={`w-full bg-white p-4 rounded-2xl shadow-sm flex items-center justify-between hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 ${currency === c.symbol ? 'border-2 border-blue-500' : ''}`}
+            onClick={() => handleCurrencyChange(c.code)}
+            className={`w-full bg-white p-4 rounded-2xl shadow-sm flex items-center justify-between hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 ${currencyCode === c.code ? 'border-2 border-blue-500' : ''}`}
             whileTap={whileTap}
             transition={spring}
             variants={zoomInOut}
@@ -36,9 +39,19 @@ const CurrencyScreen = ({ setCurrentScreen, currency, setCurrency }) => {
             viewport={{ once: true, amount: 0.2 }}
           >
             <div className="flex items-center">
-              <span className="font-medium text-gray-800 dark:text-gray-200">{c.name} ({c.code})</span>
+              <ReactCountryFlag
+                countryCode={c.countryCode}
+                svg
+                style={{
+                  width: '2em',
+                  height: '1.5em',
+                  marginRight: '0.5em',
+                  lineHeight: '1.5em'
+                }}
+                title={c.name}
+              />
+              <span className="font-medium text-gray-800 dark:text-gray-200">{c.code}</span>
             </div>
-            <span className="font-semibold text-gray-600 dark:text-gray-400">{c.symbol}</span>
           </motion.button>
         ))}
       </div>

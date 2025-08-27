@@ -5,7 +5,7 @@ import { usefulIconOptions } from '../icons/usefulIcons';
 import { motion } from 'framer-motion';
 import { spring, whileTap, jiggle } from '../../utils/motion';
 
-const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCurrentScreen, editingItem, accounts, currency }) => {
+const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCurrentScreen, editingItem, accounts, currencySymbol }) => {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [interestRate, setInterestRate] = useState('');
@@ -301,7 +301,7 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-400">Сумма ({currency})</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-400">Сумма ({currencySymbol})</label>
             <input
               type="number"
               value={amount}
@@ -473,7 +473,7 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
                   {loanPaymentType === 'annuity' ? 'Ежемесячный платеж:' : 'Первый платеж:'}
                 </span>
                 <span className="font-semibold text-lg text-blue-600">
-                  {calculationResult.monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currency}
+                  {calculationResult.monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currencySymbol}
                 </span>
               </div>
             )}
@@ -481,7 +481,7 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 dark:text-gray-400">Общая сумма {type === 'loan' ? 'выплат' : 'на конец срока'}:</span>
                 <span className="font-semibold text-lg text-gray-800 dark:text-gray-200">
-                  {calculationResult.totalPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currency}
+                  {calculationResult.totalPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currencySymbol}
                 </span>
               </div>
             )}
@@ -491,7 +491,7 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
                   {type === 'loan' ? 'Переплата' : 'Доход'}:
                 </span>
                 <span className={`font-semibold text-lg ${type === 'loan' ? 'text-red-600' : 'text-green-600'}`}>
-                  {calculationResult.totalInterest.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currency}
+                  {calculationResult.totalInterest.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currencySymbol}
                 </span>
               </div>
             )}
@@ -533,16 +533,16 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
                     <td className="px-3 py-2">{payment.month}</td>
                     <td className="px-3 py-2">{payment.date}</td>
                     <td className="px-3 py-2">
-                      {payment.monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currency}
+                      {payment.monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currencySymbol}
                     </td>
                     <td className="px-3 py-2">
-                      {payment.interest.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currency}
+                      {payment.interest.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currencySymbol}
                     </td>
                      <td className="px-3 py-2">
-                      {payment.principal.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currency}
+                      {payment.principal.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currencySymbol}
                     </td>
                     <td className="px-3 py-2">
-                      {payment.remainingBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currency}
+                      {payment.remainingBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currencySymbol}
                     </td>
                   </tr>
                 ))}

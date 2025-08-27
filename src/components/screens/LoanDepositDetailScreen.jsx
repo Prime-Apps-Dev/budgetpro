@@ -5,7 +5,7 @@ import TransactionItem from '../ui/TransactionItem';
 import { motion, AnimatePresence } from 'framer-motion';
 import { spring, whileTap, zoomInOut } from '../../utils/motion';
 
-const LoanDepositDetailScreen = ({ item, setCurrentScreen, setLoans, setDeposits, loans, deposits, setSelectedFinancialItem, setTransactions, transactions, loanTransactions, setLoanTransactions, depositTransactions, setDepositTransactions, getAccountByName, setShowAddTransaction, setEditingTransaction, accounts }) => {
+const LoanDepositDetailScreen = ({ item, setCurrentScreen, setLoans, setDeposits, loans, deposits, setSelectedFinancialItem, setTransactions, transactions, loanTransactions, setLoanTransactions, depositTransactions, setDepositTransactions, getAccountByName, setShowAddTransaction, setEditingTransaction, accounts, currencySymbol }) => {
   const [showEarlyRepaymentModal, setShowEarlyRepaymentModal] = useState(false);
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
   const [earlyRepaymentAmount, setEarlyRepaymentAmount] = useState('');
@@ -200,20 +200,20 @@ const LoanDepositDetailScreen = ({ item, setCurrentScreen, setLoans, setDeposits
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-gray-600 dark:text-gray-400">Начальная сумма:</span>
-            <span className="font-semibold text-gray-800 dark:text-gray-200">{currentItem.amount?.toLocaleString() || 0} ₽</span>
+            <span className="font-semibold text-gray-800 dark:text-gray-200">{currentItem.amount?.toLocaleString() || 0} {currencySymbol}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-600 dark:text-gray-400">
               {isLoan ? 'Остаток долга:' : 'Текущий баланс:'}
             </span>
-            <span className="font-semibold text-gray-800 dark:text-gray-200">{isLoan ? (currentItem.currentBalance?.toLocaleString() || 0) : (currentItem.currentAmount?.toLocaleString() || 0)} ₽</span>
+            <span className="font-semibold text-gray-800 dark:text-gray-200">{isLoan ? (currentItem.currentBalance?.toLocaleString() || 0) : (currentItem.currentAmount?.toLocaleString() || 0)} {currencySymbol}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-600 dark:text-gray-400">
               {isLoan ? 'Переплата:' : 'Доход:'}
             </span>
             <span className={`font-semibold ${isLoan ? 'text-red-600' : 'text-green-600'}`}>
-              {currentItem.totalInterest?.toLocaleString() || 0} ₽
+              {currentItem.totalInterest?.toLocaleString() || 0} {currencySymbol}
             </span>
           </div>
           {isLoan && (
@@ -232,7 +232,7 @@ const LoanDepositDetailScreen = ({ item, setCurrentScreen, setLoans, setDeposits
                     {currentItem.loanPaymentType === 'annuity' ? 'Ежемесячный платеж:' : 'Платеж (мин-макс):'}
                   </span>
                   <span className="font-semibold text-blue-600">
-                    {formattedMonthlyPayment} ₽
+                    {formattedMonthlyPayment} {currencySymbol}
                   </span>
                 </div>
               )}
@@ -349,6 +349,7 @@ const LoanDepositDetailScreen = ({ item, setCurrentScreen, setLoans, setDeposits
                 setLoanTransactions={setLoanTransactions}
                 loanTransactions={loanTransactions}
                 setShowAddTransaction={setShowAddTransaction}
+                currencySymbol={currencySymbol}
               />
             ))
           ) : (
@@ -378,10 +379,10 @@ const LoanDepositDetailScreen = ({ item, setCurrentScreen, setLoans, setDeposits
               </div>
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Досрочное погашение</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                Остаток долга на сегодня: <span className="font-semibold">{currentItem.currentBalance?.toLocaleString() || 0} ₽</span>
+                Остаток долга на сегодня: <span className="font-semibold">{currentItem.currentBalance?.toLocaleString() || 0} {currencySymbol}</span>
               </p>
               <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-                Сумма для полного погашения: <span className="font-semibold">{(currentItem.currentBalance + (currentItem.currentBalance * currentItem.interestRate / 100 / 12)).toLocaleString(undefined, { maximumFractionDigits: 2 })} ₽</span>
+                Сумма для полного погашения: <span className="font-semibold">{(currentItem.currentBalance + (currentItem.currentBalance * currentItem.interestRate / 100 / 12)).toLocaleString(undefined, { maximumFractionDigits: 2 })} {currencySymbol}</span>
               </p>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">Сумма к погашению</label>
@@ -435,7 +436,7 @@ const LoanDepositDetailScreen = ({ item, setCurrentScreen, setLoans, setDeposits
               </div>
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Снятие с депозита</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Текущий баланс: <span className="font-semibold">{currentItem.currentAmount?.toLocaleString() || 0} ₽</span>
+                Текущий баланс: <span className="font-semibold">{currentItem.currentAmount?.toLocaleString() || 0} {currencySymbol}</span>
               </p>
               <div className="space-y-4">
                 <div>

@@ -4,7 +4,7 @@ import { ICONS } from '../icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { spring, whileTap, whileHover, zoomInOut, fadeInOut } from '../../utils/motion';
 
-const BudgetPlanningScreen = ({ budgets, setBudgets, categories, filteredTransactions, setCurrentScreen, totalPlannedBudget, totalSpentOnBudgets }) => {
+const BudgetPlanningScreen = ({ budgets, setBudgets, categories, filteredTransactions, setCurrentScreen, totalPlannedBudget, totalSpentOnBudgets, currencySymbol }) => {
   const [showAddBudget, setShowAddBudget] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
   const [formData, setFormData] = useState({
@@ -151,13 +151,13 @@ const BudgetPlanningScreen = ({ budgets, setBudgets, categories, filteredTransac
           <span className="text-sm opacity-90">Спланировано</span>
         </div>
         <div className="text-2xl font-bold">
-          {totalPlannedBudget !== undefined && totalPlannedBudget !== null ? totalPlannedBudget.toLocaleString() : '0'} ₽
+          {totalPlannedBudget !== undefined && totalPlannedBudget !== null ? totalPlannedBudget.toLocaleString() : '0'} {currencySymbol}
         </div>
         <div className="text-sm opacity-80 mt-1">
           {showRemaining ? (
-            `Осталось потратить: ${remainingBudget.toLocaleString()} ₽`
+            `Осталось потратить: ${remainingBudget.toLocaleString()} ${currencySymbol}`
           ) : (
-            `Потрачено: ${totalSpentOnBudgets !== undefined && totalSpentOnBudgets !== null ? totalSpentOnBudgets.toLocaleString() : '0'} ₽`
+            `Потрачено: ${totalSpentOnBudgets !== undefined && totalSpentOnBudgets !== null ? totalSpentOnBudgets.toLocaleString() : '0'} ${currencySymbol}`
           )}
         </div>
       </motion.div>
@@ -208,8 +208,8 @@ const BudgetPlanningScreen = ({ budgets, setBudgets, categories, filteredTransac
                 </div>
                 <div className="mb-3">
                   <div className="flex justify-between text-sm text-gray-600 mb-2 dark:text-gray-400">
-                    <span>{spent.toLocaleString()} ₽</span>
-                    <span>{budget.limit.toLocaleString()} ₽</span>
+                    <span>{spent.toLocaleString()} {currencySymbol}</span>
+                    <span>{budget.limit.toLocaleString()} {currencySymbol}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
                     <div
@@ -219,7 +219,7 @@ const BudgetPlanningScreen = ({ budgets, setBudgets, categories, filteredTransac
                   </div>
                 </div>
                 <div className={`text-center text-sm font-medium ${isOver ? 'text-red-500' : 'text-green-500'}`}>
-                  {isOver ? `Лимит превышен на ${(spent - budget.limit).toLocaleString()} ₽` : `${progress.toFixed(1)}% израсходовано`}
+                  {isOver ? `Лимит превышен на ${(spent - budget.limit).toLocaleString()} ${currencySymbol}` : `${progress.toFixed(1)}% израсходовано`}
                 </div>
               </motion.div>
             );
