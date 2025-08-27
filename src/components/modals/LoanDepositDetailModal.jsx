@@ -196,7 +196,7 @@ const LoanDepositDetailModal = () => {
           variants={zoomInOut}
           initial="initial"
           whileInView="whileInView"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: false, amount: 0.2 }}
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-800 dark:text-gray-200">Статистика</h3>
@@ -272,7 +272,7 @@ const LoanDepositDetailModal = () => {
                 variants={zoomInOut}
                 initial="initial"
                 whileInView="whileInView"
-                viewport={{ once: true, amount: 0.2 }}
+                viewport={{ once: false, amount: 0.2 }}
               >
                 <ICONS.Plus className="w-5 h-5 mr-2" />
                 Внести платеж
@@ -285,7 +285,7 @@ const LoanDepositDetailModal = () => {
                 variants={zoomInOut}
                 initial="initial"
                 whileInView="whileInView"
-                viewport={{ once: true, amount: 0.2 }}
+                viewport={{ once: false, amount: 0.2 }}
               >
                 <ICONS.MinusCircle className="w-5 h-5 mr-2" />
                 Досрочное погашение
@@ -304,7 +304,7 @@ const LoanDepositDetailModal = () => {
                 variants={zoomInOut}
                 initial="initial"
                 whileInView="whileInView"
-                viewport={{ once: true, amount: 0.2 }}
+                viewport={{ once: false, amount: 0.2 }}
               >
                 <ICONS.Plus className="w-5 h-5 mr-2" />
                 Пополнить
@@ -317,7 +317,7 @@ const LoanDepositDetailModal = () => {
                 variants={zoomInOut}
                 initial="initial"
                 whileInView="whileInView"
-                viewport={{ once: true, amount: 0.2 }}
+                viewport={{ once: false, amount: 0.2 }}
               >
                 <ICONS.MinusCircle className="w-5 h-5 mr-2" />
                 Снять
@@ -331,7 +331,7 @@ const LoanDepositDetailModal = () => {
           variants={zoomInOut}
           initial="initial"
           whileInView="whileInView"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: false, amount: 0.2 }}
         >
           <h3 className="font-semibold text-gray-800 mb-4 dark:text-gray-200">История операций</h3>
           <div className="space-y-4">

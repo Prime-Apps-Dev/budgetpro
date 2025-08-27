@@ -138,7 +138,7 @@ const SavingsScreen = () => {
         variants={zoomInOut}
         initial="initial"
         whileInView="whileInView"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: false, amount: 0.2 }}
       >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
@@ -181,7 +181,7 @@ const SavingsScreen = () => {
               variants={zoomInOut}
               initial="initial"
               whileInView="whileInView"
-              viewport={{ once: true, amount: 0.2 }}
+              viewport={{ once: false, amount: 0.2 }}
             >
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-semibold text-gray-800 dark:text-gray-200">{goal.title}</h4>

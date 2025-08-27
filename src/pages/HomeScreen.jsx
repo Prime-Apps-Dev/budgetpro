@@ -27,7 +27,7 @@ const HomeScreen = () => {
           variants={zoomInOut}
           initial="initial"
           whileInView="whileInView"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: false }}
         >
           <div className="flex items-center mb-3">
             <ICONS.ArrowUpCircle className="w-6 h-6 mr-3" />
@@ -43,7 +43,7 @@ const HomeScreen = () => {
           variants={zoomInOut}
           initial="initial"
           whileInView="whileInView"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: false }}
         >
           <div className="flex items-center mb-3">
             <ICONS.ArrowDownCircle className="w-6 h-6 mr-3" />
@@ -62,7 +62,7 @@ const HomeScreen = () => {
           variants={zoomInOut}
           initial="initial"
           whileInView="whileInView"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: false }}
         >
           <div className="flex items-center mb-3">
             <ICONS.Wallet className="w-6 h-6 mr-3" />
@@ -78,7 +78,7 @@ const HomeScreen = () => {
           variants={zoomInOut}
           initial="initial"
           whileInView="whileInView"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: false }}
         >
           <div className="flex items-center mb-3">
             <ICONS.PiggyBank className="w-6 h-6 mr-3" />
@@ -92,7 +92,7 @@ const HomeScreen = () => {
         <h3 className="text-lg font-semibold mb-6 text-gray-800 dark:text-gray-200">Последние транзакции</h3>
         <div className="space-y-4">
           {transactions.slice(-5).reverse().map((transaction) => (
-            <motion.div key={transaction.id} variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: true, amount: 0.2 }}>
+            <motion.div key={transaction.id} variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: false }}>
               <TransactionItem
                 transaction={transaction}
               />

@@ -95,7 +95,7 @@ const TransactionHistoryScreen = () => {
       <div className="space-y-4">
         {filteredTransactions.length > 0 ? (
           filteredTransactions.map(transaction => (
-            <motion.div key={transaction.id} variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: true, amount: 0.2 }}>
+            <motion.div key={transaction.id} variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: false, amount: 0.2 }}>
               <TransactionItem
                 transaction={transaction}
               />

@@ -48,7 +48,7 @@ const AnalyticsScreen = () => {
         variants={zoomInOut}
         initial="initial"
         whileInView="whileInView"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: false, amount: 0.2 }}
       >
         <h3 className="font-semibold mb-4">Период анализа</h3>
         <div className="grid grid-cols-4 gap-3 mb-6">
@@ -94,7 +94,7 @@ const AnalyticsScreen = () => {
       </motion.div>
 
       <div className="space-y-8">
-        <motion.div variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: true, amount: 0.2 }}>
+        <motion.div variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: false, amount: 0.2 }}>
           <PieChartComponent
             data={expensesByCategory}
             title="Расходы по категориям"
@@ -103,7 +103,7 @@ const AnalyticsScreen = () => {
           />
         </motion.div>
 
-        <motion.div variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: true, amount: 0.2 }}>
+        <motion.div variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: false, amount: 0.2 }}>
           <PieChartComponent
             data={incomeByCategory}
             title="Доходы по категориям"
@@ -117,7 +117,7 @@ const AnalyticsScreen = () => {
           variants={zoomInOut}
           initial="initial"
           whileInView="whileInView"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: false, amount: 0.2 }}
         >
           <h3 className="text-lg font-semibold mb-6 text-gray-800">Сводка за период</h3>
           <div className="space-y-4">

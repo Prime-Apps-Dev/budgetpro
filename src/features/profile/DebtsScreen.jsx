@@ -126,7 +126,7 @@ const DebtsScreen = () => {
                   variants={zoomInOut}
                   initial="initial"
                   whileInView="whileInView"
-                  viewport={{ once: true, amount: 0.2 }}
+                  viewport={{ once: false, amount: 0.2 }}
                 >
                   <div className="flex items-center">
                     <ICONS.ArrowDownCircle className="w-8 h-8 text-red-500 mr-4" />
@@ -189,7 +189,7 @@ const DebtsScreen = () => {
                   variants={zoomInOut}
                   initial="initial"
                   whileInView="whileInView"
-                  viewport={{ once: true, amount: 0.2 }}
+                  viewport={{ once: false, amount: 0.2 }}
                 >
                   <div className="flex items-center">
                     <ICONS.ArrowUpCircle className="w-8 h-8 text-green-500 mr-4" />

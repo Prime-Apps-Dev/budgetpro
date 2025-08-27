@@ -104,7 +104,7 @@ const MyLoansListScreen = () => {
                 variants={zoomInOut}
                 initial="initial"
                 whileInView="whileInView"
-                viewport={{ once: true, amount: 0.2 }}
+                viewport={{ once: false, amount: 0.2 }}
               >
                 <div className="flex items-center">
                   <IconComponent className="w-8 h-8 text-red-500 mr-4" />

@@ -158,7 +158,7 @@ const BudgetPlanningScreen = () => {
         variants={zoomInOut}
         initial="initial"
         whileInView="whileInView"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: false, amount: 0.2 }}
       >
         <div className="flex items-center mb-3">
           <ICONS.Wallet className="w-6 h-6 mr-3" />
@@ -194,7 +194,7 @@ const BudgetPlanningScreen = () => {
                 variants={zoomInOut}
                 initial="initial"
                 whileInView="whileInView"
-                viewport={{ once: true, amount: 0.2 }}
+                viewport={{ once: false, amount: 0.2 }}
               >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200">{budget.category}</h3>
