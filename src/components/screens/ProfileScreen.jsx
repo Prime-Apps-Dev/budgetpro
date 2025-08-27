@@ -1,3 +1,4 @@
+// src/components/screens/ProfileScreen.jsx
 import React from 'react';
 import { ICONS } from '../icons';
 import EditProfileScreen from './profile/EditProfileScreen';
@@ -15,7 +16,7 @@ import LoanDepositDetailScreen from './LoanDepositDetailScreen';
 import AddFinancialItemScreen from './AddFinancialItemScreen';
 import MyFinancialProductsScreen from './MyFinancialProductsScreen';
 import { motion } from 'framer-motion';
-import { whileTap, whileHover, spring } from '../../utils/motion';
+import { whileTap, whileHover, spring, zoomInOut } from '../../utils/motion';
 
 const ProfileScreen = ({
   userProfile,
@@ -199,7 +200,13 @@ const ProfileScreen = ({
     <div className="p-6 pb-24 min-h-screen">
       <h2 className="text-2xl font-bold text-gray-800 mb-8 dark:text-gray-200">Профиль</h2>
 
-      <div className="bg-white rounded-2xl p-8 shadow-sm mb-8 dark:bg-gray-800">
+      <motion.div
+        className="bg-white rounded-2xl p-8 shadow-sm mb-8 dark:bg-gray-800"
+        variants={zoomInOut}
+        initial="initial"
+        whileInView="whileInView"
+        viewport={{ once: true, amount: 0.2 }}
+      >
         <div className="flex items-center mb-6">
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mr-4"
@@ -220,7 +227,7 @@ const ProfileScreen = ({
         >
           Редактировать профиль
         </motion.button>
-      </div>
+      </motion.div>
 
       <div className="space-y-4">
         <motion.button
@@ -229,6 +236,10 @@ const ProfileScreen = ({
           whileTap={whileTap}
           whileHover={{ x: 5 }}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center">
             <ICONS.Target className="w-6 h-6 text-blue-500 mr-4" />
@@ -243,6 +254,10 @@ const ProfileScreen = ({
           whileTap={whileTap}
           whileHover={{ x: 5 }}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center">
             <ICONS.Wallet className="w-6 h-6 text-blue-500 mr-4" />
@@ -257,6 +272,10 @@ const ProfileScreen = ({
           whileTap={whileTap}
           whileHover={{ x: 5 }}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center">
             <ICONS.Handshake className="w-6 h-6 text-blue-500 mr-4" />
@@ -271,6 +290,10 @@ const ProfileScreen = ({
           whileTap={whileTap}
           whileHover={{ x: 5 }}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center">
             <ICONS.Banknote className="w-6 h-6 text-blue-500 mr-4" />
@@ -285,6 +308,10 @@ const ProfileScreen = ({
           whileTap={whileTap}
           whileHover={{ x: 5 }}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center">
             <ICONS.Calendar className="w-6 h-6 text-blue-500 mr-4" />
@@ -299,6 +326,10 @@ const ProfileScreen = ({
           whileTap={whileTap}
           whileHover={{ x: 5 }}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center">
             <ICONS.CreditCard className="w-6 h-6 text-blue-500 mr-4" />
@@ -313,6 +344,10 @@ const ProfileScreen = ({
           whileTap={whileTap}
           whileHover={{ x: 5 }}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center">
             <ICONS.LayoutGrid className="w-6 h-6 text-blue-500 mr-4" />
@@ -327,6 +362,10 @@ const ProfileScreen = ({
           whileTap={whileTap}
           whileHover={{ x: 5 }}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center">
             <ICONS.Settings className="w-6 h-6 text-blue-500 mr-4" />

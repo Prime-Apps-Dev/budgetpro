@@ -28,3 +28,10 @@ export const pressSlow = {
   scale: 0.9,
   transition: { duration: 0.5, type: "tween" },
 };
+
+export const zoomInOut = {
+  initial: { scale: 0.8, opacity: 0 },
+  whileInView: { scale: 1, opacity: 1 },
+  exit: { scale: 0.8, opacity: 0 },
+  transition: { type: "spring", stiffness: 100, damping: 20 },
+};

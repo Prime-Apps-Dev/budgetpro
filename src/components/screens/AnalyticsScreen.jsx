@@ -1,6 +1,9 @@
+// src/components/screens/AnalyticsScreen.jsx
 import React from 'react';
 import PieChartComponent from '../ui/PieChartComponent';
 import { ICONS } from '../icons';
+import { motion } from 'framer-motion';
+import { whileTap, whileHover, spring, zoomInOut } from '../../utils/motion';
 
 const AnalyticsScreen = ({
   transactions,
@@ -15,14 +18,14 @@ const AnalyticsScreen = ({
   setDateRange
 }) => {
   const expensesByCategory = categories.expense.map(cat => ({
-    name: cat,
-    value: filteredTransactions.filter(t => t.type === 'expense' && t.category === cat)
+    name: cat.name,
+    value: filteredTransactions.filter(t => t.type === 'expense' && t.category === cat.name)
       .reduce((sum, t) => sum + t.amount, 0)
   })).filter(item => item.value > 0);
 
   const incomeByCategory = categories.income.map(cat => ({
-    name: cat,
-    value: filteredTransactions.filter(t => t.type === 'income' && t.category === cat)
+    name: cat.name,
+    value: filteredTransactions.filter(t => t.type === 'income' && t.category === cat.name)
       .reduce((sum, t) => sum + t.amount, 0)
   })).filter(item => item.value > 0);
 
@@ -35,11 +38,17 @@ const AnalyticsScreen = ({
         <h2 className="text-2xl font-bold text-gray-800">Аналитика</h2>
       </div>
 
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-8">
+      <motion.div
+        className="bg-white rounded-2xl p-6 shadow-sm mb-8"
+        variants={zoomInOut}
+        initial="initial"
+        whileInView="whileInView"
+        viewport={{ once: true, amount: 0.2 }}
+      >
         <h3 className="font-semibold mb-4">Период анализа</h3>
         <div className="grid grid-cols-4 gap-3 mb-6">
           {['week', 'month', 'quarter', 'year'].map(period => (
-            <button
+            <motion.button
               key={period}
               onClick={() => {
                 setSelectedPeriod(period);
@@ -50,9 +59,11 @@ const AnalyticsScreen = ({
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-100 text-gray-700'
               }`}
+              whileTap={whileTap}
+              transition={spring}
             >
               {period === 'week' ? 'Неделя' : period === 'month' ? 'Месяц' : period === 'quarter' ? 'Квартал' : 'Год'}
-            </button>
+            </motion.button>
           ))}
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -75,22 +86,32 @@ const AnalyticsScreen = ({
             />
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="space-y-8">
-        <PieChartComponent
-          data={expensesByCategory}
-          title="Расходы по категориям"
-          colors={expenseColors}
-        />
+        <motion.div variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: true, amount: 0.2 }}>
+          <PieChartComponent
+            data={expensesByCategory}
+            title="Расходы по категориям"
+            colors={expenseColors}
+          />
+        </motion.div>
 
-        <PieChartComponent
-          data={incomeByCategory}
-          title="Доходы по категориям"
-          colors={incomeColors}
-        />
+        <motion.div variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: true, amount: 0.2 }}>
+          <PieChartComponent
+            data={incomeByCategory}
+            title="Доходы по категориям"
+            colors={incomeColors}
+          />
+        </motion.div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <motion.div
+          className="bg-white rounded-2xl p-6 shadow-sm"
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           <h3 className="text-lg font-semibold mb-6 text-gray-800">Сводка за период</h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -109,7 +130,7 @@ const AnalyticsScreen = ({
               </span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

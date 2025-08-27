@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { ICONS } from '../icons';
 import { motion } from 'framer-motion';
-import { spring, whileTap, whileHover } from '../../utils/motion';
+import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
 
 const MyDepositsListScreen = ({ deposits, setCurrentScreen, setSelectedFinancialItem, setDeposits, setTransactions, depositTransactions, setDepositTransactions }) => {
   const [isLongPress, setIsLongPress] = useState(false);
@@ -85,6 +85,10 @@ const MyDepositsListScreen = ({ deposits, setCurrentScreen, setSelectedFinancial
                 whileTap={whileTap}
                 whileHover={whileHover}
                 transition={spring}
+                variants={zoomInOut}
+                initial="initial"
+                whileInView="whileInView"
+                viewport={{ once: true, amount: 0.2 }}
               >
                 <div className="flex items-center">
                   <IconComponent className="w-8 h-8 text-green-500 mr-4" />

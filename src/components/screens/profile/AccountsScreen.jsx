@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { ICONS } from '../../icons';
 import { usefulIconOptions } from '../../icons/usefulIcons';
 import { motion } from 'framer-motion';
-import { spring, whileTap, whileHover } from '../../../utils/motion';
+import { spring, whileTap, whileHover, zoomInOut } from '../../../utils/motion';
 
 const AccountsScreen = ({ accounts, setAccounts, setCurrentScreen }) => {
   const [showAddAccount, setShowAddAccount] = useState(false);
@@ -187,6 +187,10 @@ const AccountsScreen = ({ accounts, setAccounts, setCurrentScreen }) => {
               whileTap={whileTap}
               whileHover={whileHover}
               transition={spring}
+              variants={zoomInOut}
+              initial="initial"
+              whileInView="whileInView"
+              viewport={{ once: true, amount: 0.2 }}
             >
               <div className="flex items-center">
                 <IconComponent className="w-8 h-8 mr-4" style={{ color: account.color }} />

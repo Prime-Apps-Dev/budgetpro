@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ICONS } from '../icons';
 import { motion, AnimatePresence } from 'framer-motion';
-import { spring, whileTap } from '../../utils/motion';
+import { spring, whileTap, zoomInOut } from '../../utils/motion';
 
 const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions }) => {
   const [showAddDebt, setShowAddDebt] = useState(false);
@@ -84,12 +84,14 @@ const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions }) => 
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center mb-8">
-        <button
+        <motion.button
           onClick={() => setCurrentScreen('')}
           className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+          whileTap={whileTap}
+          transition={spring}
         >
           <ICONS.ChevronLeft className="w-6 h-6 dark:text-gray-300" />
-        </button>
+        </motion.button>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Долги</h2>
         <motion.button
           onClick={() => setShowAddDebt(true)}
@@ -112,6 +114,10 @@ const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions }) => 
                   className="bg-white rounded-2xl p-6 shadow-sm flex items-center justify-between dark:bg-gray-800"
                   whileTap={whileTap}
                   transition={spring}
+                  variants={zoomInOut}
+                  initial="initial"
+                  whileInView="whileInView"
+                  viewport={{ once: true, amount: 0.2 }}
                 >
                   <div className="flex items-center">
                     <ICONS.ArrowDownCircle className="w-8 h-8 text-red-500 mr-4" />
@@ -171,6 +177,10 @@ const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions }) => 
                   className="bg-white rounded-2xl p-6 shadow-sm flex items-center justify-between dark:bg-gray-800"
                   whileTap={whileTap}
                   transition={spring}
+                  variants={zoomInOut}
+                  initial="initial"
+                  whileInView="whileInView"
+                  viewport={{ once: true, amount: 0.2 }}
                 >
                   <div className="flex items-center">
                     <ICONS.ArrowUpCircle className="w-8 h-8 text-green-500 mr-4" />

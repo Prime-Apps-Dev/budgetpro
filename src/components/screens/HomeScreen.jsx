@@ -3,7 +3,7 @@ import React from 'react';
 import { ICONS } from '../icons';
 import TransactionItem from '../ui/TransactionItem';
 import { motion } from 'framer-motion';
-import { whileHover, whileTap, spring } from '../../utils/motion';
+import { whileHover, whileTap, spring, zoomInOut } from '../../utils/motion';
 
 const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalance, transactions, getAccountByName, setEditingTransaction, setShowAddTransaction, deposits, setDeposits, loans, setLoans, depositTransactions, setDepositTransactions, loanTransactions, setLoanTransactions, setTransactions }) => {
   return (
@@ -14,6 +14,10 @@ const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalan
           whileHover={whileHover}
           whileTap={whileTap}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center mb-3">
             <ICONS.ArrowUpCircle className="w-6 h-6 mr-3" />
@@ -26,6 +30,10 @@ const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalan
           whileHover={whileHover}
           whileTap={whileTap}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center mb-3">
             <ICONS.ArrowDownCircle className="w-6 h-6 mr-3" />
@@ -41,6 +49,10 @@ const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalan
           whileHover={whileHover}
           whileTap={whileTap}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center mb-3">
             <ICONS.Wallet className="w-6 h-6 mr-3" />
@@ -53,6 +65,10 @@ const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalan
           whileHover={whileHover}
           whileTap={whileTap}
           transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <div className="flex items-center mb-3">
             <ICONS.PiggyBank className="w-6 h-6 mr-3" />
@@ -65,24 +81,25 @@ const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalan
       <div className="bg-white rounded-2xl p-6 shadow-sm dark:bg-gray-800">
         <h3 className="text-lg font-semibold mb-6 text-gray-800 dark:text-gray-200">Последние транзакции</h3>
         <div className="space-y-4">
-          {transactions.slice(-5).reverse().map(transaction => (
-            <TransactionItem
-              key={transaction.id}
-              transaction={transaction}
-              getAccountByName={getAccountByName}
-              setEditingTransaction={setEditingTransaction}
-              setShowAddTransaction={setShowAddTransaction}
-              transactions={transactions}
-              setTransactions={setTransactions}
-              deposits={deposits}
-              setDeposits={setDeposits}
-              loans={loans}
-              setLoans={setLoans}
-              depositTransactions={depositTransactions}
-              setDepositTransactions={setDepositTransactions}
-              loanTransactions={loanTransactions}
-              setLoanTransactions={setLoanTransactions}
-            />
+          {transactions.slice(-5).reverse().map((transaction) => (
+            <motion.div key={transaction.id} variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: true, amount: 0.2 }}>
+              <TransactionItem
+                transaction={transaction}
+                getAccountByName={getAccountByName}
+                setEditingTransaction={setEditingTransaction}
+                setShowAddTransaction={setShowAddTransaction}
+                transactions={transactions}
+                setTransactions={setTransactions}
+                deposits={deposits}
+                setDeposits={setDeposits}
+                loans={loans}
+                setLoans={setLoans}
+                depositTransactions={depositTransactions}
+                setDepositTransactions={setDepositTransactions}
+                loanTransactions={loanTransactions}
+                setLoanTransactions={setLoanTransactions}
+              />
+            </motion.div>
           ))}
         </div>
       </div>

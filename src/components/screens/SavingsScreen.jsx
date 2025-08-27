@@ -1,5 +1,8 @@
+// src/components/screens/SavingsScreen.jsx
 import React, { useState } from 'react';
 import { ICONS } from '../icons';
+import { motion } from 'framer-motion';
+import { whileTap, whileHover, spring, zoomInOut } from '../../utils/motion';
 
 const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTransactions, totalSavingsBalance }) => {
   const [savingsAction, setSavingsAction] = useState(null);
@@ -46,12 +49,14 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
     return (
       <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
         <div className="flex items-center mb-8">
-          <button
+          <motion.button
             onClick={() => setSavingsAction(null)}
             className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+            whileTap={whileTap}
+            transition={spring}
           >
             <ICONS.ChevronLeft className="w-6 h-6 dark:text-gray-300" />
-          </button>
+          </motion.button>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
             {savingsAction === 'deposit' ? 'Пополнить копилку' : 'Снять с копилки'}
           </h2>
@@ -62,7 +67,7 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
             <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-gray-400">Выберите цель</label>
             <div className="space-y-3">
               {savingsGoals.map(goal => (
-                <button
+                <motion.button
                   key={goal.id}
                   onClick={() => setSelectedGoal(goal)}
                   className={`w-full p-4 rounded-xl border-2 text-left ${
@@ -70,10 +75,12 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900'
                       : 'border-gray-200 bg-white dark:bg-gray-800'
                   }`}
+                  whileTap={whileTap}
+                  transition={spring}
                 >
                   <div className="font-medium">{goal.title}</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">{goal.current.toLocaleString()} ₽ из {goal.target.toLocaleString()} ₽</div>
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -89,7 +96,7 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
             />
           </div>
 
-          <button
+          <motion.button
             onClick={() => handleSavingsTransaction(savingsAction)}
             disabled={!selectedGoal || !savingsAmount}
             className={`w-full p-4 rounded-2xl font-semibold text-white ${
@@ -99,9 +106,11 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
                   ? 'bg-green-600 hover:bg-green-700'
                   : 'bg-red-600 hover:bg-red-700'
             }`}
+            whileTap={whileTap}
+            transition={spring}
           >
             {savingsAction === 'deposit' ? 'Пополнить' : 'Снять'}
-          </button>
+          </motion.button>
         </div>
       </div>
     );
@@ -111,7 +120,16 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <h2 className="text-2xl font-bold text-gray-800 mb-8 dark:text-gray-200">Копилка</h2>
 
-      <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl p-8 text-white mb-8">
+      <motion.div
+        className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl p-8 text-white mb-8"
+        whileHover={whileHover}
+        whileTap={whileTap}
+        transition={spring}
+        variants={zoomInOut}
+        initial="initial"
+        whileInView="whileInView"
+        viewport={{ once: true, amount: 0.2 }}
+      >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <ICONS.PiggyBank className="w-8 h-8 mr-4" />
@@ -119,23 +137,27 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
           </div>
         </div>
         <div className="text-3xl font-bold">{totalSavingsBalance.toLocaleString()} ₽</div>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <button
+        <motion.button
           onClick={() => setSavingsAction('deposit')}
           className="bg-green-500 text-white p-4 rounded-2xl font-semibold hover:bg-green-600 flex items-center justify-center"
+          whileTap={whileTap}
+          transition={spring}
         >
           <ICONS.Plus className="w-5 h-5 mr-2" />
           Пополнить
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={() => setSavingsAction('withdrawal')}
           className="bg-red-500 text-white p-4 rounded-2xl font-semibold hover:bg-red-600 flex items-center justify-center"
+          whileTap={whileTap}
+          transition={spring}
         >
           <ICONS.ArrowUpCircle className="w-5 h-5 mr-2" />
           Снять
-        </button>
+        </motion.button>
       </div>
 
       <div className="space-y-4">
@@ -143,7 +165,14 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
         {savingsGoals.map(goal => {
           const progress = goal.target > 0 ? (goal.current / goal.target) * 100 : 0;
           return (
-            <div key={goal.id} className="bg-white rounded-2xl p-6 shadow-sm dark:bg-gray-800">
+            <motion.div 
+              key={goal.id} 
+              className="bg-white rounded-2xl p-6 shadow-sm dark:bg-gray-800"
+              variants={zoomInOut}
+              initial="initial"
+              whileInView="whileInView"
+              viewport={{ once: true, amount: 0.2 }}
+            >
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-semibold text-gray-800 dark:text-gray-200">{goal.title}</h4>
                 <span className="text-sm text-gray-500 dark:text-gray-400">{goal.deadline}</span>
@@ -163,7 +192,7 @@ const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTra
               <div className="text-center text-sm text-gray-600 dark:text-gray-400">
                 {progress.toFixed(1)}% достигнуто
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>

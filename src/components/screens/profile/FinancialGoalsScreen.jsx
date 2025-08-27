@@ -1,5 +1,8 @@
+// src/components/screens/profile/FinancialGoalsScreen.jsx
 import React, { useState } from 'react';
 import { ICONS } from '../../icons';
+import { motion } from 'framer-motion';
+import { whileTap, whileHover, spring, zoomInOut } from '../../../utils/motion';
 
 const FinancialGoalsScreen = ({ financialGoals, setFinancialGoals, setCurrentScreen }) => {
   const [showAddGoal, setShowAddGoal] = useState(false);
@@ -29,12 +32,14 @@ const FinancialGoalsScreen = ({ financialGoals, setFinancialGoals, setCurrentScr
     return (
       <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
         <div className="flex items-center mb-8">
-          <button
+          <motion.button
             onClick={() => setShowAddGoal(false)}
             className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+            whileTap={whileTap}
+            transition={spring}
           >
             <ICONS.ChevronLeft className="w-6 h-6 dark:text-gray-300" />
-          </button>
+          </motion.button>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Новая цель</h2>
         </div>
 
@@ -84,12 +89,14 @@ const FinancialGoalsScreen = ({ financialGoals, setFinancialGoals, setCurrentScr
             </label>
           </div>
 
-          <button
+          <motion.button
             onClick={handleAddGoal}
             className="w-full bg-blue-600 text-white p-4 rounded-2xl font-semibold hover:bg-blue-700"
+            whileTap={whileTap}
+            transition={spring}
           >
             Создать цель
-          </button>
+          </motion.button>
         </div>
       </div>
     );
@@ -99,20 +106,24 @@ const FinancialGoalsScreen = ({ financialGoals, setFinancialGoals, setCurrentScr
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
-          <button
+          <motion.button
             onClick={() => setCurrentScreen('')}
             className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+            whileTap={whileTap}
+            transition={spring}
           >
             <ICONS.ChevronLeft className="w-6 h-6 dark:text-gray-300" />
-          </button>
+          </motion.button>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Финансовые цели</h2>
         </div>
-        <button
+        <motion.button
           onClick={() => setShowAddGoal(true)}
           className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+          whileTap={{ scale: 0.8 }}
+          transition={spring}
         >
           <ICONS.Plus className="w-6 h-6" />
-        </button>
+        </motion.button>
       </div>
 
       <div className="space-y-4">
@@ -120,7 +131,17 @@ const FinancialGoalsScreen = ({ financialGoals, setFinancialGoals, setCurrentScr
           financialGoals.map(goal => {
             const progress = goal.target > 0 ? (goal.current / goal.target) * 100 : 0;
             return (
-              <div key={goal.id} className="bg-white rounded-2xl p-6 shadow-sm dark:bg-gray-800">
+              <motion.div 
+                key={goal.id} 
+                className="bg-white rounded-2xl p-6 shadow-sm dark:bg-gray-800"
+                whileTap={whileTap}
+                whileHover={whileHover}
+                transition={spring}
+                variants={zoomInOut}
+                initial="initial"
+                whileInView="whileInView"
+                viewport={{ once: true, amount: 0.2 }}
+              >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200">{goal.title}</h3>
@@ -130,12 +151,14 @@ const FinancialGoalsScreen = ({ financialGoals, setFinancialGoals, setCurrentScr
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-500 dark:text-gray-400">{goal.deadline}</span>
-                    <button
+                    <motion.button
                       onClick={() => handleDeleteGoal(goal.id)}
                       className="p-1 text-red-500 hover:bg-red-50 rounded dark:hover:bg-gray-700"
+                      whileTap={whileTap}
+                      transition={spring}
                     >
                       <ICONS.Trash2 className="w-4 h-4" />
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
                 <div className="mb-3">
@@ -153,7 +176,7 @@ const FinancialGoalsScreen = ({ financialGoals, setFinancialGoals, setCurrentScr
                 <div className="text-center text-sm text-gray-600 dark:text-gray-400">
                   {progress.toFixed(1)}% достигнуто
                 </div>
-              </div>
+              </motion.div>
             );
           })
         ) : (

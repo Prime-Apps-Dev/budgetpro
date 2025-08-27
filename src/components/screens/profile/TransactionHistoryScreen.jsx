@@ -1,6 +1,9 @@
+// src/components/screens/profile/TransactionHistoryScreen.jsx
 import React, { useState } from 'react';
 import { ICONS } from '../../icons';
 import TransactionItem from '../../ui/TransactionItem';
+import { motion } from 'framer-motion';
+import { whileTap, spring, zoomInOut } from '../../../utils/motion';
 
 const TransactionHistoryScreen = ({ transactions, setTransactions, setEditingTransaction, setCurrentScreen, getAccountByName, depositTransactions, setDepositTransactions, loans, setLoans, deposits, setDeposits, loanTransactions, setLoanTransactions, setShowAddTransaction }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,12 +20,14 @@ const TransactionHistoryScreen = ({ transactions, setTransactions, setEditingTra
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center mb-8">
-        <button
+        <motion.button
           onClick={() => setCurrentScreen('')}
           className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+          whileTap={whileTap}
+          transition={spring}
         >
           <ICONS.ChevronLeft className="w-6 h-6 dark:text-gray-300" />
-        </button>
+        </motion.button>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">История транзакций</h2>
       </div>
 
@@ -35,59 +40,66 @@ const TransactionHistoryScreen = ({ transactions, setTransactions, setEditingTra
           className="w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
         />
         <div className="grid grid-cols-3 gap-3">
-          <button
+          <motion.button
             onClick={() => setFilterType('all')}
             className={`p-3 rounded-xl font-medium ${
               filterType === 'all'
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
             }`}
+            whileTap={whileTap}
+            transition={spring}
           >
             Все
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => setFilterType('income')}
             className={`p-3 rounded-xl font-medium ${
               filterType === 'income'
                 ? 'bg-green-500 text-white'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
             }`}
+            whileTap={whileTap}
+            transition={spring}
           >
             Доходы
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => setFilterType('expense')}
             className={`p-3 rounded-xl font-medium ${
               filterType === 'expense'
                 ? 'bg-red-500 text-white'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
             }`}
+            whileTap={whileTap}
+            transition={spring}
           >
             Расходы
-          </button>
+          </motion.button>
         </div>
       </div>
 
       <div className="space-y-4">
         {filteredTransactions.length > 0 ? (
           filteredTransactions.map(transaction => (
-            <TransactionItem
-              key={transaction.id}
-              transaction={transaction}
-              setEditingTransaction={setEditingTransaction}
-              setTransactions={setTransactions}
-              transactions={transactions}
-              getAccountByName={getAccountByName}
-              setDepositTransactions={setDepositTransactions}
-              depositTransactions={depositTransactions}
-              setLoans={setLoans}
-              loans={loans}
-              setDeposits={setDeposits}
-              deposits={deposits}
-              setLoanTransactions={setLoanTransactions}
-              loanTransactions={loanTransactions}
-              setShowAddTransaction={setShowAddTransaction}
-            />
+            <motion.div key={transaction.id} variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: true, amount: 0.2 }}>
+              <TransactionItem
+                transaction={transaction}
+                setEditingTransaction={setEditingTransaction}
+                setTransactions={setTransactions}
+                transactions={transactions}
+                getAccountByName={getAccountByName}
+                setDepositTransactions={setDepositTransactions}
+                depositTransactions={depositTransactions}
+                setLoans={setLoans}
+                loans={loans}
+                setDeposits={setDeposits}
+                deposits={deposits}
+                setLoanTransactions={setLoanTransactions}
+                loanTransactions={loanTransactions}
+                setShowAddTransaction={setShowAddTransaction}
+              />
+            </motion.div>
           ))
         ) : (
           <p className="text-center text-gray-500 dark:text-gray-400">Транзакций не найдено.</p>
