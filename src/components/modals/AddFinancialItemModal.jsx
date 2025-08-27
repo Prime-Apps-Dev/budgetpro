@@ -1,11 +1,25 @@
-// src/components/screens/AddFinancialItemScreen.jsx
+// src/components/modals/AddFinancialItemModal.jsx
 import React, { useState, useEffect } from 'react';
 import { ICONS } from '../icons';
 import { usefulIconOptions } from '../icons/usefulIcons';
 import { motion } from 'framer-motion';
 import { spring, whileTap, jiggle } from '../../utils/motion';
+import { useAppContext } from '../../context/AppContext';
+import ModalWrapper from './ModalWrapper';
 
-const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCurrentScreen, editingItem, accounts, currencySymbol }) => {
+const AddFinancialItemModal = () => {
+  const { 
+    loans,
+    setLoans,
+    deposits,
+    setDeposits,
+    setCurrentScreen,
+    editingItem,
+    accounts,
+    currencySymbol,
+    setShowAddFinancialItemModal
+  } = useAppContext();
+
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [interestRate, setInterestRate] = useState('');
@@ -13,7 +27,7 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
   const [type, setType] = useState('loan');
   const [bank, setBank] = useState('');
   const [capitalization, setCapitalization] = useState('monthly');
-  const [depositType, setDepositType] = useState('compound'); // simple or compound
+  const [depositType, setDepositType] = useState('compound');
   const [selectedIcon, setSelectedIcon] = useState('MinusCircle');
   const [loanPaymentType, setLoanPaymentType] = useState('annuity');
   const [calculationResult, setCalculationResult] = useState(null);
@@ -30,9 +44,8 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
       setDepositType(editingItem.depositType || 'compound');
       setSelectedIcon(editingItem.iconName || (editingItem.type === 'loan' ? 'MinusCircle' : 'Banknote'));
       setLoanPaymentType(editingItem.loanPaymentType || 'annuity');
-      setCalculationResult(null); // Recalculate on edit
+      setCalculationResult(null);
     } else {
-      // Сброс состояния при добавлении нового элемента
       setName('');
       setAmount('');
       setInterestRate('');
@@ -111,17 +124,17 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
         monthlyPayment = paymentSchedule[0].monthlyPayment;
         totalInterest = totalPayment - P;
       }
-    } else { // deposit
+    } else {
       const N = r / 100;
       let Dv = 0;
 
       if (depositType === 'simple') {
-        const T_days = nMonths * (365 / 12); // Average days in a month
+        const T_days = nMonths * (365 / 12);
         const K_days = 365;
         const S = (P * r * T_days / K_days) / 100;
         totalPayment = P + S;
         totalInterest = S;
-      } else { // compound
+      } else {
         if (capitalization === 'daily') {
           const T_days = nMonths * (365 / 12);
           const K_days = 365;
@@ -195,42 +208,23 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
         setDeposits(prevDeposits => [...prevDeposits, depositData]);
       }
     }
-    setCurrentScreen('my-financial-products');
+    setShowAddFinancialItemModal(false);
   };
 
-  const goBack = () => {
-    if (editingItem) {
-      if (editingItem.type === 'loan') {
-        setCurrentScreen('loan-detail');
-      } else {
-        setCurrentScreen('deposit-detail');
-      }
-    } else {
-      setCurrentScreen('my-financial-products');
-    }
+  const handleClose = () => {
+    setShowAddFinancialItemModal(false);
   };
   
   const getIconComponent = (iconName) => {
-    return ICONS[iconName] || ICONS.MinusCircle; // Default to MinusCircle
+    return ICONS[iconName] || ICONS.MinusCircle;
   };
 
   return (
-    <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
-      <div className="flex items-center mb-8">
-        <motion.button
-          onClick={goBack}
-          className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-          whileTap={whileTap}
-          transition={spring}
-        >
-          <ICONS.ChevronLeft className="w-6 h-6 dark:text-gray-300" />
-        </motion.button>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-          {editingItem ? `Редактировать ${editingItem.type === 'loan' ? 'кредит' : 'депозит'}` : `Новый финансовый продукт`}
-        </h2>
-      </div>
-
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 dark:bg-gray-800">
+    <ModalWrapper
+      title={editingItem ? `Редактировать ${editingItem.type === 'loan' ? 'кредит' : 'депозит'}` : `Новый финансовый продукт`}
+      handleClose={handleClose}
+    >
+      <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 dark:bg-gray-800 flex-grow overflow-y-auto">
         {!editingItem && (
           <div className="grid grid-cols-2 gap-3 mb-6">
             <motion.button
@@ -462,7 +456,6 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
           </motion.button>
         </div>
       </div>
-
       {calculationResult && (
         <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 dark:bg-gray-800">
           <h3 className="font-semibold text-gray-800 mb-4 dark:text-gray-200">Результат</h3>
@@ -538,7 +531,7 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
                     <td className="px-3 py-2">
                       {payment.interest.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currencySymbol}
                     </td>
-                     <td className="px-3 py-2">
+                    <td className="px-3 py-2">
                       {payment.principal.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currencySymbol}
                     </td>
                     <td className="px-3 py-2">
@@ -551,8 +544,8 @@ const AddFinancialItemScreen = ({ loans, setLoans, deposits, setDeposits, setCur
           </div>
         </motion.div>
       )}
-    </div>
+    </ModalWrapper>
   );
 };
 
-export default AddFinancialItemScreen;
+export default AddFinancialItemModal;

@@ -1,11 +1,12 @@
 // src/components/screens/profile/AccountsScreen.jsx
 import React, { useState } from 'react';
-import { ICONS } from '../../icons';
-import { usefulIconOptions } from '../../icons/usefulIcons';
+import { ICONS } from '../../components/icons';
 import { motion } from 'framer-motion';
-import { spring, whileTap, whileHover, zoomInOut } from '../../../utils/motion';
+import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
+import { useAppContext } from '../../context/AppContext';
 
-const AccountsScreen = ({ accounts, setAccounts, setCurrentScreen }) => {
+const AccountsScreen = () => {
+  const { accounts, setAccounts, setCurrentScreen } = useAppContext();
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [newAccount, setNewAccount] = useState({
@@ -156,7 +157,7 @@ const AccountsScreen = ({ accounts, setAccounts, setCurrentScreen }) => {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
           <motion.button
-            onClick={() => setCurrentScreen('')}
+            onClick={() => setCurrentScreen('profile')}
             className="mr-4 p-2 rounded-full hover:bg-gray-200"
             whileTap={whileTap}
             transition={spring}

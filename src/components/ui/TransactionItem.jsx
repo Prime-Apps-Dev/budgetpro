@@ -3,28 +3,29 @@ import React, { useState, useRef } from 'react';
 import { ICONS } from '../icons';
 import { motion } from 'framer-motion';
 import { spring } from '../../utils/motion';
+import { useAppContext } from '../../context/AppContext';
 
-const TransactionItem = ({
-  transaction,
-  setEditingTransaction,
-  setTransactions,
-  transactions,
-  getAccountByName,
-  setShowAddTransaction,
-  depositTransactions,
-  setDepositTransactions,
-  setLoans,
-  loans,
-  deposits,
-  setDeposits,
-  loanTransactions,
-  setLoanTransactions,
-  currencySymbol
-}) => {
+const TransactionItem = ({ transaction }) => {
+  const {
+    transactions,
+    setTransactions,
+    getAccountByName,
+    setShowAddTransaction,
+    setEditingTransaction,
+    depositTransactions,
+    setDepositTransactions,
+    setLoans,
+    loans,
+    deposits,
+    setDeposits,
+    loanTransactions,
+    setLoanTransactions,
+    currencySymbol
+  } = useAppContext();
+
   const account = getAccountByName(transaction.account);
   const IconComponent = getAccountByName(transaction.account).icon;
 
-  const [isPressing, setIsPressing] = useState(false);
   const pressTimer = useRef(null);
   const longPressThreshold = 500; // 500ms для долгого нажатия
 
@@ -45,9 +46,8 @@ const TransactionItem = ({
           }
           return d;
         }));
-        
         setDepositTransactions(prevDepositTransactions => prevDepositTransactions.filter(t => t.id !== transaction.id));
-      } 
+      }
       else if (isLoanTransaction && transaction.financialItemId) {
         setLoans(prevLoans => prevLoans.map(l => {
           if (l.id === transaction.financialItemId) {
@@ -55,53 +55,53 @@ const TransactionItem = ({
           }
           return l;
         }));
-        
         setLoanTransactions(prevLoanTransactions => prevLoanTransactions.filter(t => t.id !== transaction.id));
       }
     }
   };
 
   const handlePressStart = (e) => {
-    if (e.button === 2) {
-        return;
+    if (e.button === 2) { // Запрещаем контекстное меню на ПК
+      e.preventDefault();
+      return;
     }
-    setIsPressing(true);
+    
+    // Очищаем предыдущий таймер, если он есть
+    clearTimeout(pressTimer.current);
 
     pressTimer.current = setTimeout(() => {
       handleDelete();
-      setIsPressing(false); 
+      pressTimer.current = null; // Очищаем таймер после выполнения
     }, longPressThreshold);
   };
 
   const handlePressEnd = () => {
     if (pressTimer.current) {
-        clearTimeout(pressTimer.current);
-        pressTimer.current = null;
-        setIsPressing(false); // Мгновенный возврат к исходному состоянию
-        // Это был короткий клик, открываем редактирование
-        setEditingTransaction(transaction);
-        setShowAddTransaction(true);
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+      // Если таймер был очищен до срабатывания, это был клик/короткое касание
+      setEditingTransaction(transaction);
+      setShowAddTransaction(true);
     }
   };
-  
-  const handleEdit = () => {
-    // В этом обработчике ничего не делаем, так как всю логику перенесли в handlePressEnd
-    // Это предотвращает двойное срабатывание при клике.
+
+  const handlePressCancel = () => {
+    clearTimeout(pressTimer.current);
+    pressTimer.current = null;
   };
 
   return (
     <motion.div
-      className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl dark:bg-gray-800"
-      style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
+      className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl dark:bg-gray-800 cursor-pointer"
       onMouseDown={handlePressStart}
       onMouseUp={handlePressEnd}
-      onMouseLeave={handlePressEnd}
+      onMouseLeave={handlePressCancel}
       onTouchStart={handlePressStart}
       onTouchEnd={handlePressEnd}
-      onClick={handleEdit}
+      onTouchCancel={handlePressCancel}
       onContextMenu={(e) => e.preventDefault()}
-      animate={{ scale: isPressing ? 0.95 : 1 }}
-      transition={{ type: "tween", duration: isPressing ? 0.5 : 0.1 }}
+      whileTap={{ scale: 0.95 }}
+      transition={spring}
     >
       <div className="flex items-center">
         {transaction.type === 'income' ? (

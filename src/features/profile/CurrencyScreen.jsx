@@ -1,11 +1,15 @@
+// src/components/screens/profile/CurrencyScreen.jsx
 import React from 'react';
-import { ICONS } from '../../icons';
-import { CURRENCIES } from '../../../constants/currencies';
+import { ICONS } from '../../components/icons';
+import { CURRENCIES } from '../../constants/currencies';
 import { motion } from 'framer-motion';
-import { spring, whileTap, zoomInOut } from '../../../utils/motion';
+import { spring, whileTap, zoomInOut } from '../../utils/motion';
 import ReactCountryFlag from 'react-country-flag';
+import { useAppContext } from '../../context/AppContext';
 
-const CurrencyScreen = ({ setCurrentScreen, currencyCode, setCurrencyCode }) => {
+const CurrencyScreen = () => {
+  const { setCurrentScreen, currencyCode, setCurrencyCode } = useAppContext();
+  
   const handleCurrencyChange = (newCurrencyCode) => {
     setCurrencyCode(newCurrencyCode);
     setCurrentScreen('settings');

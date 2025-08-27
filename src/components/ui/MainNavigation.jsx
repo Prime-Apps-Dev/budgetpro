@@ -1,15 +1,19 @@
+// src/components/ui/MainNavigation.jsx
 import React from 'react';
 import { ICONS } from '../icons';
+import { useAppContext } from '../../context/AppContext';
 
-const MainNavigation = ({
-  activeTab,
-  setActiveTab,
-  setShowAddTransaction,
-  setEditingTransaction,
-  setCurrentScreen,
-  showAddTransaction,
-  editingTransaction
-}) => {
+const MainNavigation = () => {
+  const {
+    activeTab,
+    setActiveTab,
+    setShowAddTransaction,
+    setEditingTransaction,
+    setCurrentScreen,
+    showAddTransaction,
+    editingTransaction
+  } = useAppContext();
+
   const handleTabClick = (tabName) => {
     setActiveTab(tabName);
     setCurrentScreen('');

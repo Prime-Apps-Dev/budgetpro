@@ -1,11 +1,13 @@
 // src/components/screens/profile/CategoriesScreen.jsx
 import React, { useState } from 'react';
-import { ICONS } from '../../icons';
-import { usefulIconOptions } from '../../icons/usefulIcons';
+import { ICONS } from '../../components/icons';
+import { usefulIconOptions } from '../../components/icons/usefulIcons';
 import { motion, AnimatePresence } from 'framer-motion';
-import { spring, whileTap, zoomInOut } from '../../../utils/motion';
+import { spring, whileTap, zoomInOut } from '../../utils/motion';
+import { useAppContext } from '../../context/AppContext';
 
-const CategoriesScreen = ({ categories, setCategories, setCurrentScreen }) => {
+const CategoriesScreen = () => {
+  const { categories, setCategories, setCurrentScreen } = useAppContext();
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryType, setNewCategoryType] = useState('expense');
@@ -111,7 +113,7 @@ const CategoriesScreen = ({ categories, setCategories, setCurrentScreen }) => {
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center mb-8">
         <motion.button
-          onClick={() => setCurrentScreen('')}
+          onClick={() => setCurrentScreen('profile')}
           className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
           whileTap={whileTap}
           transition={spring}
@@ -170,7 +172,7 @@ const CategoriesScreen = ({ categories, setCategories, setCurrentScreen }) => {
                       type="text"
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                      className="w-full p-3 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
                     />
                   </div>
                   {!editingCategory && (
@@ -179,7 +181,7 @@ const CategoriesScreen = ({ categories, setCategories, setCurrentScreen }) => {
                       <select
                         value={newCategoryType}
                         onChange={(e) => setNewCategoryType(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                        className="w-full p-3 border border-gray-300 rounded-xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
                       >
                         <option value="expense">Расход</option>
                         <option value="income">Доход</option>

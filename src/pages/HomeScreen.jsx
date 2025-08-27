@@ -1,11 +1,21 @@
 // src/components/screens/HomeScreen.jsx
 import React from 'react';
-import { ICONS } from '../icons';
-import TransactionItem from '../ui/TransactionItem';
+import { ICONS } from '../components/icons';
+import TransactionItem from '../components/ui/TransactionItem';
 import { motion } from 'framer-motion';
-import { whileHover, whileTap, spring, zoomInOut } from '../../utils/motion';
+import { whileHover, whileTap, spring, zoomInOut } from '../utils/motion';
+import { useAppContext } from '../context/AppContext';
 
-const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalance, transactions, getAccountByName, setEditingTransaction, setShowAddTransaction, deposits, setDeposits, loans, setLoans, depositTransactions, setDepositTransactions, loanTransactions, setLoanTransactions, setTransactions, currencySymbol }) => {
+const HomeScreen = () => {
+  const {
+    totalIncome,
+    totalExpenses,
+    totalBudget,
+    totalSavingsBalance,
+    transactions,
+    currencySymbol
+  } = useAppContext();
+
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="grid grid-cols-2 gap-4 mb-8">
@@ -85,20 +95,6 @@ const HomeScreen = ({ totalIncome, totalExpenses, totalBudget, totalSavingsBalan
             <motion.div key={transaction.id} variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: true, amount: 0.2 }}>
               <TransactionItem
                 transaction={transaction}
-                getAccountByName={getAccountByName}
-                setEditingTransaction={setEditingTransaction}
-                setShowAddTransaction={setShowAddTransaction}
-                transactions={transactions}
-                setTransactions={setTransactions}
-                deposits={deposits}
-                setDeposits={setDeposits}
-                loans={loans}
-                setLoans={setLoans}
-                depositTransactions={depositTransactions}
-                setDepositTransactions={setDepositTransactions}
-                loanTransactions={loanTransactions}
-                setLoanTransactions={setLoanTransactions}
-                currencySymbol={currencySymbol}
               />
             </motion.div>
           ))}

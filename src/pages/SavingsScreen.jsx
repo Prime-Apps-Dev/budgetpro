@@ -1,10 +1,20 @@
 // src/components/screens/SavingsScreen.jsx
 import React, { useState } from 'react';
-import { ICONS } from '../icons';
+import { ICONS } from '../components/icons';
 import { motion } from 'framer-motion';
-import { whileTap, whileHover, spring, zoomInOut } from '../../utils/motion';
+import { whileTap, whileHover, spring, zoomInOut } from '../utils/motion';
+import { useAppContext } from '../context/AppContext';
 
-const SavingsScreen = ({ financialGoals, setFinancialGoals, transactions, setTransactions, totalSavingsBalance, currencySymbol }) => {
+const SavingsScreen = () => {
+  const {
+    financialGoals,
+    setFinancialGoals,
+    transactions,
+    setTransactions,
+    totalSavingsBalance,
+    currencySymbol
+  } = useAppContext();
+  
   const [savingsAction, setSavingsAction] = useState(null);
   const [savingsAmount, setSavingsAmount] = useState('');
   const [selectedGoal, setSelectedGoal] = useState(null);

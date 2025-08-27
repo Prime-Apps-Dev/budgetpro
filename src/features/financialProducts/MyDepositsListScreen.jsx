@@ -1,39 +1,46 @@
-// src/components/screens/MyDepositsListScreen.jsx
+// src/features/financialProducts/MyDepositsListScreen.jsx
 import React, { useState, useRef } from 'react';
-import { ICONS } from '../icons';
+import { ICONS } from '../../components/icons';
 import { motion } from 'framer-motion';
 import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
+import { useAppContext } from '../../context/AppContext';
 
-const MyDepositsListScreen = ({ deposits, setCurrentScreen, setSelectedFinancialItem, setDeposits, setTransactions, depositTransactions, setDepositTransactions, currencySymbol }) => {
+const MyDepositsListScreen = () => {
+  const {
+    depositsWithBalance: deposits,
+    setDeposits,
+    setCurrentScreen,
+    setSelectedFinancialItem,
+    currencySymbol,
+    setShowAddFinancialItemModal
+  } = useAppContext();
+
   const [isLongPress, setIsLongPress] = useState(false);
   const pressTimer = useRef(null);
 
   const getIconComponent = (iconName) => {
-    return ICONS[iconName] || ICONS.Banknote; // Default to Banknote
+    return ICONS[iconName] || ICONS.Banknote;
   };
 
   const handleItemClick = (item) => {
     if (isLongPress) return;
     setSelectedFinancialItem(item);
-    setCurrentScreen('deposit-detail');
   };
 
   const handleDelete = (depositId) => {
     if (window.confirm('Вы уверены, что хотите удалить этот депозит?')) {
-      // Удаляем депозит из списка
       setDeposits(prevDeposits => prevDeposits.filter(deposit => deposit.id !== depositId));
     }
   };
 
   const handlePressStart = (e, deposit) => {
-    // Prevent context menu on right click
     if (e.button === 2) {
       return;
     }
     pressTimer.current = setTimeout(() => {
       setIsLongPress(true);
       handleDelete(deposit.id);
-    }, 500); // 500ms for long press
+    }, 500);
   };
 
   const handlePressEnd = () => {
@@ -57,7 +64,7 @@ const MyDepositsListScreen = ({ deposits, setCurrentScreen, setSelectedFinancial
         <motion.button
           onClick={() => {
             setSelectedFinancialItem(null);
-            setCurrentScreen('add-financial-item');
+            setShowAddFinancialItemModal(true);
           }}
           className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 ml-auto"
           whileTap={{ scale: 0.8 }}

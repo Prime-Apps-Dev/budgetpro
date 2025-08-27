@@ -1,23 +1,27 @@
 // src/components/screens/AnalyticsScreen.jsx
 import React from 'react';
-import PieChartComponent from '../ui/PieChartComponent';
-import { ICONS } from '../icons';
+import PieChartComponent from '../components/ui/PieChartComponent';
+import { ICONS } from '../components/icons';
 import { motion } from 'framer-motion';
-import { whileTap, whileHover, spring, zoomInOut } from '../../utils/motion';
+import { whileTap, spring, zoomInOut } from '../utils/motion';
+import { useAppContext } from '../context/AppContext';
 
-const AnalyticsScreen = ({
-  transactions,
-  categories,
-  filteredTransactions,
-  totalIncome,
-  totalExpenses,
-  totalBudget,
-  selectedPeriod,
-  setSelectedPeriod,
-  dateRange,
-  setDateRange,
-  currencySymbol,
-}) => {
+const AnalyticsScreen = () => {
+  const {
+    categories,
+    getFilteredTransactions,
+    totalIncome,
+    totalExpenses,
+    totalBudget,
+    selectedPeriod,
+    setSelectedPeriod,
+    dateRange,
+    setDateRange,
+    currencySymbol,
+  } = useAppContext();
+  
+  const filteredTransactions = getFilteredTransactions();
+
   const expensesByCategory = categories.expense.map(cat => ({
     name: cat.name,
     value: filteredTransactions.filter(t => t.type === 'expense' && t.category === cat.name)
@@ -95,7 +99,7 @@ const AnalyticsScreen = ({
             data={expensesByCategory}
             title="Расходы по категориям"
             colors={expenseColors}
-            currency={currencySymbol}
+            currencySymbol={currencySymbol}
           />
         </motion.div>
 
@@ -104,7 +108,7 @@ const AnalyticsScreen = ({
             data={incomeByCategory}
             title="Доходы по категориям"
             colors={incomeColors}
-            currency={currencySymbol}
+            currencySymbol={currencySymbol}
           />
         </motion.div>
 

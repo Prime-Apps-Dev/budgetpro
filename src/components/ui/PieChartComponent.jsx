@@ -1,3 +1,4 @@
+// src/components/ui/PieChartComponent.jsx
 import React from 'react';
 
 const PieChartComponent = ({ data, title, colors, currencySymbol }) => {

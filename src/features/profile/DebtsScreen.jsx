@@ -1,10 +1,19 @@
 // src/components/screens/DebtsScreen.jsx
 import React, { useState } from 'react';
-import { ICONS } from '../icons';
+import { ICONS } from '../../components/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { spring, whileTap, zoomInOut } from '../../utils/motion';
+import { useAppContext } from '../../context/AppContext';
 
-const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions, currencySymbol }) => {
+const DebtsScreen = () => {
+  const {
+    debts,
+    setDebts,
+    setCurrentScreen,
+    setTransactions,
+    currencySymbol
+  } = useAppContext();
+
   const [showAddDebt, setShowAddDebt] = useState(false);
   const [editingDebt, setEditingDebt] = useState(null);
   const [newDebt, setNewDebt] = useState({
@@ -52,7 +61,7 @@ const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions, curre
       type: 'expense',
       amount: debt.amount,
       category: 'Отдача долга',
-      account: 'Основной', // Предполагаем основной счет по умолчанию
+      account: 'Основной',
       date: new Date().toISOString().split('T')[0],
       description: `Отдача долга ${debt.person}`
     };
@@ -66,7 +75,7 @@ const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions, curre
       type: 'income',
       amount: debt.amount,
       category: 'Возврат долга',
-      account: 'Основной', // Предполагаем основной счет по умолчанию
+      account: 'Основной',
       date: new Date().toISOString().split('T')[0],
       description: `Возврат долга от ${debt.person}`
     };
@@ -85,7 +94,7 @@ const DebtsScreen = ({ debts, setDebts, setCurrentScreen, setTransactions, curre
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center mb-8">
         <motion.button
-          onClick={() => setCurrentScreen('')}
+          onClick={() => setCurrentScreen('profile')}
           className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
           whileTap={whileTap}
           transition={spring}

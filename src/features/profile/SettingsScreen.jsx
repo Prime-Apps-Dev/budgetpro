@@ -1,11 +1,14 @@
 // src/components/screens/profile/SettingsScreen.jsx
 import React from 'react';
-import { ICONS } from '../../icons';
+import { ICONS } from '../../components/icons';
 import { motion } from 'framer-motion';
-import { whileTap, jiggle, spring } from '../../../utils/motion';
-import { CURRENCIES } from '../../../constants/currencies';
+import { whileTap, jiggle, spring } from '../../utils/motion';
+import { CURRENCIES } from '../../constants/currencies';
+import { useAppContext } from '../../context/AppContext';
 
-const SettingsScreen = ({ setCurrentScreen, isDarkMode, setIsDarkMode, currencyCode, setCurrencyCode }) => {
+const SettingsScreen = () => {
+  const { setCurrentScreen, isDarkMode, setIsDarkMode, currencyCode, setCurrencyCode } = useAppContext();
+
   const getCurrencyName = (code) => {
     const currencyObj = CURRENCIES.find(c => c.code === code);
     return currencyObj ? `${currencyObj.name} (${currencyObj.code})` : 'Неизвестно';

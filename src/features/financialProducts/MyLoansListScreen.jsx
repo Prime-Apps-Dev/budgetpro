@@ -1,39 +1,46 @@
-// src/components/screens/MyLoansListScreen.jsx
+// src/features/financialProducts/MyLoansListScreen.jsx
 import React, { useState, useRef } from 'react';
-import { ICONS } from '../icons';
+import { ICONS } from '../../components/icons';
 import { motion } from 'framer-motion';
 import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
+import { useAppContext } from '../../context/AppContext';
 
-const MyLoansListScreen = ({ loans, setCurrentScreen, setSelectedFinancialItem, setLoans, setTransactions, loanTransactions, setLoanTransactions, currencySymbol }) => {
+const MyLoansListScreen = () => {
+  const {
+    loansWithBalance: loans,
+    setLoans,
+    setCurrentScreen,
+    setSelectedFinancialItem,
+    currencySymbol,
+    setShowAddFinancialItemModal
+  } = useAppContext();
+  
   const [isLongPress, setIsLongPress] = useState(false);
   const pressTimer = useRef(null);
 
   const getIconComponent = (iconName) => {
-    return ICONS[iconName] || ICONS.MinusCircle; // Default to MinusCircle
+    return ICONS[iconName] || ICONS.MinusCircle;
   };
 
   const handleItemClick = (item) => {
     if (isLongPress) return;
     setSelectedFinancialItem(item);
-    setCurrentScreen('loan-detail');
   };
 
   const handleDelete = (loanId) => {
     if (window.confirm('Вы уверены, что хотите удалить этот кредит?')) {
-      // Удаляем кредит из списка
       setLoans(prevLoans => prevLoans.filter(loan => loan.id !== loanId));
     }
   };
 
   const handlePressStart = (e, loan) => {
-    // Prevent context menu on right click
     if (e.button === 2) {
       return;
     }
     pressTimer.current = setTimeout(() => {
       setIsLongPress(true);
       handleDelete(loan.id);
-    }, 500); // 500ms for long press
+    }, 500);
   };
 
   const handlePressEnd = () => {
@@ -57,7 +64,7 @@ const MyLoansListScreen = ({ loans, setCurrentScreen, setSelectedFinancialItem, 
         <motion.button
           onClick={() => {
             setSelectedFinancialItem(null);
-            setCurrentScreen('add-financial-item');
+            setShowAddFinancialItemModal(true);
           }}
           className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 ml-auto"
           whileTap={{ scale: 0.8 }}

@@ -1,11 +1,24 @@
 // src/components/screens/profile/TransactionHistoryScreen.jsx
 import React, { useState } from 'react';
-import { ICONS } from '../../icons';
-import TransactionItem from '../../ui/TransactionItem';
+import { ICONS } from '../../components/icons';
+import TransactionItem from '../../components/ui/TransactionItem';
 import { motion } from 'framer-motion';
-import { whileTap, spring, zoomInOut } from '../../../utils/motion';
+import { whileTap, spring, zoomInOut } from '../../utils/motion';
+import { useAppContext } from '../../context/AppContext';
 
-const TransactionHistoryScreen = ({ transactions, setTransactions, setEditingTransaction, setCurrentScreen, getAccountByName, depositTransactions, setDepositTransactions, loans, setLoans, deposits, setDeposits, loanTransactions, setLoanTransactions, setShowAddTransaction, currencySymbol }) => {
+const TransactionHistoryScreen = () => {
+  const {
+    transactions,
+    setCurrentScreen,
+    getFilteredTransactions,
+    getAccountByName,
+    loans,
+    deposits,
+    loanTransactions,
+    depositTransactions,
+    currencySymbol
+  } = useAppContext();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
 
@@ -21,7 +34,7 @@ const TransactionHistoryScreen = ({ transactions, setTransactions, setEditingTra
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center mb-8">
         <motion.button
-          onClick={() => setCurrentScreen('')}
+          onClick={() => setCurrentScreen('profile')}
           className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
           whileTap={whileTap}
           transition={spring}
@@ -85,20 +98,6 @@ const TransactionHistoryScreen = ({ transactions, setTransactions, setEditingTra
             <motion.div key={transaction.id} variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: true, amount: 0.2 }}>
               <TransactionItem
                 transaction={transaction}
-                setEditingTransaction={setEditingTransaction}
-                setTransactions={setTransactions}
-                transactions={transactions}
-                getAccountByName={getAccountByName}
-                setDepositTransactions={setDepositTransactions}
-                depositTransactions={depositTransactions}
-                setLoans={setLoans}
-                loans={loans}
-                setDeposits={setDeposits}
-                deposits={deposits}
-                setLoanTransactions={setLoanTransactions}
-                loanTransactions={loanTransactions}
-                setShowAddTransaction={setShowAddTransaction}
-                currencySymbol={currencySymbol}
               />
             </motion.div>
           ))
