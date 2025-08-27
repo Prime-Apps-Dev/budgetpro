@@ -186,6 +186,7 @@ const ProfileScreen = ({
             deposits={deposits}
             setDeposits={setDeposits}
             setCurrentScreen={setCurrentScreen}
+            editingItem={selectedFinancialItem}
             accounts={accounts}
             currency={currency}
         />

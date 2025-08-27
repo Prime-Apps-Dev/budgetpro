@@ -24,7 +24,8 @@ const AddEditTransactionScreen = ({
   loanTransactions,
   setLoanTransactions,
   depositTransactions,
-  setDepositTransactions
+  setDepositTransactions,
+  currency,
 }) => {
   const isEditing = !!editingTransaction;
   const isFinancialTransaction = selectedFinancialItem && (selectedFinancialItem.type === 'loan' || selectedFinancialItem.type === 'deposit');
@@ -239,7 +240,7 @@ const AddEditTransactionScreen = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-gray-400">Сумма</label>
+              <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-gray-400">Сумма ({currency})</label>
               <input
                 type="number"
                 value={formData.amount}
