@@ -15,7 +15,8 @@ const AnalyticsScreen = ({
   selectedPeriod,
   setSelectedPeriod,
   dateRange,
-  setDateRange
+  setDateRange,
+  currency,
 }) => {
   const expensesByCategory = categories.expense.map(cat => ({
     name: cat.name,
@@ -94,6 +95,7 @@ const AnalyticsScreen = ({
             data={expensesByCategory}
             title="Расходы по категориям"
             colors={expenseColors}
+            currency={currency}
           />
         </motion.div>
 
@@ -102,6 +104,7 @@ const AnalyticsScreen = ({
             data={incomeByCategory}
             title="Доходы по категориям"
             colors={incomeColors}
+            currency={currency}
           />
         </motion.div>
 
@@ -116,17 +119,17 @@ const AnalyticsScreen = ({
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Общий доход:</span>
-              <span className="font-semibold text-green-600">+{totalIncome.toLocaleString()} ₽</span>
+              <span className="font-semibold text-green-600">+{totalIncome.toLocaleString()} {currency}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Общий расход:</span>
-              <span className="font-semibold text-red-600">-{totalExpenses.toLocaleString()} ₽</span>
+              <span className="font-semibold text-red-600">-{totalExpenses.toLocaleString()} {currency}</span>
             </div>
             <div className="h-px bg-gray-200"></div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Итого:</span>
               <span className={`font-semibold ${totalBudget >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {totalBudget.toLocaleString()} ₽
+                {totalBudget.toLocaleString()} {currency}
               </span>
             </div>
           </div>

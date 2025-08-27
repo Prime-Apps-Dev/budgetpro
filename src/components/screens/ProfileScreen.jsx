@@ -15,6 +15,7 @@ import MyDepositsListScreen from './MyDepositsListScreen';
 import LoanDepositDetailScreen from './LoanDepositDetailScreen';
 import AddFinancialItemScreen from './AddFinancialItemScreen';
 import MyFinancialProductsScreen from './MyFinancialProductsScreen';
+import CurrencyScreen from './profile/CurrencyScreen';
 import { motion } from 'framer-motion';
 import { whileTap, whileHover, spring, zoomInOut } from '../../utils/motion';
 
@@ -52,16 +53,17 @@ const ProfileScreen = ({
   setShowAddTransaction,
   setEditingTransaction,
   totalPlannedBudget,
-  totalSpentOnBudgets
+  totalSpentOnBudgets,
+  currency,
 }) => {
   if (currentScreen === 'edit-profile') {
     return <EditProfileScreen userProfile={userProfile} setUserProfile={setUserProfile} setCurrentScreen={setCurrentScreen} />;
   }
   if (currentScreen === 'financial-goals') {
-    return <FinancialGoalsScreen financialGoals={financialGoals} setFinancialGoals={setFinancialGoals} setCurrentScreen={setCurrentScreen} />;
+    return <FinancialGoalsScreen financialGoals={financialGoals} setFinancialGoals={setFinancialGoals} setCurrentScreen={setCurrentScreen} currency={currency} />;
   }
   if (currentScreen === 'transaction-history') {
-    return <TransactionHistoryScreen transactions={transactions} setTransactions={setTransactions} setEditingTransaction={() => {}} setCurrentScreen={setCurrentScreen} getAccountByName={getAccountByName} />;
+    return <TransactionHistoryScreen transactions={transactions} setTransactions={setTransactions} setEditingTransaction={() => {}} setCurrentScreen={setCurrentScreen} getAccountByName={getAccountByName} currency={currency} />;
   }
   if (currentScreen === 'accounts') {
     return <AccountsScreen accounts={accounts} setAccounts={setAccounts} setCurrentScreen={setCurrentScreen} />;
@@ -79,6 +81,7 @@ const ProfileScreen = ({
         setCurrentScreen={setCurrentScreen}
         totalPlannedBudget={totalPlannedBudget}
         totalSpentOnBudgets={totalSpentOnBudgets}
+        currency={currency}
       />
     );
   }
@@ -89,6 +92,7 @@ const ProfileScreen = ({
         setDebts={setDebts}
         setCurrentScreen={setCurrentScreen}
         setTransactions={setTransactions}
+        currency={currency}
       />
     );
   }
@@ -105,6 +109,7 @@ const ProfileScreen = ({
         loans={loans}
         setCurrentScreen={setCurrentScreen}
         setSelectedFinancialItem={setSelectedFinancialItem}
+        currency={currency}
       />
     );
   }
@@ -114,6 +119,7 @@ const ProfileScreen = ({
         deposits={deposits}
         setCurrentScreen={setCurrentScreen}
         setSelectedFinancialItem={setSelectedFinancialItem}
+        currency={currency}
       />
     );
   }
@@ -136,6 +142,7 @@ const ProfileScreen = ({
         setEditingTransaction={setEditingTransaction}
         getAccountByName={getAccountByName}
         accounts={accounts}
+        currency={currency}
       />
     );
   }
@@ -158,6 +165,7 @@ const ProfileScreen = ({
         setEditingTransaction={setEditingTransaction}
         getAccountByName={getAccountByName}
         accounts={accounts}
+        currency={currency}
       />
     );
   }
@@ -179,6 +187,7 @@ const ProfileScreen = ({
             setDeposits={setDeposits}
             setCurrentScreen={setCurrentScreen}
             accounts={accounts}
+            currency={currency}
         />
     );
   }
@@ -192,7 +201,16 @@ const ProfileScreen = ({
             setCurrentScreen={setCurrentScreen}
             editingItem={selectedFinancialItem}
             accounts={accounts}
+            currency={currency}
         />
+    );
+  }
+  if (currentScreen === 'select-currency') {
+    return (
+      <CurrencyScreen
+        setCurrentScreen={setCurrentScreen}
+        currency={currency}
+      />
     );
   }
 
@@ -352,6 +370,24 @@ const ProfileScreen = ({
           <div className="flex items-center">
             <ICONS.LayoutGrid className="w-6 h-6 text-blue-500 mr-4" />
             <span className="font-medium text-gray-800 dark:text-gray-200">Категории</span>
+          </div>
+          <ICONS.ChevronLeft className="w-5 h-5 text-gray-400 transform rotate-180" />
+        </motion.button>
+        
+        <motion.button
+          onClick={() => setCurrentScreen('select-currency')}
+          className="w-full bg-white p-4 rounded-2xl shadow-sm flex items-center justify-between hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+          whileTap={whileTap}
+          whileHover={{ x: 5 }}
+          transition={spring}
+          variants={zoomInOut}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <div className="flex items-center">
+            <ICONS.DollarSign className="w-6 h-6 text-blue-500 mr-4" />
+            <span className="font-medium text-gray-800 dark:text-gray-200">Валюта</span>
           </div>
           <ICONS.ChevronLeft className="w-5 h-5 text-gray-400 transform rotate-180" />
         </motion.button>
