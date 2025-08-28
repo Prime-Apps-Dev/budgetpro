@@ -7,7 +7,7 @@ import { whileHover, whileTap, spring, zoomInOut } from '../utils/motion';
 import { useAppContext } from '../context/AppContext';
 
 /**
- * Компонент главного экрана приложения.
+ * Компонент главного экрана приложения с улучшенным дизайном и 8-point grid системой.
  * Отображает общие финансовые показатели и последние транзакции.
  * @returns {JSX.Element}
  */
@@ -18,87 +18,283 @@ const HomeScreen = () => {
     totalBudget,
     totalSavingsBalance,
     transactions,
-    currencySymbol
+    currencySymbol,
+    setActiveTab,
+    navigateToScreen,
+    navigateToTransactionHistory
   } = useAppContext();
 
+  // Расчет баланса для отображения
+  const balance = totalIncome - totalExpenses;
+  const isPositiveBalance = balance >= 0;
+
   return (
-    <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <motion.div
-          className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 text-white"
-          whileHover={whileHover}
-          whileTap={whileTap}
-          transition={spring}
-          variants={zoomInOut}
-          whileInView="whileInView"
-          viewport={{ once: false, amount: 0.2 }}
-        >
-          <div className="flex items-center mb-3">
-            <ICONS.ArrowUpCircle className="w-6 h-6 mr-3" />
-            <span className="text-sm opacity-90">Доходы</span>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32">
+      {/* Персонализированный header - 8pt grid: py-8 (32px), px-6 (24px) */}
+      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-700 px-6 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">П</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  Добро пожаловать!
+                </h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {new Date().toLocaleDateString('ru-RU', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long' 
+                  })}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="text-2xl font-bold">{totalIncome.toLocaleString()} {currencySymbol}</div>
-        </motion.div>
-        <motion.div
-          className="bg-gradient-to-r from-red-500 to-red-600 rounded-2xl p-6 text-white"
-          whileHover={whileHover}
-          whileTap={whileTap}
-          transition={spring}
-          variants={zoomInOut}
-          whileInView="whileInView"
-          viewport={{ once: false, amount: 0.2 }}
-        >
-          <div className="flex items-center mb-3">
-            <ICONS.ArrowDownCircle className="w-6 h-6 mr-3" />
-            <span className="text-sm opacity-90">Расходы</span>
+          <motion.div
+            className="text-right"
+            variants={zoomInOut}
+            whileInView="whileInView"
+            viewport={{ once: false, amount: 0.2 }}
+          >
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Баланс</div>
+            <div className={`text-2xl font-bold ${
+              isPositiveBalance 
+                ? 'text-green-600 dark:text-green-400' 
+                : 'text-red-600 dark:text-red-400'
+            }`}>
+              {isPositiveBalance ? '+' : ''}{balance.toLocaleString()} {currencySymbol}
+            </div>
+          </motion.div>
+        </div>
+        
+        {/* Краткая сводка дня */}
+        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-4 border border-white/50 dark:border-gray-700/50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="text-center">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Операций сегодня</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  {transactions.filter(t => {
+                    const today = new Date();
+                    const transactionDate = new Date(t.date);
+                    return transactionDate.toDateString() === today.toDateString();
+                  }).length}
+                </div>
+              </div>
+              <div className="w-px h-8 bg-gray-200 dark:bg-gray-600" />
+              <div className="text-center">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Категорий</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  {new Set(transactions.map(t => t.category)).size}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${
+                isPositiveBalance ? 'bg-green-500' : 'bg-red-500'
+              }`} />
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {isPositiveBalance ? 'Прибыль' : 'Убыток'}
+              </span>
+            </div>
           </div>
-          <div className="text-2xl font-bold">{totalExpenses.toLocaleString()} {currencySymbol}</div>
-        </motion.div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <motion.div
-          className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white"
-          whileHover={whileHover}
-          whileTap={whileTap}
-          transition={spring}
-          variants={zoomInOut}
-          whileInView="whileInView"
-          viewport={{ once: false, amount: 0.2 }}
-        >
-          <div className="flex items-center mb-3">
-            <ICONS.Wallet className="w-6 h-6 mr-3" />
-            <span className="text-sm opacity-90">Бюджет</span>
-          </div>
-          <div className="text-2xl font-bold">{totalBudget.toLocaleString()} {currencySymbol}</div>
-        </motion.div>
-        <motion.div
-          className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl p-6 text-white"
-          whileHover={whileHover}
-          whileTap={whileTap}
-          transition={spring}
-          variants={zoomInOut}
-          whileInView="whileInView"
-          viewport={{ once: false, amount: 0.2 }}
-        >
-          <div className="flex items-center mb-3">
-            <ICONS.PiggyBank className="w-6 h-6 mr-3" />
-            <span className="text-sm opacity-90">Копилка</span>
-          </div>
-          <div className="text-2xl font-bold">{totalSavingsBalance.toLocaleString()} {currencySymbol}</div>
-        </motion.div>
-      </div>
-
-      <div className="bg-white rounded-2xl p-6 shadow-sm dark:bg-gray-800">
-        <h3 className="text-lg font-semibold mb-6 text-gray-800 dark:text-gray-200">Последние транзакции</h3>
+      {/* Основной контент - 8pt grid: px-6 (24px), py-6 (24px) */}
+      <div className="px-6 py-6 space-y-6">
+        
+        {/* Статистические карточки - 8pt grid: gap-4 (16px) */}
         <div className="space-y-4">
-          {transactions.slice(-5).reverse().map((transaction) => (
-            <motion.div key={transaction.id} variants={zoomInOut} whileInView="whileInView" viewport={{ once: false, amount: 0.2 }}>
-              <TransactionItem
-                transaction={transaction}
-              />
-            </motion.div>
-          ))}
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 px-2">
+            Обзор финансов
+          </h2>
+          
+          {/* Основные показатели - доходы и расходы */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <motion.button
+              onClick={() => navigateToTransactionHistory('income')}
+              className="relative overflow-hidden bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-3xl p-6 text-white shadow-lg shadow-green-500/20 text-left"
+              whileHover={whileHover}
+              whileTap={whileTap}
+              transition={spring}
+              variants={zoomInOut}
+              whileInView="whileInView"
+              viewport={{ once: false, amount: 0.2 }}
+            >
+              {/* Декоративный элемент */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm">
+                    <ICONS.ArrowUpCircle className="w-6 h-6" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium opacity-90">Доходы</div>
+                    <div className="text-xs opacity-70">за все время</div>
+                  </div>
+                </div>
+                <div className="text-2xl font-bold mb-1">
+                  {totalIncome.toLocaleString()} {currencySymbol}
+                </div>
+                <div className="flex items-center text-sm opacity-80">
+                  <div className="w-1 h-1 bg-white rounded-full mr-2" />
+                  Положительный поток
+                </div>
+              </div>
+            </motion.button>
+
+            <motion.button
+              onClick={() => navigateToTransactionHistory('expense')}
+              className="relative overflow-hidden bg-gradient-to-br from-red-500 via-red-600 to-red-700 rounded-3xl p-6 text-white shadow-lg shadow-red-500/20 text-left"
+              whileHover={whileHover}
+              whileTap={whileTap}
+              transition={spring}
+              variants={zoomInOut}
+              whileInView="whileInView"
+              viewport={{ once: false, amount: 0.2 }}
+            >
+              {/* Декоративный элемент */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm">
+                    <ICONS.ArrowDownCircle className="w-6 h-6" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium opacity-90">Расходы</div>
+                    <div className="text-xs opacity-70">за все время</div>
+                  </div>
+                </div>
+                <div className="text-2xl font-bold mb-1">
+                  {totalExpenses.toLocaleString()} {currencySymbol}
+                </div>
+                <div className="flex items-center text-sm opacity-80">
+                  <div className="w-1 h-1 bg-white rounded-full mr-2" />
+                  Отрицательный поток
+                </div>
+              </div>
+            </motion.button>
+          </div>
+
+          {/* Дополнительные показатели - бюджет и копилка */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <motion.button
+              onClick={() => navigateToTransactionHistory('all')}
+              className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-3xl p-6 text-white shadow-lg shadow-blue-500/20 text-left"
+              whileHover={whileHover}
+              whileTap={whileTap}
+              transition={spring}
+              variants={zoomInOut}
+              whileInView="whileInView"
+              viewport={{ once: false, amount: 0.2 }}
+            >
+              {/* Декоративный элемент */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm">
+                    <ICONS.Wallet className="w-6 h-6" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium opacity-90">Бюджет</div>
+                    <div className="text-xs opacity-70">доступно</div>
+                  </div>
+                </div>
+                <div className="text-2xl font-bold mb-1">
+                  {totalBudget.toLocaleString()} {currencySymbol}
+                </div>
+                <div className="flex items-center text-sm opacity-80">
+                  <div className="w-1 h-1 bg-white rounded-full mr-2" />
+                  Планируемые средства
+                </div>
+              </div>
+            </motion.button>
+
+            <motion.button
+              onClick={() => {
+                setActiveTab('savings');
+                navigateToScreen('savings');
+              }}
+              className="relative overflow-hidden bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-3xl p-6 text-white shadow-lg shadow-purple-500/20 text-left"
+              whileHover={whileHover}
+              whileTap={whileTap}
+              transition={spring}
+              variants={zoomInOut}
+              whileInView="whileInView"
+              viewport={{ once: false, amount: 0.2 }}
+            >
+              {/* Декоративный элемент */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm">
+                    <ICONS.PiggyBank className="w-6 h-6" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium opacity-90">Копилка</div>
+                    <div className="text-xs opacity-70">накоплено</div>
+                  </div>
+                </div>
+                <div className="text-2xl font-bold mb-1">
+                  {totalSavingsBalance.toLocaleString()} {currencySymbol}
+                </div>
+                <div className="flex items-center text-sm opacity-80">
+                  <div className="w-1 h-1 bg-white rounded-full mr-2" />
+                  Отложенные средства
+                </div>
+              </div>
+            </motion.button>
+          </div>
+        </div>
+
+        {/* Секция последних транзакций - 8pt grid spacing */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Последние операции
+            </h2>
+            <button 
+              onClick={() => navigateToTransactionHistory('all')}
+              className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+              Все операции
+            </button>
+          </div>
+          
+          <div className="space-y-3">
+            {transactions.length > 0 ? (
+              transactions.slice(-5).reverse().map((transaction, index) => (
+                <motion.div 
+                  key={transaction.id}
+                  variants={zoomInOut}
+                  whileInView="whileInView"
+                  viewport={{ once: false, amount: 0.2 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <TransactionItem transaction={transaction} />
+                </motion.div>
+              ))
+            ) : (
+              <motion.div 
+                className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center"
+                variants={zoomInOut}
+                whileInView="whileInView"
+                viewport={{ once: false, amount: 0.2 }}
+              >
+                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                  <ICONS.ArrowUpCircle className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                  Пока нет операций
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  Добавьте первую транзакцию, чтобы начать отслеживание финансов
+                </p>
+              </motion.div>
+            )}
+          </div>
         </div>
       </div>
     </div>

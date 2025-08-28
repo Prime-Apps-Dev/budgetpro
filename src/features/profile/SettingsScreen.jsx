@@ -12,7 +12,7 @@ import { useAppContext } from '../../context/AppContext';
  * @returns {JSX.Element}
  */
 const SettingsScreen = () => {
-  const { setCurrentScreen, isDarkMode, setIsDarkMode, currencyCode, setCurrencyCode } = useAppContext();
+  const { navigateToScreen, isDarkMode, setIsDarkMode, currencyCode, goBack } = useAppContext();
 
   /**
    * Возвращает полное имя валюты по её коду.
@@ -28,7 +28,7 @@ const SettingsScreen = () => {
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center mb-8">
         <motion.button
-          onClick={() => setCurrentScreen('profile')}
+          onClick={goBack}
           className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
           whileTap={whileTap}
           transition={spring}
@@ -69,7 +69,7 @@ const SettingsScreen = () => {
         </div>
 
         <motion.button
-          onClick={() => setCurrentScreen('select-currency')}
+          onClick={() => navigateToScreen('select-currency')}
           className="w-full bg-white p-6 rounded-2xl shadow-sm flex items-center justify-between dark:bg-gray-800"
           whileTap={whileTap}
           transition={spring}

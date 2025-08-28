@@ -33,6 +33,13 @@ const EditProfileModal = () => {
 
   const avatarOptions = ['👤', '👨', '👩', '🧑', '👨‍💼', '👩‍💼', '🎯', '💼', '🏦', '💰'];
   const colorOptions = ['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
+  
+  // Варианты анимации для picker-ов
+  const pickerAnimationVariants = {
+    initial: { opacity: 0, scaleY: 0, transformOrigin: 'top' },
+    animate: { opacity: 1, scaleY: 1, transition: { duration: 0.2 } },
+    exit: { opacity: 0, scaleY: 0, transition: { duration: 0.2 } }
+  };
 
   return (
     <ModalWrapper
@@ -71,9 +78,10 @@ const EditProfileModal = () => {
           {showAvatarPicker && (
             <motion.div 
               className="bg-white rounded-2xl p-6 shadow-sm"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
+              variants={pickerAnimationVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold">Выберите иконку</h3>
@@ -106,9 +114,10 @@ const EditProfileModal = () => {
           {showColorPicker && (
             <motion.div 
               className="bg-white rounded-2xl p-6 shadow-sm"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
+              variants={pickerAnimationVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold">Выберите цвет</h3>

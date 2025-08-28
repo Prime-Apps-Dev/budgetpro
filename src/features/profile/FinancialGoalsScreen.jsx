@@ -1,4 +1,4 @@
-// src/components/screens/profile/FinancialGoalsScreen.jsx
+// src/features/profile/FinancialGoalsScreen.jsx
 import React from 'react';
 import { ICONS } from '../../components/icons';
 import { motion } from 'framer-motion';

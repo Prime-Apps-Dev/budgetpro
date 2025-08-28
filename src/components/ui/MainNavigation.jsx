@@ -17,7 +17,8 @@ const MainNavigation = () => {
     setShowAddTransaction,
     setEditingTransaction,
     setCurrentScreen,
-    closeAllModals
+    closeAllModals,
+    screenHistory
   } = useAppContext();
 
   /**
@@ -27,7 +28,10 @@ const MainNavigation = () => {
   const handleTabClick = (tabName) => {
     closeAllModals();
     setActiveTab(tabName);
+    // Сбрасываем вложенный экран при переключении вкладок
     setCurrentScreen('');
+    // Очищаем историю экранов, так как это корневая навигация
+    screenHistory.length = 0;
   };
 
   return (

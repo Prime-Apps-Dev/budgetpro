@@ -14,11 +14,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fadeInOut } from './utils/motion';
 import { useAppContext } from './context/AppContext';
 
-// Динамический импорт компонентов для Code Splitting и Lazy Loading.
+// Динамический импорт всех компонентов для Code Splitting
 const HomeScreen = lazy(() => import('./pages/HomeScreen'));
 const AnalyticsScreen = lazy(() => import('./pages/AnalyticsScreen'));
 const SavingsScreen = lazy(() => import('./pages/SavingsScreen'));
 const ProfileScreen = lazy(() => import('./pages/ProfileScreen'));
+const FinancialGoalsScreen = lazy(() => import('./features/profile/FinancialGoalsScreen'));
+const TransactionHistoryScreen = lazy(() => import('./features/profile/TransactionHistoryScreen'));
+const AccountsScreen = lazy(() => import('./features/profile/AccountsScreen'));
+const CategoriesScreen = lazy(() => import('./features/profile/CategoriesScreen'));
+const SettingsScreen = lazy(() => import('./features/profile/SettingsScreen'));
+const BudgetPlanningScreen = lazy(() => import('./features/profile/BudgetPlanningScreen'));
+const DebtsScreen = lazy(() => import('./features/profile/DebtsScreen'));
+const MyLoansListScreen = lazy(() => import('./features/financialProducts/MyLoansListScreen'));
+const MyDepositsListScreen = lazy(() => import('./features/financialProducts/MyDepositsListScreen'));
+const MyFinancialProductsScreen = lazy(() => import('./features/financialProducts/MyFinancialProductsScreen'));
+const CurrencyScreen = lazy(() => import('./features/profile/CurrencyScreen'));
 
 /**
  * Основной компонент-контейнер приложения, содержащий логику рендеринга
@@ -54,20 +65,34 @@ const App = () => {
   const renderScreen = () => {
     switch (currentScreen) {
       case 'financial-goals':
+        return <FinancialGoalsScreen />;
       case 'transaction-history':
+        return <TransactionHistoryScreen />;
       case 'accounts':
+        return <AccountsScreen />;
       case 'categories':
+        return <CategoriesScreen />;
       case 'budget-planning':
+        return <BudgetPlanningScreen />;
       case 'debts':
-      case 'settings':
-      case 'select-currency':
+        return <DebtsScreen />;
       case 'my-financial-products':
+        return <MyFinancialProductsScreen />;
       case 'loans-list':
+        return <MyLoansListScreen />;
       case 'deposits-list':
-        // Все вложенные экраны профиля рендерятся внутри ProfileScreen.
+        return <MyDepositsListScreen />;
+      case 'settings':
+        return <SettingsScreen />;
+      case 'select-currency':
+        return <CurrencyScreen />;
+      case 'profile':
         return <ProfileScreen />;
+      case 'add-financial-item':
+      case 'edit-financial-item':
+        // Эти экраны не рендерятся напрямую, а управляются модальным окном
+        return null;
       default:
-        // Если нет вложенного экрана, рендерим компонент, соответствующий активной вкладке.
         switch (activeTab) {
           case 'home':
             return <HomeScreen />;

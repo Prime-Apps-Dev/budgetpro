@@ -13,7 +13,7 @@ import { useAppContext } from '../../context/AppContext';
  * @returns {JSX.Element}
  */
 const CurrencyScreen = () => {
-  const { setCurrentScreen, currencyCode, setCurrencyCode } = useAppContext();
+  const { goBack, currencyCode, setCurrencyCode } = useAppContext();
   
   /**
    * Обрабатывает изменение валюты.
@@ -21,14 +21,14 @@ const CurrencyScreen = () => {
    */
   const handleCurrencyChange = (newCurrencyCode) => {
     setCurrencyCode(newCurrencyCode);
-    setCurrentScreen('settings');
+    goBack();
   };
 
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center mb-8">
         <motion.button
-          onClick={() => setCurrentScreen('settings')}
+          onClick={goBack}
           className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
           whileTap={whileTap}
           transition={spring}

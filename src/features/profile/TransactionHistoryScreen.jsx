@@ -28,30 +28,31 @@ const TransactionRow = ({ index, style, data }) => {
 const TransactionHistoryScreen = () => {
   const {
     transactions,
-    setCurrentScreen,
-    currencySymbol
+    goBack,
+    currencySymbol,
+    transactionFilterType,
+    setTransactionFilterType
   } = useAppContext();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
 
   // Используем useMemo для мемоизации результатов фильтрации.
-  // Фильтрация будет происходить только при изменении `transactions`, `searchTerm` или `filterType`.
+  // Фильтрация будет происходить только при изменении `transactions`, `searchTerm` или `transactionFilterType`.
   const filteredTransactions = useMemo(() => {
     return transactions.slice().reverse().filter(transaction => {
       const matchesSearch = transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             transaction.account.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             (transaction.description && transaction.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesType = filterType === 'all' || transaction.type === filterType;
+      const matchesType = transactionFilterType === 'all' || transaction.type === transactionFilterType;
       return matchesSearch && matchesType;
     });
-  }, [transactions, searchTerm, filterType]);
+  }, [transactions, searchTerm, transactionFilterType]);
 
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center mb-8">
         <motion.button
-          onClick={() => setCurrentScreen('profile')}
+          onClick={goBack}
           className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
           whileTap={whileTap}
           transition={spring}
@@ -71,9 +72,9 @@ const TransactionHistoryScreen = () => {
         />
         <div className="grid grid-cols-3 gap-3">
           <motion.button
-            onClick={() => setFilterType('all')}
+            onClick={() => setTransactionFilterType('all')}
             className={`p-3 rounded-xl font-medium ${
-              filterType === 'all'
+              transactionFilterType === 'all'
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
             }`}
@@ -83,9 +84,9 @@ const TransactionHistoryScreen = () => {
             Все
           </motion.button>
           <motion.button
-            onClick={() => setFilterType('income')}
+            onClick={() => setTransactionFilterType('income')}
             className={`p-3 rounded-xl font-medium ${
-              filterType === 'income'
+              transactionFilterType === 'income'
                 ? 'bg-green-500 text-white'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
             }`}
@@ -95,9 +96,9 @@ const TransactionHistoryScreen = () => {
             Доходы
           </motion.button>
           <motion.button
-            onClick={() => setFilterType('expense')}
+            onClick={() => setTransactionFilterType('expense')}
             className={`p-3 rounded-xl font-medium ${
-              filterType === 'expense'
+              transactionFilterType === 'expense'
                 ? 'bg-red-500 text-white'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
             }`}

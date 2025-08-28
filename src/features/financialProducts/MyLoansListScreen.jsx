@@ -14,7 +14,7 @@ const MyLoansListScreen = () => {
   const {
     loansWithBalance: loans,
     setLoans,
-    setCurrentScreen,
+    goBack,
     setSelectedFinancialItem,
     currencySymbol,
     setShowAddFinancialItemModal
@@ -81,7 +81,7 @@ const MyLoansListScreen = () => {
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
       <div className="flex items-center mb-8">
         <motion.button
-          onClick={() => setCurrentScreen('my-financial-products')}
+          onClick={goBack}
           className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
           whileTap={whileTap}
           transition={spring}

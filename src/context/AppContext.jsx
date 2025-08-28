@@ -110,6 +110,11 @@ export const AppContextProvider = ({ children }) => {
   // Новые переменные для управления модальным окном категорий
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  // Новая переменная для фильтрации на экране истории транзакций
+  const [transactionFilterType, setTransactionFilterType] = useState('all');
+  
+  // Стек для истории экранов
+  const [screenHistory, setScreenHistory] = useState([]);
 
   // Мемоизируем символ валюты, чтобы он пересчитывался только при изменении кода валюты.
   const currencySymbol = useMemo(() => getCurrencySymbolByCode(currencyCode), [currencyCode]);
@@ -348,6 +353,40 @@ export const AppContextProvider = ({ children }) => {
     setEditingCategory(null);
   }, []);
 
+  /**
+   * Переходит на экран истории транзакций с заданным фильтром.
+   * @param {'all' | 'income' | 'expense'} type - Тип транзакции для фильтрации.
+   */
+  const navigateToTransactionHistory = useCallback((type) => {
+    setTransactionFilterType(type);
+    setCurrentScreen('transaction-history');
+  }, []);
+
+  /**
+   * Управляет переходом между экранами, сохраняя историю.
+   * @param {string} screenName - Имя экрана для перехода.
+   */
+  const navigateToScreen = useCallback((screenName) => {
+    if (currentScreen) {
+      setScreenHistory(prevHistory => [...prevHistory, currentScreen]);
+    }
+    setCurrentScreen(screenName);
+  }, [currentScreen]);
+
+  /**
+   * Возвращается на предыдущий экран из истории.
+   */
+  const goBack = useCallback(() => {
+    if (screenHistory.length > 0) {
+      const previousScreen = screenHistory[screenHistory.length - 1];
+      setScreenHistory(prevHistory => prevHistory.slice(0, -1));
+      setCurrentScreen(previousScreen);
+    } else {
+      // Если истории нет, возвращаемся на главный экран вкладки
+      setCurrentScreen('');
+    }
+  }, [screenHistory]);
+
   // Мемоизируем весь объект состояния для передачи в провайдер.
   const state = useMemo(() => ({
     activeTab, setActiveTab,
@@ -393,12 +432,18 @@ export const AppContextProvider = ({ children }) => {
     editingBudget, setEditingBudget,
     showAddGoalModal, setShowAddGoalModal,
     editingGoal, setEditingGoal,
-    // Добавляем новую функцию
+    // Добавляем новые функции
     closeAllModals,
     showAddCategoryModal, setShowAddCategoryModal,
-    editingCategory, setEditingCategory
+    editingCategory, setEditingCategory,
+    // Добавляем новое состояние и функции
+    transactionFilterType, setTransactionFilterType,
+    navigateToTransactionHistory,
+    navigateToScreen,
+    goBack,
+    screenHistory
   }), [
-    activeTab, currentScreen, selectedFinancialItem, isDarkMode, transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, selectedPeriod, dateRange, showAddTransaction, editingTransaction, newTransaction, userProfile, currencyCode, isDataLoaded, currencySymbol, getAccountByName, loansWithBalance, depositsWithBalance, getFilteredTransactions, totalIncome, totalExpenses, totalBudget, totalSavingsBalance, totalPlannedBudget, totalSpentOnBudgets, showAddFinancialItemModal, editingFinancialItem, showEditProfileModal, showAddDebtModal, editingDebt, showAddBudgetModal, editingBudget, showAddGoalModal, editingGoal, closeAllModals, showAddCategoryModal, editingCategory
+    activeTab, currentScreen, selectedFinancialItem, isDarkMode, transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, selectedPeriod, dateRange, showAddTransaction, editingTransaction, newTransaction, userProfile, currencyCode, isDataLoaded, currencySymbol, getAccountByName, loansWithBalance, depositsWithBalance, getFilteredTransactions, totalIncome, totalExpenses, totalBudget, totalSavingsBalance, totalPlannedBudget, totalSpentOnBudgets, showAddFinancialItemModal, editingFinancialItem, showEditProfileModal, showAddDebtModal, editingDebt, showAddBudgetModal, editingBudget, showAddGoalModal, editingGoal, closeAllModals, showAddCategoryModal, editingCategory, transactionFilterType, navigateToTransactionHistory, navigateToScreen, goBack, screenHistory
   ]);
 
   return (

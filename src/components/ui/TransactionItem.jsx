@@ -6,12 +6,7 @@ import { spring } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 
 /**
- * Компонент для отображения отдельной транзакции.
- * Использует `React.memo` для предотвращения ненужных перерисовок.
- * @param {object} props - Свойства компонента.
- * @param {object} props.transaction - Объект транзакции.
- * @param {object} [props.style] - Стили для виртуализации списка.
- * @returns {JSX.Element}
+ * Минималистичный компонент для отображения транзакции
  */
 const TransactionItem = memo(({ transaction, style }) => {
   const {
@@ -32,20 +27,32 @@ const TransactionItem = memo(({ transaction, style }) => {
   } = useAppContext();
 
   const account = getAccountByName(transaction.account);
-  const IconComponent = getAccountByName(transaction.account).icon;
+  const IconComponent = account?.icon || ICONS.Wallet;
 
   const pressTimer = useRef(null);
-  const longPressThreshold = 500; // 500ms для долгого нажатия
+  const longPressThreshold = 500;
 
   const isDepositTransaction = transaction.category === 'Пополнение депозита' || transaction.category === 'Снятие с депозита';
   const isLoanTransaction = transaction.category === 'Погашение кредита';
 
-  /**
-   * Обрабатывает удаление транзакции.
-   */
+  // Форматирование даты - только для сегодня/вчера
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Вчера';
+    } else {
+      return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    }
+  };
+
   const handleDelete = () => {
-    if (window.confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
-      console.log('Вызвано удаление транзакции:', transaction.id);
+    if (window.confirm('Удалить транзакцию?')) {
       setTransactions(prevTransactions => prevTransactions.filter(t => t.id !== transaction.id));
 
       if (isDepositTransaction && transaction.financialItemId) {
@@ -72,43 +79,28 @@ const TransactionItem = memo(({ transaction, style }) => {
     }
   };
 
-  /**
-   * Обрабатывает начало нажатия (долгое нажатие для удаления).
-   * @param {Event} e - Событие мыши или касания.
-   */
   const handlePressStart = (e) => {
-    if (e.button === 2) { // Запрещаем контекстное меню на ПК
+    if (e.button === 2) {
       e.preventDefault();
       return;
     }
     
-    // Очищаем предыдущий таймер, если он есть
     clearTimeout(pressTimer.current);
-
     pressTimer.current = setTimeout(() => {
-      console.log('Долгое нажатие (удаление):', transaction.id);
       handleDelete();
-      pressTimer.current = null; // Очищаем таймер после выполнения
+      pressTimer.current = null;
     }, longPressThreshold);
   };
 
-  /**
-   * Обрабатывает завершение нажатия (короткое нажатие для редактирования).
-   */
   const handlePressEnd = () => {
     if (pressTimer.current) {
       clearTimeout(pressTimer.current);
       pressTimer.current = null;
-      // Если таймер был очищен до срабатывания, это был клик/короткое касание
-      console.log('Короткое нажатие (редактирование):', transaction.id);
       setEditingTransaction(transaction);
       setShowAddTransaction(true);
     }
   };
 
-  /**
-   * Обрабатывает отмену нажатия.
-   */
   const handlePressCancel = () => {
     clearTimeout(pressTimer.current);
     pressTimer.current = null;
@@ -117,7 +109,7 @@ const TransactionItem = memo(({ transaction, style }) => {
   return (
     <motion.div
       style={style}
-      className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl dark:bg-gray-800 cursor-pointer"
+      className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-150"
       onMouseDown={handlePressStart}
       onMouseUp={handlePressEnd}
       onMouseLeave={handlePressCancel}
@@ -125,32 +117,60 @@ const TransactionItem = memo(({ transaction, style }) => {
       onTouchEnd={handlePressEnd}
       onTouchCancel={handlePressCancel}
       onContextMenu={(e) => e.preventDefault()}
-      whileTap={{ scale: 0.95 }}
+      whileTap={{ scale: 0.98 }}
       transition={spring}
     >
-      <div className="flex items-center">
-        {transaction.type === 'income' ? (
-          <ICONS.ArrowUpCircle className="w-8 h-8 text-green-500 mr-4" />
-        ) : (
-          <ICONS.ArrowDownCircle className="w-8 h-8 text-red-500 mr-4" />
-        )}
-        <div>
-          <div className="font-medium text-gray-800 dark:text-gray-200">{transaction.category}</div>
-          <div className="text-sm text-gray-500 flex items-center dark:text-gray-400">
-            {transaction.date} •
-            <IconComponent className="w-4 h-4 mx-1" style={{ color: account.color }} />
-            {account.name}
+      <div className="flex items-center justify-between">
+        {/* Левая часть */}
+        <div className="flex items-center space-x-3 min-w-0 flex-1">
+          {/* Иконка аккаунта с цветом */}
+          <div 
+            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: `${account?.color || '#6366f1'}20` }}
+          >
+            <IconComponent 
+              className="w-5 h-5" 
+              style={{ color: account?.color || '#6366f1' }} 
+            />
           </div>
-          {transaction.description && (
-            <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              {transaction.description}
+          
+          {/* Основная информация */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center space-x-2">
+              <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                {transaction.category}
+              </h3>
             </div>
-          )}
+            
+            {/* Описание только если есть и оно короткое */}
+            {transaction.description && transaction.description.length <= 30 && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                {transaction.description}
+              </p>
+            )}
+            
+            {/* Дата и аккаунт в одной строке */}
+            <div className="flex items-center space-x-3 text-xs text-gray-400 dark:text-gray-500 mt-1">
+              <span>{formatDate(transaction.date)}</span>
+              {account && (
+                <>
+                  <span>•</span>
+                  <span className="truncate">{account.name}</span>
+                </>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="flex items-center">
-        <div className={`font-semibold mr-4 ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-          {transaction.type === 'income' ? '+' : '-'}{transaction.amount.toLocaleString()} {currencySymbol}
+
+        {/* Правая часть - сумма */}
+        <div className="text-right flex-shrink-0 ml-4">
+          <div className={`font-semibold ${
+            transaction.type === 'income' 
+              ? 'text-green-600 dark:text-green-400' 
+              : 'text-gray-900 dark:text-gray-100'
+          }`}>
+            {transaction.type === 'income' ? '+' : '−'}{transaction.amount.toLocaleString()} {currencySymbol}
+          </div>
         </div>
       </div>
     </motion.div>

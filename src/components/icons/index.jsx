@@ -1,3 +1,4 @@
+// src/components/icons/index.jsx
 import {
     Home,
     PlusCircle,
@@ -68,7 +69,14 @@ import {
     Package,
     Tractor,
     SprayCan,
-    MapPin
+    MapPin,
+    Clock,
+    BarChart3,
+    AlertTriangle,
+    AlertCircle,
+    AlertOctagon,
+    TrendingUp,
+    TrendingDown,
 } from 'lucide-react';
 
 export const ICONS = {
@@ -141,5 +149,12 @@ export const ICONS = {
     Package,
     Tractor,
     SprayCan,
-    MapPin
+    MapPin,
+    Clock,
+    BarChart3,
+    AlertTriangle,
+    AlertCircle,
+    AlertOctagon,
+    TrendingUp,
+    TrendingDown,
 };

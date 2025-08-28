@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ICONS } from '../icons';
 import { usefulIconOptions } from '../icons/usefulIcons';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { spring, whileTap } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 import ModalWrapper from './ModalWrapper';
@@ -85,6 +85,13 @@ const AddEditCategoryModal = () => {
   const getIcon = (name) => {
     return ICONS[name] || ICONS.LayoutGrid;
   };
+  
+  // Варианты анимации для picker-ов
+  const pickerAnimationVariants = {
+    initial: { opacity: 0, scaleY: 0, transformOrigin: 'top' },
+    animate: { opacity: 1, scaleY: 1, transition: { duration: 0.2 } },
+    exit: { opacity: 0, scaleY: 0, transition: { duration: 0.2 } }
+  };
 
   return (
     <ModalWrapper
@@ -117,22 +124,30 @@ const AddEditCategoryModal = () => {
           )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-400">Иконка</label>
-            <div className="grid grid-cols-6 gap-3 max-h-60 overflow-y-auto pr-2">
-                {usefulIconOptions.map(iconName => {
-                    const IconComponent = getIcon(iconName);
-                    return (
-                        <motion.button
-                            key={iconName}
-                            onClick={() => setNewCategoryIcon(iconName)}
-                            className={`w-12 h-12 rounded-lg flex items-center justify-center border-2 ${newCategoryIcon === iconName ? 'border-blue-500' : 'border-gray-300 dark:border-gray-600'}`}
-                            whileTap={whileTap}
-                            transition={spring}
-                        >
-                            <IconComponent className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-                        </motion.button>
-                    );
-                })}
-            </div>
+            <AnimatePresence>
+                <motion.div
+                    className="grid grid-cols-6 gap-3 max-h-60 overflow-y-auto pr-2"
+                    variants={pickerAnimationVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                >
+                    {usefulIconOptions.map(iconName => {
+                        const IconComponent = getIcon(iconName);
+                        return (
+                            <motion.button
+                                key={iconName}
+                                onClick={() => setNewCategoryIcon(iconName)}
+                                className={`w-12 h-12 rounded-lg flex items-center justify-center border-2 ${newCategoryIcon === iconName ? 'border-blue-500' : 'border-gray-300 dark:border-gray-600'}`}
+                                whileTap={whileTap}
+                                transition={spring}
+                            >
+                                <IconComponent className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+                            </motion.button>
+                        );
+                    })}
+                </motion.div>
+            </AnimatePresence>
           </div>
           <motion.button
             onClick={handleSaveCategory}

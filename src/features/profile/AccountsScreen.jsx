@@ -11,7 +11,7 @@ import { useAppContext } from '../../context/AppContext';
  * @returns {JSX.Element}
  */
 const AccountsScreen = () => {
-  const { accounts, setAccounts, setCurrentScreen } = useAppContext();
+  const { accounts, setAccounts, goBack, navigateToScreen } = useAppContext();
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [newAccount, setNewAccount] = useState({
@@ -177,7 +177,7 @@ const AccountsScreen = () => {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
           <motion.button
-            onClick={() => setCurrentScreen('profile')}
+            onClick={goBack}
             className="mr-4 p-2 rounded-full hover:bg-gray-200"
             whileTap={whileTap}
             transition={spring}
