@@ -7,6 +7,17 @@ import { spring, whileTap, jiggle } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 import ModalWrapper from './ModalWrapper';
 
+// Создаем экземпляр Web Worker для вынесения тяжелых расчетов в фоновый поток.
+// Это предотвращает блокировку основного потока UI.
+const financialWorker = new Worker(new URL('../../workers/financialCalculator.js', import.meta.url), {
+  type: 'module'
+});
+
+/**
+ * Модальное окно для добавления или редактирования финансового продукта (кредита или депозита).
+ * Использует Web Worker для выполнения расчетов.
+ * @returns {JSX.Element}
+ */
 const AddFinancialItemModal = () => {
   const { 
     loans,
@@ -60,105 +71,36 @@ const AddFinancialItemModal = () => {
     }
   }, [editingItem]);
 
+  useEffect(() => {
+    const handleWorkerMessage = (e) => {
+      setCalculationResult(e.data.result);
+    };
+
+    financialWorker.onmessage = handleWorkerMessage;
+
+    return () => {
+      financialWorker.onmessage = null;
+    };
+  }, []);
+
+  /**
+   * Отправляет данные в Web Worker для выполнения расчетов.
+   */
   const calculate = () => {
-    const P = parseFloat(amount);
-    const r = parseFloat(interestRate);
-    const nMonths = parseFloat(term);
-
-    if (isNaN(P) || isNaN(r) || isNaN(nMonths) || P <= 0 || r < 0 || nMonths <= 0) {
-      setCalculationResult(null);
-      return;
-    }
-
-    const rMonthly = r / 100 / 12;
-
-    let monthlyPayment = null;
-    let totalPayment = 0;
-    let totalInterest = 0;
-    let paymentSchedule = [];
-
-    if (type === 'loan') {
-      if (loanPaymentType === 'annuity') {
-        if (rMonthly > 0) {
-          const annuityCoefficient = (rMonthly * Math.pow(1 + rMonthly, nMonths)) / (Math.pow(1 + rMonthly, nMonths) - 1);
-          monthlyPayment = P * annuityCoefficient;
-        } else {
-          monthlyPayment = P / nMonths;
-        }
-        totalPayment = monthlyPayment * nMonths;
-        totalInterest = totalPayment - P;
-
-        let remainingBalance = P;
-        for (let i = 1; i <= nMonths; i++) {
-          const interestPayment = remainingBalance * rMonthly;
-          const principalPayment = monthlyPayment - interestPayment;
-          remainingBalance -= principalPayment;
-          paymentSchedule.push({
-            month: i,
-            monthlyPayment: monthlyPayment,
-            principal: principalPayment,
-            interest: interestPayment,
-            remainingBalance: remainingBalance > 0 ? remainingBalance : 0,
-            date: new Date(new Date().setMonth(new Date().getMonth() + i - 1)).toISOString().split('T')[0]
-          });
-        }
-      } else if (loanPaymentType === 'differentiated') {
-        const principalPayment = P / nMonths;
-        let remainingBalance = P;
-
-        for (let i = 1; i <= nMonths; i++) {
-          const interestPayment = remainingBalance * rMonthly;
-          const monthlyPaymentCurrent = principalPayment + interestPayment;
-          totalPayment += monthlyPaymentCurrent;
-          remainingBalance -= principalPayment;
-
-          paymentSchedule.push({
-            month: i,
-            monthlyPayment: monthlyPaymentCurrent,
-            principal: principalPayment,
-            interest: interestPayment,
-            remainingBalance: remainingBalance > 0 ? remainingBalance : 0,
-            date: new Date(new Date().setMonth(new Date().getMonth() + i - 1)).toISOString().split('T')[0]
-          });
-        }
-        monthlyPayment = paymentSchedule[0].monthlyPayment;
-        totalInterest = totalPayment - P;
-      }
-    } else {
-      const N = r / 100;
-      let Dv = 0;
-
-      if (depositType === 'simple') {
-        const T_days = nMonths * (365 / 12);
-        const K_days = 365;
-        const S = (P * r * T_days / K_days) / 100;
-        totalPayment = P + S;
-        totalInterest = S;
-      } else {
-        if (capitalization === 'daily') {
-          const T_days = nMonths * (365 / 12);
-          const K_days = 365;
-          Dv = P * Math.pow(1 + (N / K_days), T_days);
-        } else if (capitalization === 'monthly') {
-          const T_months = nMonths;
-          Dv = P * Math.pow(1 + (N / 12), T_months);
-        } else if (capitalization === 'quarterly') {
-          const T_quarters = nMonths / 3;
-          Dv = P * Math.pow(1 + (N / 4), T_quarters);
-        }
-        totalPayment = Dv;
-        totalInterest = Dv - P;
-      }
-    }
-
-    setCalculationResult({
-      monthlyPayment,
-      totalPayment,
-      totalInterest,
-      paymentSchedule,
+    financialWorker.postMessage({
+      type,
+      amount,
+      interestRate,
+      term,
+      depositType,
+      capitalization,
+      loanPaymentType
     });
   };
 
+  /**
+   * Обрабатывает сохранение нового или отредактированного финансового продукта.
+   */
   const handleSave = () => {
     if (!calculationResult) return;
     const { monthlyPayment, totalPayment, totalInterest, paymentSchedule } = calculationResult;
@@ -211,10 +153,18 @@ const AddFinancialItemModal = () => {
     setShowAddFinancialItemModal(false);
   };
 
+  /**
+   * Функция для закрытия модального окна.
+   */
   const handleClose = () => {
     setShowAddFinancialItemModal(false);
   };
   
+  /**
+   * Возвращает компонент иконки по имени.
+   * @param {string} iconName - Имя иконки.
+   * @returns {React.Component} - Компонент иконки.
+   */
   const getIconComponent = (iconName) => {
     return ICONS[iconName] || ICONS.MinusCircle;
   };

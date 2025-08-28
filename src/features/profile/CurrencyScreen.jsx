@@ -7,9 +7,18 @@ import { spring, whileTap, zoomInOut } from '../../utils/motion';
 import ReactCountryFlag from 'react-country-flag';
 import { useAppContext } from '../../context/AppContext';
 
+/**
+ * Компонент экрана выбора валюты.
+ * Позволяет пользователю изменить основную валюту приложения.
+ * @returns {JSX.Element}
+ */
 const CurrencyScreen = () => {
   const { setCurrentScreen, currencyCode, setCurrencyCode } = useAppContext();
   
+  /**
+   * Обрабатывает изменение валюты.
+   * @param {string} newCurrencyCode - Новый код валюты.
+   */
   const handleCurrencyChange = (newCurrencyCode) => {
     setCurrencyCode(newCurrencyCode);
     setCurrentScreen('settings');

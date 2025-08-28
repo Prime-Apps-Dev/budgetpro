@@ -1,60 +1,41 @@
 // src/components/screens/DebtsScreen.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import { ICONS } from '../../components/icons';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { spring, whileTap, zoomInOut } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 
+/**
+ * Компонент экрана "Долги".
+ * Позволяет пользователю управлять своими долгами: добавлять, погашать и списывать.
+ * @returns {JSX.Element}
+ */
 const DebtsScreen = () => {
   const {
     debts,
     setDebts,
     setCurrentScreen,
     setTransactions,
-    currencySymbol
+    currencySymbol,
+    setShowAddDebtModal, // Новая переменная из контекста
+    setEditingDebt // Новая переменная из контекста
   } = useAppContext();
 
-  const [showAddDebt, setShowAddDebt] = useState(false);
-  const [editingDebt, setEditingDebt] = useState(null);
-  const [newDebt, setNewDebt] = useState({
-    type: 'i-owe',
-    amount: '',
-    person: '',
-    description: '',
-    date: new Date().toISOString().split('T')[0],
-  });
-
-  const handleSaveDebt = () => {
-    if (!newDebt.amount || !newDebt.person) return;
-    const debtData = {
-      ...newDebt,
-      amount: parseFloat(newDebt.amount),
-      id: editingDebt ? editingDebt.id : Date.now(),
-    };
-
-    if (editingDebt) {
-      setDebts(debts.map(d => (d.id === editingDebt.id ? debtData : d)));
-      setEditingDebt(null);
-    } else {
-      setDebts([...debts, debtData]);
-    }
-
-    setNewDebt({
-      type: 'i-owe',
-      amount: '',
-      person: '',
-      description: '',
-      date: new Date().toISOString().split('T')[0],
-    });
-    setShowAddDebt(false);
-  };
-
+  /**
+   * Обрабатывает удаление долга.
+   * @param {number} id - ID долга для удаления.
+   */
   const handleDeleteDebt = (id) => {
     if (debts.length > 1) {
       setDebts(debts.filter(debt => debt.id !== id));
     }
   };
 
+  /**
+   * Обрабатывает погашение долга, который пользователь должен.
+   * Создает транзакцию расхода.
+   * @param {object} debt - Объект долга.
+   */
   const handlePayBackDebt = (debt) => {
     const newTransaction = {
       id: Date.now(),
@@ -69,6 +50,11 @@ const DebtsScreen = () => {
     handleDeleteDebt(debt.id);
   };
 
+  /**
+   * Обрабатывает возврат долга, который должны пользователю.
+   * Создает транзакцию дохода.
+   * @param {object} debt - Объект долга.
+   */
   const handleWriteOffDebt = (debt) => {
     const newTransaction = {
       id: Date.now(),
@@ -83,6 +69,11 @@ const DebtsScreen = () => {
     handleDeleteDebt(debt.id);
   };
 
+  /**
+   * Обрабатывает прощение долга, который должны пользователю.
+   * Удаляет долг без создания транзакции.
+   * @param {number} id - ID долга.
+   */
   const handleForgiveDebt = (id) => {
     handleDeleteDebt(id);
   };
@@ -103,7 +94,10 @@ const DebtsScreen = () => {
         </motion.button>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Долги</h2>
         <motion.button
-          onClick={() => setShowAddDebt(true)}
+          onClick={() => {
+            setShowAddDebtModal(true); // Обновляем вызов
+            setEditingDebt(null); // Сбрасываем редактируемый долг
+          }}
           className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 ml-auto"
           whileTap={{ scale: 0.8 }}
           transition={spring}
@@ -151,7 +145,7 @@ const DebtsScreen = () => {
                     <motion.button
                       onClick={() => {
                         setEditingDebt(debt);
-                        setShowAddDebt(true);
+                        setShowAddDebtModal(true);
                       }}
                       className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg dark:hover:bg-gray-700"
                       whileTap={whileTap}
@@ -222,7 +216,7 @@ const DebtsScreen = () => {
                     <motion.button
                       onClick={() => {
                         setEditingDebt(debt);
-                        setShowAddDebt(true);
+                        setShowAddDebtModal(true);
                       }}
                       className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg dark:hover:bg-gray-700"
                       whileTap={whileTap}
@@ -247,116 +241,6 @@ const DebtsScreen = () => {
           </div>
         </div>
       </div>
-      
-      <AnimatePresence>
-        {(showAddDebt || editingDebt) && (
-            <motion.div
-              className="fixed inset-x-0 bottom-0 top-1/4 flex items-end justify-center z-50"
-              initial={{ y: "100%" }}
-              animate={{ y: "0%" }}
-              exit={{ y: "100%" }}
-              transition={{ type: "tween", duration: 0.3 }}
-            >
-              <div className="absolute inset-0 bg-black opacity-50" onClick={() => { setShowAddDebt(false); setEditingDebt(null); }}></div>
-              <div className="relative bg-white dark:bg-gray-800 rounded-t-3xl p-6 shadow-xl w-full h-full flex flex-col">
-                <div className="flex justify-center mb-4">
-                  <motion.div
-                    onClick={() => { setShowAddDebt(false); setEditingDebt(null); }}
-                    className="w-12 h-1 bg-gray-300 rounded-full cursor-pointer dark:bg-gray-600"
-                    whileTap={{ scale: 0.8 }}
-                    transition={spring}
-                  ></motion.div>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-                  {editingDebt ? 'Редактировать долг' : 'Добавить долг'}
-                </h3>
-
-                <div className="flex-grow overflow-y-auto pr-2">
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-3">
-                        <motion.button
-                          onClick={() => setNewDebt({ ...newDebt, type: 'i-owe' })}
-                          className={`p-4 rounded-2xl border-2 font-medium ${
-                            newDebt.type === 'i-owe'
-                              ? 'border-red-500 bg-red-50 text-red-700 dark:border-red-400 dark:bg-red-900 dark:text-red-300'
-                              : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
-                          }`}
-                          whileTap={whileTap}
-                          transition={spring}
-                        >
-                          Я должен
-                        </motion.button>
-                        <motion.button
-                          onClick={() => setNewDebt({ ...newDebt, type: 'owed-to-me' })}
-                          className={`p-4 rounded-2xl border-2 font-medium ${
-                            newDebt.type === 'owed-to-me'
-                              ? 'border-green-500 bg-green-50 text-green-700 dark:border-green-400 dark:bg-green-900 dark:text-green-300'
-                              : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
-                          }`}
-                          whileTap={whileTap}
-                          transition={spring}
-                        >
-                          Мне должны
-                        </motion.button>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-gray-400">Сумма</label>
-                        <input
-                          type="number"
-                          value={newDebt.amount}
-                          onChange={(e) => setNewDebt({ ...newDebt, amount: e.target.value })}
-                          placeholder="0"
-                          className="w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-gray-400">Кому/Кто</label>
-                        <input
-                          type="text"
-                          value={newDebt.person}
-                          onChange={(e) => setNewDebt({ ...newDebt, person: e.target.value })}
-                          placeholder="Имя человека"
-                          className="w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-gray-400">Описание (необязательно)</label>
-                        <input
-                          type="text"
-                          value={newDebt.description}
-                          onChange={(e) => setNewDebt({ ...newDebt, description: e.target.value })}
-                          placeholder="Например: За ужин"
-                          className="w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-gray-400">Дата</label>
-                        <input
-                          type="date"
-                          value={newDebt.date}
-                          onChange={(e) => setNewDebt({ ...newDebt, date: e.target.value })}
-                          className="w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
-                        />
-                      </div>
-
-                      <motion.button
-                        onClick={handleSaveDebt}
-                        className="w-full bg-blue-600 text-white p-4 rounded-2xl font-semibold hover:bg-blue-700"
-                        whileTap={whileTap}
-                        transition={spring}
-                      >
-                        {editingDebt ? 'Сохранить изменения' : 'Добавить долг'}
-                      </motion.button>
-                    </div>
-                </div>
-              </div>
-            </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

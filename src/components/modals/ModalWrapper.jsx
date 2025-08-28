@@ -9,12 +9,13 @@ import { useAppContext } from '../../context/AppContext';
  * Универсальный компонент-обертка для модальных окон.
  * Обеспечивает общую логику анимации, жестов и стиля.
  *
- * @param {Object} props - Свойства компонента.
+ * @param {object} props - Свойства компонента.
  * @param {string} props.title - Заголовок модального окна.
  * @param {function} props.handleClose - Функция для закрытия модального окна.
  * @param {React.ReactNode} props.children - Дочерние элементы, содержимое модального окна.
  * @param {React.ReactNode} [props.actions] - JSX-элемент для отображения справа от заголовка (например, кнопки "Редактировать", "Удалить").
  * @param {string} [props.className] - Дополнительные CSS-классы для внутреннего контейнера.
+ * @returns {JSX.Element}
  */
 const ModalWrapper = ({ title, handleClose, children, actions, className = '' }) => {
   const { isDarkMode } = useAppContext();
@@ -22,9 +23,24 @@ const ModalWrapper = ({ title, handleClose, children, actions, className = '' })
   const y = useMotionValue(0);
   const opacity = useTransform(y, [0, 200], [1, 0]);
 
-  const handleDragEnd = () => {
-    const threshold = 150;
-    if (y.get() > threshold) {
+  /**
+   * Обрабатывает завершение жеста перетаскивания.
+   * Если жест был достаточно сильным, закрывает модальное окно.
+   * @param {Event} event - Событие.
+   * @param {object} info - Информация о жесте.
+   */
+  const handleDragEnd = (event, info) => {
+    // Порог расстояния в пикселях
+    const distanceThreshold = 150; 
+    // Порог скорости в пикселях/секунду
+    const velocityThreshold = 200; 
+    
+    // Проверяем, был ли свайп быстрым вниз
+    const isFastSwipe = info.velocity.y > velocityThreshold;
+    // Проверяем, был ли drag достаточно долгим
+    const isLongDrag = info.offset.y > distanceThreshold;
+
+    if (isFastSwipe || isLongDrag) {
       handleClose();
     }
   };
@@ -51,7 +67,7 @@ const ModalWrapper = ({ title, handleClose, children, actions, className = '' })
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
         onDragEnd={handleDragEnd}
-        style={{ y }}
+        style={{ y, opacity }}
       >
         <div className="relative bg-white dark:bg-gray-800 rounded-t-3xl p-6 shadow-xl w-full h-full flex flex-col cursor-grab max-h-[85vh]">
           <div className="flex justify-center mb-4 cursor-grab" onMouseDown={() => y.set(0)}>

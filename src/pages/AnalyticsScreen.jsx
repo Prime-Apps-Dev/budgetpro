@@ -1,5 +1,5 @@
 // src/pages/AnalyticsScreen.jsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import PieChartComponent from '../components/ui/PieChartComponent';
 import { ICONS } from '../components/icons';
 import { motion } from 'framer-motion';
@@ -20,19 +20,31 @@ const AnalyticsScreen = () => {
     currencySymbol,
   } = useAppContext();
   
-  const filteredTransactions = getFilteredTransactions();
+  // Используем useMemo для кэширования результатов фильтрации.
+  const filteredTransactions = useMemo(() => getFilteredTransactions(), [getFilteredTransactions]);
 
-  const expensesByCategory = categories.expense.map(cat => ({
-    name: cat.name,
-    value: filteredTransactions.filter(t => t.type === 'expense' && t.category === cat.name)
-      .reduce((sum, t) => sum + t.amount, 0)
-  })).filter(item => item.value > 0);
+  // Используем useMemo для мемоизации расчетов расходов по категориям.
+  const expensesByCategory = useMemo(() => {
+    return categories.expense.map(cat => ({
+      name: cat.name,
+      value: filteredTransactions.filter(t => t.type === 'expense' && t.category === cat.name)
+        .reduce((sum, t) => sum + t.amount, 0)
+    })).filter(item => item.value > 0);
+  }, [categories.expense, filteredTransactions]);
 
-  const incomeByCategory = categories.income.map(cat => ({
-    name: cat.name,
-    value: filteredTransactions.filter(t => t.type === 'income' && t.category === cat.name)
-      .reduce((sum, t) => sum + t.amount, 0)
-  })).filter(item => item.value > 0);
+  // Используем useMemo для мемоизации расчетов доходов по категориям.
+  const incomeByCategory = useMemo(() => {
+    return categories.income.map(cat => ({
+      name: cat.name,
+      value: filteredTransactions.filter(t => t.type === 'income' && t.category === cat.name)
+        .reduce((sum, t) => sum + t.amount, 0)
+    })).filter(item => item.value > 0);
+  }, [categories.income, filteredTransactions]);
+
+  // Рассчитываем итоговую сумму всех транзакций для текущего периода
+  const totalTransactionsAmount = useMemo(() => {
+    return filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
+  }, [filteredTransactions]);
 
   const expenseColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
   const incomeColors = ['#10b981', '#06b6d4', '#8b5cf6', '#f59e0b'];

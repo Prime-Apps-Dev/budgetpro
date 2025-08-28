@@ -5,6 +5,11 @@ import { motion } from 'framer-motion';
 import { whileTap, whileHover, spring, zoomInOut } from '../utils/motion';
 import { useAppContext } from '../context/AppContext';
 
+/**
+ * Компонент экрана "Копилка".
+ * Позволяет пользователю управлять своими сбережениями, связанными с финансовыми целями.
+ * @returns {JSX.Element}
+ */
 const SavingsScreen = () => {
   const {
     financialGoals,
@@ -21,6 +26,10 @@ const SavingsScreen = () => {
 
   const savingsGoals = financialGoals.filter(goal => goal.isSavings);
 
+  /**
+   * Обрабатывает транзакцию пополнения или снятия средств с копилки.
+   * @param {string} type - Тип операции ('deposit' или 'withdrawal').
+   */
   const handleSavingsTransaction = (type) => {
     if (!savingsAmount || parseFloat(savingsAmount) <= 0 || !selectedGoal) return;
 

@@ -5,17 +5,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppContext } from '../../context/AppContext';
 import ModalWrapper from './ModalWrapper';
 
+/**
+ * Модальное окно для редактирования профиля пользователя.
+ * Позволяет изменять имя, email, аватар и его цвет.
+ * @returns {JSX.Element}
+ */
 const EditProfileModal = () => {
-  const { userProfile, setUserProfile, setCurrentScreen, setShowEditProfileModal } = useAppContext();
+  const { userProfile, setUserProfile, setShowEditProfileModal } = useAppContext();
   const [editedProfile, setEditedProfile] = useState({ ...userProfile });
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
 
+  /**
+   * Сохраняет изменения профиля и закрывает модальное окно.
+   */
   const handleSave = () => {
     setUserProfile(editedProfile);
     setShowEditProfileModal(false);
   };
   
+  /**
+   * Закрывает модальное окно без сохранения.
+   */
   const handleClose = () => {
     setShowEditProfileModal(false);
   };

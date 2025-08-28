@@ -1,129 +1,57 @@
-// src/components/screens/BudgetPlanningScreen.jsx
+// src/features/profile/BudgetPlanningScreen.jsx
 import React, { useState } from 'react';
 import { ICONS } from '../../components/icons';
-import { motion, AnimatePresence } from 'framer-motion';
-import { spring, whileTap, whileHover, zoomInOut, fadeInOut } from '../../utils/motion';
+import { motion } from 'framer-motion';
+import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 
+/**
+ * Компонент экрана "Планирование бюджета".
+ * Позволяет пользователю создавать, редактировать и удалять бюджеты по категориям.
+ * @returns {JSX.Element}
+ */
 const BudgetPlanningScreen = () => {
   const {
     budgets,
     setBudgets,
-    categories,
     getFilteredTransactions,
     setCurrentScreen,
     totalPlannedBudget,
     totalSpentOnBudgets,
-    currencySymbol
+    currencySymbol,
+    setShowAddBudgetModal, // Новая переменная из контекста
+    setEditingBudget // Новая переменная из контекста
   } = useAppContext();
 
-  const [showAddBudget, setShowAddBudget] = useState(false);
-  const [editingBudget, setEditingBudget] = useState(null);
-  const [formData, setFormData] = useState({
-    category: '',
-    limit: ''
-  });
   const [showRemaining, setShowRemaining] = useState(false);
 
   const filteredTransactions = getFilteredTransactions();
 
-  const handleSaveBudget = () => {
-    if (!formData.category || !formData.limit) return;
-    const newBudget = {
-      id: editingBudget ? editingBudget.id : Date.now(),
-      category: formData.category,
-      limit: parseFloat(formData.limit),
-      spent: 0
-    };
-
-    if (editingBudget) {
-      setBudgets(budgets.map(b => b.id === newBudget.id ? newBudget : b));
-    } else {
-      setBudgets([...budgets, newBudget]);
-    }
-
-    setFormData({ category: '', limit: '' });
-    setShowAddBudget(false);
-    setEditingBudget(null);
-  };
-
+  /**
+   * Обрабатывает удаление бюджета.
+   * @param {number} id - ID бюджета для удаления.
+   */
   const handleDeleteBudget = (id) => {
     setBudgets(budgets.filter(b => b.id !== id));
   };
 
+  /**
+   * Рассчитывает потраченную сумму по заданной категории.
+   * @param {string} category - Имя категории.
+   * @returns {number} - Сумма расходов.
+   */
   const getSpentAmount = (category) => {
     return filteredTransactions
       .filter(t => t.type === 'expense' && t.category === category)
       .reduce((sum, t) => sum + t.amount, 0);
   };
   
+  /**
+   * Переключает отображение оставшегося или потраченного бюджета.
+   */
   const handleCardClick = () => {
     setShowRemaining(!showRemaining);
   };
-
-  const AddEditBudgetModal = ({ isEditing, editingBudget, setShowAddBudget, setEditingBudget, formData, setFormData, handleSaveBudget, categories }) => {
-    const currentData = isEditing ? editingBudget : formData;
-    return (
-      <motion.div
-        className="fixed inset-x-0 bottom-0 top-1/4 flex items-end justify-center z-50"
-        initial={{ y: "100%" }}
-        animate={{ y: "0%" }}
-        exit={{ y: "100%" }}
-        transition={{ type: "tween", duration: 0.3 }}
-      >
-        <div className="absolute inset-0 bg-black opacity-50" onClick={() => { setShowAddBudget(false); setEditingBudget(null); }}></div>
-        <div className="relative bg-white dark:bg-gray-800 rounded-t-3xl p-6 shadow-xl w-full h-full flex flex-col">
-          <div className="flex justify-center mb-4">
-            <motion.div
-              onClick={() => { setShowAddBudget(false); setEditingBudget(null); }}
-              className="w-12 h-1 bg-gray-300 rounded-full cursor-pointer dark:bg-gray-600"
-              whileTap={{ scale: 0.8 }}
-              transition={spring}
-            ></motion.div>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-            {isEditing ? 'Редактировать бюджет' : 'Создать бюджет'}
-          </h3>
-          <div className="flex-grow overflow-y-auto pr-2">
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-gray-400">Категория</label>
-                <select
-                  value={currentData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
-                >
-                  <option value="">Выберите категорию</option>
-                  {categories.expense.map(cat => (
-                    <option key={cat.name} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-gray-400">Лимит</label>
-                <input
-                  type="number"
-                  value={currentData.limit}
-                  onChange={(e) => setFormData({ ...formData, limit: e.target.value })}
-                  placeholder="0"
-                  className="w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
-                />
-              </div>
-              <motion.button
-                onClick={handleSaveBudget}
-                className="w-full bg-blue-600 text-white p-4 rounded-2xl font-semibold hover:bg-blue-700"
-                whileTap={whileTap}
-                transition={spring}
-              >
-                {isEditing ? 'Сохранить изменения' : 'Создать бюджет'}
-              </motion.button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    );
-  };
-
 
   const remainingBudget = totalPlannedBudget - totalSpentOnBudgets;
 
@@ -140,7 +68,10 @@ const BudgetPlanningScreen = () => {
         </motion.button>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Планирование бюджета</h2>
         <motion.button
-          onClick={() => setShowAddBudget(true)}
+          onClick={() => {
+            setShowAddBudgetModal(true); // Обновляем вызов
+            setEditingBudget(null); // Сбрасываем редактируемый бюджет
+          }}
           className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 ml-auto"
           whileTap={{ scale: 0.8 }}
           transition={spring}
@@ -202,7 +133,7 @@ const BudgetPlanningScreen = () => {
                     <motion.button
                       onClick={() => {
                         setEditingBudget(budget);
-                        setFormData({ category: budget.category, limit: budget.limit });
+                        setShowAddBudgetModal(true);
                       }}
                       className="p-1 text-blue-500 hover:bg-blue-50 rounded-lg dark:hover:bg-gray-700"
                       whileTap={whileTap}
@@ -242,21 +173,6 @@ const BudgetPlanningScreen = () => {
           <p className="text-center text-gray-500 dark:text-gray-400">У вас нет бюджетов. Создайте первый!</p>
         )}
       </div>
-
-      <AnimatePresence>
-        {(showAddBudget || editingBudget) && (
-          <AddEditBudgetModal
-            isEditing={!!editingBudget}
-            editingBudget={editingBudget}
-            setShowAddBudget={setShowAddBudget}
-            setEditingBudget={setEditingBudget}
-            formData={formData}
-            setFormData={setFormData}
-            handleSaveBudget={handleSaveBudget}
-            categories={categories}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 };

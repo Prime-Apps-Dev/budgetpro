@@ -6,9 +6,19 @@ import { whileTap, jiggle, spring } from '../../utils/motion';
 import { CURRENCIES } from '../../constants/currencies';
 import { useAppContext } from '../../context/AppContext';
 
+/**
+ * Компонент экрана "Настройки".
+ * Позволяет пользователю управлять темной темой и валютой.
+ * @returns {JSX.Element}
+ */
 const SettingsScreen = () => {
   const { setCurrentScreen, isDarkMode, setIsDarkMode, currencyCode, setCurrencyCode } = useAppContext();
 
+  /**
+   * Возвращает полное имя валюты по её коду.
+   * @param {string} code - Код валюты (например, 'USD').
+   * @returns {string} - Полное имя валюты.
+   */
   const getCurrencyName = (code) => {
     const currencyObj = CURRENCIES.find(c => c.code === code);
     return currencyObj ? `${currencyObj.name} (${currencyObj.code})` : 'Неизвестно';

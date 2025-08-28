@@ -5,6 +5,12 @@ import { spring, whileTap } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 import ModalWrapper from './ModalWrapper';
 
+/**
+ * Модальное окно для добавления или редактирования транзакции.
+ * Позволяет пользователю вводить данные о расходах и доходах,
+ * а также связывать их с кредитами и депозитами.
+ * @returns {JSX.Element}
+ */
 const AddEditTransactionModal = () => {
   const {
     transactions,
@@ -16,7 +22,6 @@ const AddEditTransactionModal = () => {
     setNewTransaction,
     categories,
     accounts,
-    setActiveTab,
     loans,
     setLoans,
     deposits,
@@ -30,6 +35,9 @@ const AddEditTransactionModal = () => {
     currencySymbol,
   } = useAppContext();
 
+  /**
+   * Закрывает модальное окно и сбрасывает состояния.
+   */
   const handleClose = () => {
     if (editingTransaction) {
       setEditingTransaction(null);
@@ -84,6 +92,9 @@ const AddEditTransactionModal = () => {
     }
   }, [editingTransaction, newTransaction, selectedFinancialItem, setNewTransaction]);
   
+  /**
+   * Обрабатывает отправку формы, сохраняя новую или обновляя существующую транзакцию.
+   */
   const handleSubmit = () => {
     if (formData.amount && formData.category && formData.account) {
       const transactionData = {

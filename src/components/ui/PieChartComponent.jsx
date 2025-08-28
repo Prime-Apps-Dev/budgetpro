@@ -1,6 +1,15 @@
 // src/components/ui/PieChartComponent.jsx
 import React from 'react';
 
+/**
+ * Компонент для отображения круговой диаграммы.
+ * @param {object} props - Свойства компонента.
+ * @param {Array<object>} props.data - Массив данных для диаграммы.
+ * @param {string} props.title - Заголовок диаграммы.
+ * @param {Array<string>} props.colors - Массив цветов для сегментов.
+ * @param {string} props.currencySymbol - Символ валюты.
+ * @returns {JSX.Element|null}
+ */
 const PieChartComponent = ({ data, title, colors, currencySymbol }) => {
   if (!data || data.length === 0) return null;
 

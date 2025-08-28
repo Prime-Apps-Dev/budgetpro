@@ -1,10 +1,29 @@
 // src/features/profile/TransactionHistoryScreen.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ICONS } from '../../components/icons';
 import TransactionItem from '../../components/ui/TransactionItem';
 import { motion } from 'framer-motion';
-import { whileTap, spring, zoomInOut } from '../../utils/motion';
+import { whileTap, spring } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
+import { FixedSizeList as List } from 'react-window';
+
+/**
+ * Компонент, который будет рендерить одну строку в виртуализированном списке.
+ * React Window передает ему props `index` и `style`.
+ * @param {object} props - Свойства компонента.
+ * @param {number} props.index - Индекс элемента в списке.
+ * @param {object} props.style - Стили, необходимые для виртуализации.
+ * @param {array} props.data - Массив данных для списка.
+ * @returns {JSX.Element}
+ */
+const TransactionRow = ({ index, style, data }) => {
+  const transaction = data[index];
+  return (
+    <div style={style}>
+      <TransactionItem transaction={transaction} />
+    </div>
+  );
+};
 
 const TransactionHistoryScreen = () => {
   const {
@@ -16,13 +35,17 @@ const TransactionHistoryScreen = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
 
-  const filteredTransactions = transactions.slice().reverse().filter(transaction => {
-    const matchesSearch = transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          transaction.account.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (transaction.description && transaction.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesType = filterType === 'all' || transaction.type === filterType;
-    return matchesSearch && matchesType;
-  });
+  // Используем useMemo для мемоизации результатов фильтрации.
+  // Фильтрация будет происходить только при изменении `transactions`, `searchTerm` или `filterType`.
+  const filteredTransactions = useMemo(() => {
+    return transactions.slice().reverse().filter(transaction => {
+      const matchesSearch = transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            transaction.account.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (transaction.description && transaction.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesType = filterType === 'all' || transaction.type === filterType;
+      return matchesSearch && matchesType;
+    });
+  }, [transactions, searchTerm, filterType]);
 
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
@@ -88,13 +111,16 @@ const TransactionHistoryScreen = () => {
 
       <div className="space-y-4">
         {filteredTransactions.length > 0 ? (
-          filteredTransactions.map(transaction => (
-            <motion.div key={transaction.id} variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: false, amount: 0.2 }}>
-              <TransactionItem
-                transaction={transaction}
-              />
-            </motion.div>
-          ))
+          <List
+            height={window.innerHeight - 250} // Динамическая высота списка
+            itemCount={filteredTransactions.length}
+            itemSize={100} // Средняя высота элемента списка
+            width={'100%'}
+            itemData={filteredTransactions}
+            className="styled-scrollbars"
+          >
+            {TransactionRow}
+          </List>
         ) : (
           <p className="text-center text-gray-500 dark:text-gray-400">Транзакций не найдено.</p>
         )}

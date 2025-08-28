@@ -5,6 +5,14 @@ import { CURRENCIES, getCurrencySymbolByCode } from '../constants/currencies';
 
 export const AppContext = createContext(null);
 
+/**
+ * Провайдер контекста приложения, содержащий все глобальные состояния и функции.
+ * Использует `useState` для управления состояниями, `useEffect` для сохранения
+ * данных в `localStorage` и `useMemo`/`useCallback` для оптимизации производительности.
+ * @param {object} props - Свойства компонента.
+ * @param {React.ReactNode} props.children - Дочерние элементы, которые будут иметь доступ к контексту.
+ * @returns {JSX.Element}
+ */
 export const AppContextProvider = ({ children }) => {
   const defaultState = useMemo(() => ({
     transactions: [
@@ -91,7 +99,19 @@ export const AppContextProvider = ({ children }) => {
   const [showAddFinancialItemModal, setShowAddFinancialItemModal] = useState(false);
   const [editingFinancialItem, setEditingFinancialItem] = useState(null);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  
+  // Добавляем новые переменные состояния для модальных окон
+  const [showAddDebtModal, setShowAddDebtModal] = useState(false);
+  const [editingDebt, setEditingDebt] = useState(null);
+  const [showAddBudgetModal, setShowAddBudgetModal] = useState(false);
+  const [editingBudget, setEditingBudget] = useState(null);
+  const [showAddGoalModal, setShowAddGoalModal] = useState(false);
+  const [editingGoal, setEditingGoal] = useState(null);
+  // Новые переменные для управления модальным окном категорий
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
 
+  // Мемоизируем символ валюты, чтобы он пересчитывался только при изменении кода валюты.
   const currencySymbol = useMemo(() => getCurrencySymbolByCode(currencyCode), [currencyCode]);
 
   useEffect(() => {
@@ -168,12 +188,24 @@ export const AppContextProvider = ({ children }) => {
     }
   }, [transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, userProfile, isDarkMode, isDataLoaded, currencyCode]);
 
+  /**
+   * Возвращает объект счета по его имени, включая компонент иконки.
+   * Мемоизировано с помощью `useCallback` для стабильности.
+   * @param {string} name - Имя счета.
+   * @returns {object} - Объект счета с компонентом иконки.
+   */
   const getAccountByName = useCallback((name) => {
     const account = accounts.find(acc => acc.name === name) || accounts[0];
     const iconComponent = ICONS[account?.iconName] || ICONS.CreditCard;
     return { ...account, icon: iconComponent };
   }, [accounts]);
 
+  /**
+   * Рассчитывает текущий остаток по кредиту.
+   * Мемоизировано с помощью `useCallback`.
+   * @param {number} loanId - ID кредита.
+   * @returns {number} - Текущий баланс.
+   */
   const getLoanBalance = useCallback((loanId) => {
     const loan = loans.find(l => l.id === loanId);
     if (!loan) return 0;
@@ -183,6 +215,12 @@ export const AppContextProvider = ({ children }) => {
     return loan.amount - repayments;
   }, [loans, loanTransactions]);
 
+  /**
+   * Рассчитывает текущий баланс по депозиту.
+   * Мемоизировано с помощью `useCallback`.
+   * @param {number} depositId - ID депозита.
+   * @returns {number} - Текущий баланс.
+   */
   const getDepositBalance = useCallback((depositId) => {
     const deposit = deposits.find(d => d.id === depositId);
     if (!deposit) return 0;
@@ -195,6 +233,7 @@ export const AppContextProvider = ({ children }) => {
     return deposit.amount + contributions - withdrawals;
   }, [deposits, depositTransactions]);
 
+  // Мемоизируем список кредитов с актуальным балансом.
   const loansWithBalance = useMemo(() => {
     return loans.map(loan => ({
       ...loan,
@@ -202,6 +241,7 @@ export const AppContextProvider = ({ children }) => {
     }));
   }, [loans, getLoanBalance]);
 
+  // Мемоизируем список депозитов с актуальным балансом.
   const depositsWithBalance = useMemo(() => {
     return deposits.map(deposit => ({
       ...deposit,
@@ -209,6 +249,11 @@ export const AppContextProvider = ({ children }) => {
     }));
   }, [deposits, getDepositBalance]);
 
+  /**
+   * Фильтрует транзакции на основе выбранного периода или диапазона дат.
+   * Мемоизировано с помощью `useCallback`.
+   * @returns {Array} - Отфильтрованный массив транзакций.
+   */
   const getFilteredTransactions = useCallback(() => {
     let filtered = [...transactions];
     const now = new Date();
@@ -236,14 +281,18 @@ export const AppContextProvider = ({ children }) => {
           const yearAgo = new Date(now.getFullYear(), 0, 1);
           filtered = filtered.filter(t => new Date(t.date) >= yearAgo);
           break;
+        default:
+          break;
       }
     }
 
     return filtered;
   }, [transactions, dateRange, selectedPeriod]);
 
-  const filteredTransactions = getFilteredTransactions();
+  // Мемоизируем результаты фильтрации транзакций.
+  const filteredTransactions = useMemo(() => getFilteredTransactions(), [getFilteredTransactions]);
 
+  // Мемоизируем общие суммы для производительности.
   const totalIncome = useMemo(() => {
     return filteredTransactions
       .filter(t => t.type === 'income')
@@ -279,6 +328,27 @@ export const AppContextProvider = ({ children }) => {
     }, 0);
   }, [budgets, transactions]);
   
+  /**
+   * Сбрасывает все состояния, связанные с модальными окнами.
+   * @function
+   */
+  const closeAllModals = useCallback(() => {
+    setShowAddTransaction(false);
+    setEditingTransaction(null);
+    setSelectedFinancialItem(null);
+    setShowAddFinancialItemModal(false);
+    setShowEditProfileModal(false);
+    setShowAddDebtModal(false);
+    setEditingDebt(null);
+    setShowAddBudgetModal(false);
+    setEditingBudget(null);
+    setShowAddGoalModal(false);
+    setEditingGoal(null);
+    setShowAddCategoryModal(false);
+    setEditingCategory(null);
+  }, []);
+
+  // Мемоизируем весь объект состояния для передачи в провайдер.
   const state = useMemo(() => ({
     activeTab, setActiveTab,
     currentScreen, setCurrentScreen,
@@ -315,9 +385,20 @@ export const AppContextProvider = ({ children }) => {
     totalSpentOnBudgets,
     showAddFinancialItemModal, setShowAddFinancialItemModal,
     editingFinancialItem, setEditingFinancialItem,
-    showEditProfileModal, setShowEditProfileModal
+    showEditProfileModal, setShowEditProfileModal,
+    // Добавляем новые переменные в контекст
+    showAddDebtModal, setShowAddDebtModal,
+    editingDebt, setEditingDebt,
+    showAddBudgetModal, setShowAddBudgetModal,
+    editingBudget, setEditingBudget,
+    showAddGoalModal, setShowAddGoalModal,
+    editingGoal, setEditingGoal,
+    // Добавляем новую функцию
+    closeAllModals,
+    showAddCategoryModal, setShowAddCategoryModal,
+    editingCategory, setEditingCategory
   }), [
-    activeTab, currentScreen, selectedFinancialItem, isDarkMode, transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, selectedPeriod, dateRange, showAddTransaction, editingTransaction, newTransaction, userProfile, currencyCode, isDataLoaded, currencySymbol, getAccountByName, loansWithBalance, depositsWithBalance, getFilteredTransactions, totalIncome, totalExpenses, totalBudget, totalSavingsBalance, totalPlannedBudget, totalSpentOnBudgets, showAddFinancialItemModal, editingFinancialItem, showEditProfileModal
+    activeTab, currentScreen, selectedFinancialItem, isDarkMode, transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, selectedPeriod, dateRange, showAddTransaction, editingTransaction, newTransaction, userProfile, currencyCode, isDataLoaded, currencySymbol, getAccountByName, loansWithBalance, depositsWithBalance, getFilteredTransactions, totalIncome, totalExpenses, totalBudget, totalSavingsBalance, totalPlannedBudget, totalSpentOnBudgets, showAddFinancialItemModal, editingFinancialItem, showEditProfileModal, showAddDebtModal, editingDebt, showAddBudgetModal, editingBudget, showAddGoalModal, editingGoal, closeAllModals, showAddCategoryModal, editingCategory
   ]);
 
   return (
@@ -327,6 +408,10 @@ export const AppContextProvider = ({ children }) => {
   );
 };
 
+/**
+ * Хук для удобного доступа к контексту приложения.
+ * @returns {object} - Объект контекста.
+ */
 export const useAppContext = () => {
   const context = useContext(AppContext);
   if (context === null) {

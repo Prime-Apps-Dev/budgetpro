@@ -5,6 +5,11 @@ import { motion } from 'framer-motion';
 import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 
+/**
+ * Компонент экрана "Мои кредиты".
+ * Позволяет пользователю просматривать свои кредиты, добавлять новые и удалять существующие.
+ * @returns {JSX.Element}
+ */
 const MyLoansListScreen = () => {
   const {
     loansWithBalance: loans,
@@ -18,21 +23,41 @@ const MyLoansListScreen = () => {
   const [isLongPress, setIsLongPress] = useState(false);
   const pressTimer = useRef(null);
 
+  /**
+   * Возвращает компонент иконки по имени.
+   * @param {string} iconName - Имя иконки.
+   * @returns {React.Component} - Компонент иконки.
+   */
   const getIconComponent = (iconName) => {
     return ICONS[iconName] || ICONS.MinusCircle;
   };
 
+  /**
+   * Обрабатывает клик по элементу списка, открывая детали.
+   * @param {object} item - Объект кредита.
+   */
   const handleItemClick = (item) => {
     if (isLongPress) return;
+    console.log('Нажат элемент списка кредитов:', item.name);
     setSelectedFinancialItem(item);
   };
 
+  /**
+   * Обрабатывает удаление кредита.
+   * @param {number} loanId - ID кредита для удаления.
+   */
   const handleDelete = (loanId) => {
     if (window.confirm('Вы уверены, что хотите удалить этот кредит?')) {
+      console.log('Кредит удален:', loanId);
       setLoans(prevLoans => prevLoans.filter(loan => loan.id !== loanId));
     }
   };
 
+  /**
+   * Обрабатывает начало долгого нажатия.
+   * @param {Event} e - Событие.
+   * @param {object} loan - Объект кредита.
+   */
   const handlePressStart = (e, loan) => {
     if (e.button === 2) {
       return;
@@ -43,6 +68,9 @@ const MyLoansListScreen = () => {
     }, 500);
   };
 
+  /**
+   * Обрабатывает завершение нажатия.
+   */
   const handlePressEnd = () => {
     clearTimeout(pressTimer.current);
     pressTimer.current = null;
@@ -63,6 +91,7 @@ const MyLoansListScreen = () => {
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Мои кредиты</h2>
         <motion.button
           onClick={() => {
+            console.log('Нажата кнопка "Добавить кредит"');
             setSelectedFinancialItem(null);
             setShowAddFinancialItemModal(true);
           }}

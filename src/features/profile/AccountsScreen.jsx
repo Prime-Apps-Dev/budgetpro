@@ -5,6 +5,11 @@ import { motion } from 'framer-motion';
 import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 
+/**
+ * Компонент экрана "Счета".
+ * Позволяет пользователю управлять своими счетами: добавлять, редактировать и удалять.
+ * @returns {JSX.Element}
+ */
 const AccountsScreen = () => {
   const { accounts, setAccounts, setCurrentScreen } = useAppContext();
   const [showAddAccount, setShowAddAccount] = useState(false);
@@ -24,10 +29,18 @@ const AccountsScreen = () => {
 
   const colors = ['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#06b6d4'];
   
+  /**
+   * Возвращает компонент иконки по имени.
+   * @param {string} name - Имя иконки.
+   * @returns {React.Component} - Компонент иконки.
+   */
   const getIcon = (name) => {
     return ICONS[name] || ICONS.CreditCard;
   };
 
+  /**
+   * Обрабатывает добавление нового счета.
+   */
   const handleAddAccount = () => {
     if (newAccount.name.trim()) {
       const account = {
@@ -41,6 +54,9 @@ const AccountsScreen = () => {
     }
   };
 
+  /**
+   * Обрабатывает обновление существующего счета.
+   */
   const handleUpdateAccount = () => {
     if (editingAccount && editingAccount.name.trim()) {
       const updatedAccount = {
@@ -54,6 +70,10 @@ const AccountsScreen = () => {
     }
   };
 
+  /**
+   * Обрабатывает удаление счета.
+   * @param {number} accountId - ID счета для удаления.
+   */
   const handleDeleteAccount = (accountId) => {
     if (accounts.length > 1) {
       setAccounts(accounts.filter(acc => acc.id !== accountId));

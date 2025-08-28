@@ -6,6 +6,11 @@ import { motion } from 'framer-motion';
 import { whileHover, whileTap, spring, zoomInOut } from '../utils/motion';
 import { useAppContext } from '../context/AppContext';
 
+/**
+ * Компонент главного экрана приложения.
+ * Отображает общие финансовые показатели и последние транзакции.
+ * @returns {JSX.Element}
+ */
 const HomeScreen = () => {
   const {
     totalIncome,

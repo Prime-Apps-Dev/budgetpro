@@ -5,6 +5,11 @@ import { motion } from 'framer-motion';
 import { spring, whileTap } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 
+/**
+ * Компонент экрана "Мои финансовые продукты".
+ * Предоставляет навигацию к спискам кредитов и депозитов.
+ * @returns {JSX.Element}
+ */
 const MyFinancialProductsScreen = () => {
   const { setCurrentScreen } = useAppContext();
 

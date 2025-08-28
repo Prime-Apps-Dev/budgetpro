@@ -2,7 +2,14 @@
 import React from 'react';
 import { ICONS } from '../icons';
 import { useAppContext } from '../../context/AppContext';
+import { motion } from 'framer-motion';
+import { spring, whileTap } from '../../utils/motion';
 
+/**
+ * Компонент основной навигационной панели.
+ * Позволяет пользователю переключаться между вкладками и открывать модальное окно добавления транзакции.
+ * @returns {JSX.Element}
+ */
 const MainNavigation = () => {
   const {
     activeTab,
@@ -10,15 +17,17 @@ const MainNavigation = () => {
     setShowAddTransaction,
     setEditingTransaction,
     setCurrentScreen,
-    showAddTransaction,
-    editingTransaction
+    closeAllModals
   } = useAppContext();
 
+  /**
+   * Обрабатывает клик по вкладке навигации.
+   * @param {string} tabName - Имя вкладки.
+   */
   const handleTabClick = (tabName) => {
+    closeAllModals();
     setActiveTab(tabName);
     setCurrentScreen('');
-    setShowAddTransaction(false);
-    setEditingTransaction(null);
   };
 
   return (
@@ -27,7 +36,7 @@ const MainNavigation = () => {
         <button
           onClick={() => handleTabClick('home')}
           className={`flex flex-col items-center p-2 ${
-            activeTab === 'home' && !showAddTransaction && !editingTransaction ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+            activeTab === 'home' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
           }`}
         >
           <ICONS.Home className="w-6 h-6" />
@@ -37,27 +46,30 @@ const MainNavigation = () => {
         <button
           onClick={() => handleTabClick('analytics')}
           className={`flex flex-col items-center p-2 ${
-            activeTab === 'analytics' && !showAddTransaction && !editingTransaction ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+            activeTab === 'analytics' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
           }`}
         >
           <ICONS.PieChart className="w-6 h-6" />
           <span className="text-xs mt-1">Аналитика</span>
         </button>
 
-        <button
+        <motion.button
           onClick={() => {
+            console.log('Нажата кнопка "Добавить транзакцию"');
             setShowAddTransaction(true);
             setEditingTransaction(null);
           }}
           className="flex flex-col items-center p-2 bg-blue-600 rounded-full text-white mx-2"
+          whileTap={whileTap}
+          transition={spring}
         >
           <ICONS.PlusCircle className="w-8 h-8" />
-        </button>
+        </motion.button>
 
         <button
           onClick={() => handleTabClick('savings')}
           className={`flex flex-col items-center p-2 ${
-            activeTab === 'savings' && !showAddTransaction && !editingTransaction ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+            activeTab === 'savings' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
           }`}
         >
           <ICONS.PiggyBank className="w-6 h-6" />
@@ -67,7 +79,7 @@ const MainNavigation = () => {
         <button
           onClick={() => handleTabClick('profile')}
           className={`flex flex-col items-center p-2 ${
-            activeTab === 'profile' && !showAddTransaction && !editingTransaction ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+            activeTab === 'profile' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
           }`}
         >
           <ICONS.User className="w-6 h-6" />

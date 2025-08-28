@@ -1,30 +1,31 @@
 // src/App.jsx
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import MainNavigation from './components/ui/MainNavigation';
-import HomeScreen from './pages/HomeScreen';
-import AnalyticsScreen from './pages/AnalyticsScreen';
-import SavingsScreen from './pages/SavingsScreen';
-import ProfileScreen from './pages/ProfileScreen';
 import AddEditTransactionModal from './components/modals/AddEditTransactionModal';
 import AddFinancialItemModal from './components/modals/AddFinancialItemModal';
 import LoanDepositDetailModal from './components/modals/LoanDepositDetailModal';
 import EditProfileModal from './components/modals/EditProfileModal';
-import MyLoansListScreen from './features/financialProducts/MyLoansListScreen';
-import MyDepositsListScreen from './features/financialProducts/MyDepositsListScreen';
-import MyFinancialProductsScreen from './features/financialProducts/MyFinancialProductsScreen';
-import DebtsScreen from './features/profile/DebtsScreen';
-import BudgetPlanningScreen from './features/profile/BudgetPlanningScreen';
-import AccountsScreen from './features/profile/AccountsScreen';
-import CategoriesScreen from './features/profile/CategoriesScreen';
-import CurrencyScreen from './features/profile/CurrencyScreen';
-import FinancialGoalsScreen from './features/profile/FinancialGoalsScreen';
-import SettingsScreen from './features/profile/SettingsScreen';
-import TransactionHistoryScreen from './features/profile/TransactionHistoryScreen';
+import AddEditDebtModal from './components/modals/AddEditDebtModal';
+import AddEditBudgetModal from './components/modals/AddEditBudgetModal';
+import AddEditFinancialGoalModal from './components/modals/AddEditFinancialGoalModal';
+import AddEditCategoryModal from './components/modals/AddEditCategoryModal';
+import ModalPortal from './components/modals/ModalPortal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeInOut } from './utils/motion';
 import { useAppContext } from './context/AppContext';
 
-const AppContent = () => {
+// Динамический импорт компонентов для Code Splitting и Lazy Loading.
+const HomeScreen = lazy(() => import('./pages/HomeScreen'));
+const AnalyticsScreen = lazy(() => import('./pages/AnalyticsScreen'));
+const SavingsScreen = lazy(() => import('./pages/SavingsScreen'));
+const ProfileScreen = lazy(() => import('./pages/ProfileScreen'));
+
+/**
+ * Основной компонент-контейнер приложения, содержащий логику рендеринга
+ * экранов и модальных окон.
+ * @returns {JSX.Element}
+ */
+const App = () => {
   const {
     activeTab,
     currentScreen,
@@ -35,57 +36,50 @@ const AppContent = () => {
     selectedFinancialItem,
     showAddFinancialItemModal,
     showEditProfileModal,
+    showAddDebtModal,
+    editingDebt,
+    showAddBudgetModal,
+    editingBudget,
+    showAddGoalModal,
+    editingGoal,
+    showAddCategoryModal,
+    editingCategory
   } = useAppContext();
 
+  /**
+   * Определяет, какой экран должен быть отрендерен,
+   * основываясь на текущей вкладке и вложенном экране.
+   * @returns {JSX.Element|null}
+   */
   const renderScreen = () => {
-    if (currentScreen) {
-      switch (currentScreen) {
-        case 'edit-profile':
-          return null; // EditProfileModal теперь рендерится отдельно
-        case 'financial-goals':
-          return <FinancialGoalsScreen />;
-        case 'transaction-history':
-          return <TransactionHistoryScreen />;
-        case 'accounts':
-          return <AccountsScreen />;
-        case 'categories':
-          return <CategoriesScreen />;
-        case 'budget-planning':
-          return <BudgetPlanningScreen />;
-        case 'debts':
-          return <DebtsScreen />;
-        case 'my-financial-products':
-          return <MyFinancialProductsScreen />;
-        case 'loans-list':
-          return <MyLoansListScreen />;
-        case 'deposits-list':
-          return <MyDepositsListScreen />;
-        case 'loan-detail':
-        case 'deposit-detail':
-          return null; // LoanDepositDetailModal теперь рендерится отдельно
-        case 'settings':
-          return <SettingsScreen />;
-        case 'add-financial-item':
-        case 'edit-financial-item':
-          return null; // AddFinancialItemModal теперь рендерится отдельно
-        case 'select-currency':
-          return <CurrencyScreen />;
-        default:
-          return null;
-      }
-    } else {
-      switch (activeTab) {
-        case 'home':
-          return <HomeScreen />;
-        case 'analytics':
-          return <AnalyticsScreen />;
-        case 'savings':
-          return <SavingsScreen />;
-        case 'profile':
-          return <ProfileScreen />;
-        default:
-          return <HomeScreen />;
-      }
+    switch (currentScreen) {
+      case 'financial-goals':
+      case 'transaction-history':
+      case 'accounts':
+      case 'categories':
+      case 'budget-planning':
+      case 'debts':
+      case 'settings':
+      case 'select-currency':
+      case 'my-financial-products':
+      case 'loans-list':
+      case 'deposits-list':
+        // Все вложенные экраны профиля рендерятся внутри ProfileScreen.
+        return <ProfileScreen />;
+      default:
+        // Если нет вложенного экрана, рендерим компонент, соответствующий активной вкладке.
+        switch (activeTab) {
+          case 'home':
+            return <HomeScreen />;
+          case 'analytics':
+            return <AnalyticsScreen />;
+          case 'savings':
+            return <SavingsScreen />;
+          case 'profile':
+            return <ProfileScreen />;
+          default:
+            return <HomeScreen />;
+        }
     }
   };
 
@@ -98,65 +92,71 @@ const AppContent = () => {
       </div>
     );
   }
-  
-  const isAnyModalOpen = (
-    showAddTransaction ||
-    editingTransaction ||
-    showAddFinancialItemModal ||
-    showEditProfileModal ||
-    selectedFinancialItem
-  );
 
   return (
     <div className={`max-w-md mx-auto min-h-screen relative overflow-hidden ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-100'}`}>
-      <AnimatePresence>
-        {isAnyModalOpen && (
-          <motion.div
-            className="fixed inset-0 z-40"
-            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-            animate={{ opacity: 1, backdropFilter: 'blur(8px)' }}
-            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-            transition={{ type: "tween", duration: 0.3 }}
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence mode="wait">
+      <Suspense fallback={
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-gray-500 dark:text-gray-400">Загрузка экрана...</div>
+        </div>
+      }>
         <motion.div
           key={activeTab + currentScreen}
           variants={fadeInOut}
           initial="initial"
           animate="animate"
-          exit="exit"
         >
           {renderScreen()}
         </motion.div>
-      </AnimatePresence>
+      </Suspense>
 
       <MainNavigation />
       
-      <AnimatePresence>
-        {(showAddTransaction || editingTransaction) && (
-          <AddEditTransactionModal key="add-edit-transaction-modal" />
-        )}
-        {showAddFinancialItemModal && (
-          <AddFinancialItemModal key="add-financial-item-modal" />
-        )}
-        {selectedFinancialItem && (
-          <LoanDepositDetailModal key="loan-deposit-detail-modal" />
-        )}
-        {showEditProfileModal && (
-          <EditProfileModal key="edit-profile-modal" />
-        )}
-      </AnimatePresence>
+      <ModalPortal>
+        <AnimatePresence>
+          {(showAddTransaction || editingTransaction) && (
+            <Suspense fallback={null}>
+              <AddEditTransactionModal key="add-edit-transaction-modal" />
+            </Suspense>
+          )}
+          {showAddFinancialItemModal && (
+            <Suspense fallback={null}>
+              <AddFinancialItemModal key="add-financial-item-modal" />
+            </Suspense>
+          )}
+          {selectedFinancialItem && (
+            <Suspense fallback={null}>
+              <LoanDepositDetailModal key="loan-deposit-detail-modal" />
+            </Suspense>
+          )}
+          {showEditProfileModal && (
+            <Suspense fallback={null}>
+              <EditProfileModal key="edit-profile-modal" />
+            </Suspense>
+          )}
+          {(showAddDebtModal || editingDebt) && (
+            <Suspense fallback={null}>
+              <AddEditDebtModal key="add-edit-debt-modal" />
+            </Suspense>
+          )}
+          {(showAddBudgetModal || editingBudget) && (
+            <Suspense fallback={null}>
+              <AddEditBudgetModal key="add-edit-budget-modal" />
+            </Suspense>
+          )}
+          {(showAddGoalModal || editingGoal) && (
+            <Suspense fallback={null}>
+              <AddEditFinancialGoalModal key="add-edit-financial-goal-modal" />
+            </Suspense>
+          )}
+          {(showAddCategoryModal || editingCategory) && (
+            <Suspense fallback={null}>
+              <AddEditCategoryModal key="add-edit-category-modal" />
+            </Suspense>
+          )}
+        </AnimatePresence>
+      </ModalPortal>
     </div>
-  );
-};
-
-const App = () => {
-  return (
-    <AppContent />
   );
 };
 

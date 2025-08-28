@@ -5,7 +5,15 @@ import { motion } from 'framer-motion';
 import { spring } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 
-const TransactionItem = memo(({ transaction }) => {
+/**
+ * Компонент для отображения отдельной транзакции.
+ * Использует `React.memo` для предотвращения ненужных перерисовок.
+ * @param {object} props - Свойства компонента.
+ * @param {object} props.transaction - Объект транзакции.
+ * @param {object} [props.style] - Стили для виртуализации списка.
+ * @returns {JSX.Element}
+ */
+const TransactionItem = memo(({ transaction, style }) => {
   const {
     transactions,
     setTransactions,
@@ -32,8 +40,12 @@ const TransactionItem = memo(({ transaction }) => {
   const isDepositTransaction = transaction.category === 'Пополнение депозита' || transaction.category === 'Снятие с депозита';
   const isLoanTransaction = transaction.category === 'Погашение кредита';
 
+  /**
+   * Обрабатывает удаление транзакции.
+   */
   const handleDelete = () => {
     if (window.confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
+      console.log('Вызвано удаление транзакции:', transaction.id);
       setTransactions(prevTransactions => prevTransactions.filter(t => t.id !== transaction.id));
 
       if (isDepositTransaction && transaction.financialItemId) {
@@ -60,6 +72,10 @@ const TransactionItem = memo(({ transaction }) => {
     }
   };
 
+  /**
+   * Обрабатывает начало нажатия (долгое нажатие для удаления).
+   * @param {Event} e - Событие мыши или касания.
+   */
   const handlePressStart = (e) => {
     if (e.button === 2) { // Запрещаем контекстное меню на ПК
       e.preventDefault();
@@ -70,21 +86,29 @@ const TransactionItem = memo(({ transaction }) => {
     clearTimeout(pressTimer.current);
 
     pressTimer.current = setTimeout(() => {
+      console.log('Долгое нажатие (удаление):', transaction.id);
       handleDelete();
       pressTimer.current = null; // Очищаем таймер после выполнения
     }, longPressThreshold);
   };
 
+  /**
+   * Обрабатывает завершение нажатия (короткое нажатие для редактирования).
+   */
   const handlePressEnd = () => {
     if (pressTimer.current) {
       clearTimeout(pressTimer.current);
       pressTimer.current = null;
       // Если таймер был очищен до срабатывания, это был клик/короткое касание
+      console.log('Короткое нажатие (редактирование):', transaction.id);
       setEditingTransaction(transaction);
       setShowAddTransaction(true);
     }
   };
 
+  /**
+   * Обрабатывает отмену нажатия.
+   */
   const handlePressCancel = () => {
     clearTimeout(pressTimer.current);
     pressTimer.current = null;
@@ -92,6 +116,7 @@ const TransactionItem = memo(({ transaction }) => {
 
   return (
     <motion.div
+      style={style}
       className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl dark:bg-gray-800 cursor-pointer"
       onMouseDown={handlePressStart}
       onMouseUp={handlePressEnd}

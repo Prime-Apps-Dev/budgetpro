@@ -5,6 +5,11 @@ import { motion } from 'framer-motion';
 import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 
+/**
+ * Компонент экрана "Мои депозиты".
+ * Позволяет пользователю просматривать свои депозиты, добавлять новые и удалять существующие.
+ * @returns {JSX.Element}
+ */
 const MyDepositsListScreen = () => {
   const {
     depositsWithBalance: deposits,
@@ -18,21 +23,41 @@ const MyDepositsListScreen = () => {
   const [isLongPress, setIsLongPress] = useState(false);
   const pressTimer = useRef(null);
 
+  /**
+   * Возвращает компонент иконки по имени.
+   * @param {string} iconName - Имя иконки.
+   * @returns {React.Component} - Компонент иконки.
+   */
   const getIconComponent = (iconName) => {
     return ICONS[iconName] || ICONS.Banknote;
   };
 
+  /**
+   * Обрабатывает клик по элементу списка, открывая детали.
+   * @param {object} item - Объект депозита.
+   */
   const handleItemClick = (item) => {
     if (isLongPress) return;
+    console.log('Нажат элемент списка депозитов:', item.name);
     setSelectedFinancialItem(item);
   };
 
+  /**
+   * Обрабатывает удаление депозита.
+   * @param {number} depositId - ID депозита для удаления.
+   */
   const handleDelete = (depositId) => {
     if (window.confirm('Вы уверены, что хотите удалить этот депозит?')) {
+      console.log('Депозит удален:', depositId);
       setDeposits(prevDeposits => prevDeposits.filter(deposit => deposit.id !== depositId));
     }
   };
 
+  /**
+   * Обрабатывает начало долгого нажатия.
+   * @param {Event} e - Событие.
+   * @param {object} deposit - Объект депозита.
+   */
   const handlePressStart = (e, deposit) => {
     if (e.button === 2) {
       return;
@@ -43,10 +68,13 @@ const MyDepositsListScreen = () => {
     }, 500);
   };
 
+  /**
+   * Обрабатывает завершение нажатия.
+   */
   const handlePressEnd = () => {
-    clearTimeout(pressTimer.current);
-    pressTimer.current = null;
-    setIsLongPress(false);
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+      setIsLongPress(false);
   };
 
   return (
@@ -63,6 +91,7 @@ const MyDepositsListScreen = () => {
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Мои депозиты</h2>
         <motion.button
           onClick={() => {
+            console.log('Нажата кнопка "Добавить депозит"');
             setSelectedFinancialItem(null);
             setShowAddFinancialItemModal(true);
           }}
