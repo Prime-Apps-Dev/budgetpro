@@ -1,4 +1,4 @@
-// src/components/screens/AnalyticsScreen.jsx
+// src/pages/AnalyticsScreen.jsx
 import React from 'react';
 import PieChartComponent from '../components/ui/PieChartComponent';
 import { ICONS } from '../components/icons';
@@ -46,7 +46,6 @@ const AnalyticsScreen = () => {
       <motion.div
         className="bg-white rounded-2xl p-6 shadow-sm mb-8"
         variants={zoomInOut}
-        initial="initial"
         whileInView="whileInView"
         viewport={{ once: false, amount: 0.2 }}
       >
@@ -94,7 +93,7 @@ const AnalyticsScreen = () => {
       </motion.div>
 
       <div className="space-y-8">
-        <motion.div variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: false, amount: 0.2 }}>
+        <motion.div variants={zoomInOut} whileInView="whileInView" viewport={{ once: false, amount: 0.2 }}>
           <PieChartComponent
             data={expensesByCategory}
             title="Расходы по категориям"
@@ -103,7 +102,7 @@ const AnalyticsScreen = () => {
           />
         </motion.div>
 
-        <motion.div variants={zoomInOut} initial="initial" whileInView="whileInView" viewport={{ once: false, amount: 0.2 }}>
+        <motion.div variants={zoomInOut} whileInView="whileInView" viewport={{ once: false, amount: 0.2 }}>
           <PieChartComponent
             data={incomeByCategory}
             title="Доходы по категориям"
@@ -115,7 +114,6 @@ const AnalyticsScreen = () => {
         <motion.div
           className="bg-white rounded-2xl p-6 shadow-sm"
           variants={zoomInOut}
-          initial="initial"
           whileInView="whileInView"
           viewport={{ once: false, amount: 0.2 }}
         >

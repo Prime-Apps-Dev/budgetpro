@@ -1,5 +1,5 @@
 // src/context/AppContext.jsx
-import React, { createContext, useState, useEffect, useMemo, useContext } from 'react';
+import React, { createContext, useState, useEffect, useMemo, useContext, useCallback } from 'react';
 import { ICONS } from '../components/icons';
 import { CURRENCIES, getCurrencySymbolByCode } from '../constants/currencies';
 
@@ -46,7 +46,13 @@ export const AppContextProvider = ({ children }) => {
     depositTransactions: [
       { id: 200, financialItemId: 1, type: 'income', amount: 5000, category: 'Пополнение депозита', account: 'Основной', date: '2025-08-25', description: 'Пополнение депозита "Депозит на отпуск"' }
     ],
-    currencyCode: 'RUB'
+    currencyCode: 'RUB',
+    userProfile: {
+      name: 'Пользователь',
+      email: 'user@example.com',
+      avatar: '👤',
+      avatarColor: '#3b82f6'
+    }
   }), []);
 
   const [activeTab, setActiveTab] = useState('home');
@@ -162,22 +168,22 @@ export const AppContextProvider = ({ children }) => {
     }
   }, [transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, userProfile, isDarkMode, isDataLoaded, currencyCode]);
 
-  const getAccountByName = (name) => {
+  const getAccountByName = useCallback((name) => {
     const account = accounts.find(acc => acc.name === name) || accounts[0];
     const iconComponent = ICONS[account?.iconName] || ICONS.CreditCard;
     return { ...account, icon: iconComponent };
-  };
+  }, [accounts]);
 
-  const getLoanBalance = (loanId) => {
+  const getLoanBalance = useCallback((loanId) => {
     const loan = loans.find(l => l.id === loanId);
     if (!loan) return 0;
     const repayments = loanTransactions
       .filter(t => t.financialItemId === loanId)
       .reduce((sum, t) => sum + t.amount, 0);
     return loan.amount - repayments;
-  };
+  }, [loans, loanTransactions]);
 
-  const getDepositBalance = (depositId) => {
+  const getDepositBalance = useCallback((depositId) => {
     const deposit = deposits.find(d => d.id === depositId);
     if (!deposit) return 0;
     const contributions = depositTransactions
@@ -187,23 +193,23 @@ export const AppContextProvider = ({ children }) => {
       .filter(t => t.financialItemId === depositId && t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
     return deposit.amount + contributions - withdrawals;
-  };
+  }, [deposits, depositTransactions]);
 
   const loansWithBalance = useMemo(() => {
     return loans.map(loan => ({
       ...loan,
       currentBalance: getLoanBalance(loan.id)
     }));
-  }, [loans, loanTransactions]);
+  }, [loans, getLoanBalance]);
 
   const depositsWithBalance = useMemo(() => {
     return deposits.map(deposit => ({
       ...deposit,
       currentAmount: getDepositBalance(deposit.id)
     }));
-  }, [deposits, depositTransactions]);
+  }, [deposits, getDepositBalance]);
 
-  const getFilteredTransactions = () => {
+  const getFilteredTransactions = useCallback(() => {
     let filtered = [...transactions];
     const now = new Date();
 
@@ -234,32 +240,46 @@ export const AppContextProvider = ({ children }) => {
     }
 
     return filtered;
-  };
+  }, [transactions, dateRange, selectedPeriod]);
 
-  const totalIncome = getFilteredTransactions()
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const filteredTransactions = getFilteredTransactions();
 
-  const totalExpenses = getFilteredTransactions()
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalBudget = totalIncome - totalExpenses;
-
-  const totalSavingsBalance = financialGoals
-    .filter(goal => goal.isSavings)
-    .reduce((sum, goal) => sum + goal.current, 0);
-
-  const totalPlannedBudget = budgets.reduce((sum, budget) => sum + budget.limit, 0);
-
-  const totalSpentOnBudgets = budgets.reduce((totalSpent, budget) => {
-    const spentForCategory = transactions
-      .filter(t => t.category === budget.category && t.type === 'expense')
+  const totalIncome = useMemo(() => {
+    return filteredTransactions
+      .filter(t => t.type === 'income')
       .reduce((sum, t) => sum + t.amount, 0);
-    return totalSpent + spentForCategory;
-  }, 0);
+  }, [filteredTransactions]);
 
-  const state = {
+  const totalExpenses = useMemo(() => {
+    return filteredTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+  }, [filteredTransactions]);
+
+  const totalBudget = useMemo(() => {
+    return totalIncome - totalExpenses;
+  }, [totalIncome, totalExpenses]);
+
+  const totalSavingsBalance = useMemo(() => {
+    return financialGoals
+      .filter(goal => goal.isSavings)
+      .reduce((sum, goal) => sum + goal.current, 0);
+  }, [financialGoals]);
+
+  const totalPlannedBudget = useMemo(() => {
+    return budgets.reduce((sum, budget) => sum + budget.limit, 0);
+  }, [budgets]);
+
+  const totalSpentOnBudgets = useMemo(() => {
+    return budgets.reduce((totalSpent, budget) => {
+      const spentForCategory = transactions
+        .filter(t => t.category === budget.category && t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+      return totalSpent + spentForCategory;
+    }, 0);
+  }, [budgets, transactions]);
+  
+  const state = useMemo(() => ({
     activeTab, setActiveTab,
     currentScreen, setCurrentScreen,
     selectedFinancialItem, setSelectedFinancialItem,
@@ -296,7 +316,9 @@ export const AppContextProvider = ({ children }) => {
     showAddFinancialItemModal, setShowAddFinancialItemModal,
     editingFinancialItem, setEditingFinancialItem,
     showEditProfileModal, setShowEditProfileModal
-  };
+  }), [
+    activeTab, currentScreen, selectedFinancialItem, isDarkMode, transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, selectedPeriod, dateRange, showAddTransaction, editingTransaction, newTransaction, userProfile, currencyCode, isDataLoaded, currencySymbol, getAccountByName, loansWithBalance, depositsWithBalance, getFilteredTransactions, totalIncome, totalExpenses, totalBudget, totalSavingsBalance, totalPlannedBudget, totalSpentOnBudgets, showAddFinancialItemModal, editingFinancialItem, showEditProfileModal
+  ]);
 
   return (
     <AppContext.Provider value={state}>

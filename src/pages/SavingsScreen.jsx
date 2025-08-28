@@ -1,4 +1,4 @@
-// src/components/screens/SavingsScreen.jsx
+// src/pages/SavingsScreen.jsx
 import React, { useState } from 'react';
 import { ICONS } from '../components/icons';
 import { motion } from 'framer-motion';
@@ -136,7 +136,6 @@ const SavingsScreen = () => {
         whileTap={whileTap}
         transition={spring}
         variants={zoomInOut}
-        initial="initial"
         whileInView="whileInView"
         viewport={{ once: false, amount: 0.2 }}
       >
@@ -179,7 +178,6 @@ const SavingsScreen = () => {
               key={goal.id} 
               className="bg-white rounded-2xl p-6 shadow-sm dark:bg-gray-800"
               variants={zoomInOut}
-              initial="initial"
               whileInView="whileInView"
               viewport={{ once: false, amount: 0.2 }}
             >

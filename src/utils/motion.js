@@ -1,8 +1,8 @@
 // src/utils/motion.js
 export const spring = {
-  type: "spring",
-  stiffness: 700,
-  damping: 40,
+  type: 'spring',
+  stiffness: 500,
+  damping: 30,
 };
 
 export const whileTap = { scale: 0.95 };
@@ -29,9 +29,9 @@ export const pressSlow = {
   transition: { duration: 0.5, type: "tween" },
 };
 
+
 export const zoomInOut = {
-  initial: { scale: 0.8, opacity: 0 },
-  whileInView: { scale: 1, opacity: 1 },
-  exit: { scale: 0.8, opacity: 0 },
-  transition: { type: "spring", stiffness: 100, damping: 20 },
+  // initial: { opacity: 0.5, scale: 0.9 }, // Удаляем initial, чтобы элементы были видны сразу
+  whileInView: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 200, damping: 20 } },
+  exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } },
 };

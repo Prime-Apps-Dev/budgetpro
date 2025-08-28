@@ -1,11 +1,11 @@
 // src/components/ui/TransactionItem.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import { ICONS } from '../icons';
 import { motion } from 'framer-motion';
 import { spring } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 
-const TransactionItem = ({ transaction }) => {
+const TransactionItem = memo(({ transaction }) => {
   const {
     transactions,
     setTransactions,
@@ -130,6 +130,6 @@ const TransactionItem = ({ transaction }) => {
       </div>
     </motion.div>
   );
-};
+});
 
 export default TransactionItem;

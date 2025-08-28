@@ -29,51 +29,63 @@ const AppContent = () => {
     activeTab,
     currentScreen,
     isDarkMode,
+    isDataLoaded,
     showAddTransaction,
     editingTransaction,
-    isDataLoaded,
     selectedFinancialItem,
     showAddFinancialItemModal,
     showEditProfileModal,
   } = useAppContext();
 
   const renderScreen = () => {
-    switch (currentScreen) {
-      case 'loans-list':
-        return <MyLoansListScreen />;
-      case 'deposits-list':
-        return <MyDepositsListScreen />;
-      case 'debts':
-        return <DebtsScreen />;
-      case 'my-financial-products':
-        return <MyFinancialProductsScreen />;
-      case 'budget-planning':
-        return <BudgetPlanningScreen />;
-      case 'financial-goals':
-        return <FinancialGoalsScreen />;
-      case 'transaction-history':
-        return <TransactionHistoryScreen />;
-      case 'accounts':
-        return <AccountsScreen />;
-      case 'categories':
-        return <CategoriesScreen />;
-      case 'settings':
-        return <SettingsScreen />;
-      case 'select-currency':
-        return <CurrencyScreen />;
-      default:
-        switch (activeTab) {
-          case 'home':
-            return <HomeScreen />;
-          case 'analytics':
-            return <AnalyticsScreen />;
-          case 'savings':
-            return <SavingsScreen />;
-          case 'profile':
-            return <ProfileScreen />;
-          default:
-            return <HomeScreen />;
-        }
+    if (currentScreen) {
+      switch (currentScreen) {
+        case 'edit-profile':
+          return null; // EditProfileModal теперь рендерится отдельно
+        case 'financial-goals':
+          return <FinancialGoalsScreen />;
+        case 'transaction-history':
+          return <TransactionHistoryScreen />;
+        case 'accounts':
+          return <AccountsScreen />;
+        case 'categories':
+          return <CategoriesScreen />;
+        case 'budget-planning':
+          return <BudgetPlanningScreen />;
+        case 'debts':
+          return <DebtsScreen />;
+        case 'my-financial-products':
+          return <MyFinancialProductsScreen />;
+        case 'loans-list':
+          return <MyLoansListScreen />;
+        case 'deposits-list':
+          return <MyDepositsListScreen />;
+        case 'loan-detail':
+        case 'deposit-detail':
+          return null; // LoanDepositDetailModal теперь рендерится отдельно
+        case 'settings':
+          return <SettingsScreen />;
+        case 'add-financial-item':
+        case 'edit-financial-item':
+          return null; // AddFinancialItemModal теперь рендерится отдельно
+        case 'select-currency':
+          return <CurrencyScreen />;
+        default:
+          return null;
+      }
+    } else {
+      switch (activeTab) {
+        case 'home':
+          return <HomeScreen />;
+        case 'analytics':
+          return <AnalyticsScreen />;
+        case 'savings':
+          return <SavingsScreen />;
+        case 'profile':
+          return <ProfileScreen />;
+        default:
+          return <HomeScreen />;
+      }
     }
   };
 
@@ -87,7 +99,6 @@ const AppContent = () => {
     );
   }
   
-  // Определяем, активно ли какое-либо модальное окно
   const isAnyModalOpen = (
     showAddTransaction ||
     editingTransaction ||
@@ -98,7 +109,6 @@ const AppContent = () => {
 
   return (
     <div className={`max-w-md mx-auto min-h-screen relative overflow-hidden ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-100'}`}>
-      {/* Затемняющий оверлей с размытием */}
       <AnimatePresence>
         {isAnyModalOpen && (
           <motion.div

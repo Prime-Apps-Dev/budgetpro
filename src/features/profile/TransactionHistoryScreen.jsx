@@ -1,4 +1,4 @@
-// src/components/screens/profile/TransactionHistoryScreen.jsx
+// src/features/profile/TransactionHistoryScreen.jsx
 import React, { useState } from 'react';
 import { ICONS } from '../../components/icons';
 import TransactionItem from '../../components/ui/TransactionItem';
@@ -10,12 +10,6 @@ const TransactionHistoryScreen = () => {
   const {
     transactions,
     setCurrentScreen,
-    getFilteredTransactions,
-    getAccountByName,
-    loans,
-    deposits,
-    loanTransactions,
-    depositTransactions,
     currencySymbol
   } = useAppContext();
 
