@@ -11,15 +11,7 @@ import { useAppContext } from '../../context/AppContext';
  * @returns {JSX.Element}
  */
 const AccountsScreen = () => {
-  const { accounts, setAccounts, goBack, navigateToScreen } = useAppContext();
-  const [showAddAccount, setShowAddAccount] = useState(false);
-  const [editingAccount, setEditingAccount] = useState(null);
-  const [newAccount, setNewAccount] = useState({
-    name: '',
-    type: 'bank',
-    iconName: 'CreditCard',
-    color: '#3b82f6'
-  });
+  const { accounts, setAccounts, goBack, navigateToScreen, setShowAddAccountModal, setEditingAccount } = useAppContext();
 
   const accountTypes = [
     { id: 'bank', name: 'Банковская карта', iconName: 'CreditCard' },
@@ -39,38 +31,6 @@ const AccountsScreen = () => {
   };
 
   /**
-   * Обрабатывает добавление нового счета.
-   */
-  const handleAddAccount = () => {
-    if (newAccount.name.trim()) {
-      const account = {
-        id: Date.now(),
-        ...newAccount,
-        iconName: accountTypes.find(t => t.id === newAccount.type).iconName
-      };
-      setAccounts([...accounts, account]);
-      setNewAccount({ name: '', type: 'bank', iconName: 'CreditCard', color: '#3b82f6' });
-      setShowAddAccount(false);
-    }
-  };
-
-  /**
-   * Обрабатывает обновление существующего счета.
-   */
-  const handleUpdateAccount = () => {
-    if (editingAccount && editingAccount.name.trim()) {
-      const updatedAccount = {
-        ...editingAccount,
-        iconName: accountTypes.find(t => t.id === editingAccount.type).iconName
-      };
-      setAccounts(accounts.map(acc =>
-        acc.id === editingAccount.id ? updatedAccount : acc
-      ));
-      setEditingAccount(null);
-    }
-  };
-
-  /**
    * Обрабатывает удаление счета.
    * @param {number} accountId - ID счета для удаления.
    */
@@ -79,98 +39,6 @@ const AccountsScreen = () => {
       setAccounts(accounts.filter(acc => acc.id !== accountId));
     }
   };
-
-  if (showAddAccount || editingAccount) {
-    const formData = editingAccount || newAccount;
-    const setFormData = editingAccount ? setEditingAccount : setNewAccount;
-    const isEditing = !!editingAccount;
-
-    return (
-      <div className="p-6 pb-24 bg-gray-50 min-h-screen">
-        <div className="flex items-center mb-8">
-          <motion.button
-            onClick={() => {
-              setShowAddAccount(false);
-              setEditingAccount(null);
-            }}
-            className="mr-4 p-2 rounded-full hover:bg-gray-200"
-            whileTap={whileTap}
-            transition={spring}
-          >
-            <ICONS.ChevronLeft className="w-6 h-6" />
-          </motion.button>
-          <h2 className="text-2xl font-bold text-gray-800">
-            {isEditing ? 'Редактировать счёт' : 'Добавить счёт'}
-          </h2>
-        </div>
-
-        <div className="space-y-8">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Название счёта</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Например: Основная карта"
-              className="w-full p-4 border border-gray-300 rounded-2xl"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Тип счёта</label>
-            <div className="space-y-3">
-              {accountTypes.map(type => {
-                const IconComponent = getIcon(type.iconName);
-                return (
-                  <motion.button
-                    key={type.id}
-                    onClick={() => setFormData({ ...formData, type: type.id, iconName: type.iconName })}
-                    className={`w-full p-4 rounded-2xl border-2 flex items-center ${
-                      formData.type === type.id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 bg-white'
-                    }`}
-                    whileTap={whileTap}
-                    transition={spring}
-                  >
-                    <IconComponent className="w-6 h-6 mr-4" />
-                    <span className="font-medium">{type.name}</span>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Цвет</label>
-            <div className="grid grid-cols-6 gap-3">
-              {colors.map(color => (
-                <motion.button
-                  key={color}
-                  onClick={() => setFormData({ ...formData, color })}
-                  className={`w-12 h-12 rounded-full ${
-                    formData.color === color ? 'ring-2 ring-gray-400' : ''
-                  }`}
-                  style={{ backgroundColor: color }}
-                  whileTap={whileTap}
-                  transition={spring}
-                />
-              ))}
-            </div>
-          </div>
-
-          <motion.button
-            onClick={isEditing ? handleUpdateAccount : handleAddAccount}
-            className="w-full bg-blue-600 text-white p-4 rounded-2xl font-semibold hover:bg-blue-700"
-            whileTap={whileTap}
-            transition={spring}
-          >
-            {isEditing ? 'Сохранить изменения' : 'Добавить счёт'}
-          </motion.button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen">
@@ -187,7 +55,10 @@ const AccountsScreen = () => {
           <h2 className="text-2xl font-bold text-gray-800">Счета</h2>
         </div>
         <motion.button
-          onClick={() => setShowAddAccount(true)}
+          onClick={() => {
+            setEditingAccount(null);
+            setShowAddAccountModal(true);
+          }}
           className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
           whileTap={{ scale: 0.8 }}
           transition={spring}
@@ -222,7 +93,10 @@ const AccountsScreen = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <motion.button
-                  onClick={() => setEditingAccount(account)}
+                  onClick={() => {
+                    setEditingAccount(account);
+                    setShowAddAccountModal(true);
+                  }}
                   className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"
                   whileTap={whileTap}
                   transition={spring}

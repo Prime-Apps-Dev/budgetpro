@@ -52,7 +52,7 @@ const ModalWrapper = ({ title, children, handleClose }) => {
         onClick={handleClose} // Закрытие по клику вне модалки
       >
         <motion.div
-          className={`relative w-full max-w-md rounded-t-3xl shadow-lg flex flex-col ${
+          className={`relative w-full max-w-md rounded-t-3xl shadow-lg flex flex-col max-h-[75vh] ${
             isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800'
           }`}
           variants={modalVariants}

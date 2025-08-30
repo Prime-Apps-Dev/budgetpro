@@ -30,12 +30,20 @@ const TransactionItem = memo(({ transaction, style }) => {
   const IconComponent = account?.icon || ICONS.Wallet;
 
   const pressTimer = useRef(null);
-  const longPressThreshold = 500;
+  const isSwiping = useRef(false);
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+  const longPressThreshold = 500; // ms
+  const swipeThreshold = 50; // px
 
   const isDepositTransaction = transaction.category === 'Пополнение депозита' || transaction.category === 'Снятие с депозита';
   const isLoanTransaction = transaction.category === 'Погашение кредита';
 
-  // Форматирование даты - только для сегодня/вчера
+  /**
+   * Форматирует дату для отображения.
+   * @param {string} dateString - Дата в формате строки.
+   * @returns {string} Отформатированная дата.
+   */
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const today = new Date();
@@ -51,6 +59,9 @@ const TransactionItem = memo(({ transaction, style }) => {
     }
   };
 
+  /**
+   * Обрабатывает удаление транзакции.
+   */
   const handleDelete = () => {
     if (window.confirm('Удалить транзакцию?')) {
       setTransactions(prevTransactions => prevTransactions.filter(t => t.id !== transaction.id));
@@ -78,45 +89,108 @@ const TransactionItem = memo(({ transaction, style }) => {
       }
     }
   };
-
-  const handlePressStart = (e) => {
-    if (e.button === 2) {
-      e.preventDefault();
-      return;
-    }
+  
+  /**
+   * Обрабатывает начало касания или нажатия мыши.
+   * @param {object} e - Объект события.
+   */
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    isSwiping.current = false;
     
+    // Запускаем таймер для обнаружения длинного нажатия
     clearTimeout(pressTimer.current);
     pressTimer.current = setTimeout(() => {
-      handleDelete();
+      // Это длинное нажатие, открываем редактирование
+      setEditingTransaction(transaction);
+      setShowAddTransaction(true);
       pressTimer.current = null;
     }, longPressThreshold);
   };
-
-  const handlePressEnd = () => {
-    if (pressTimer.current) {
+  
+  /**
+   * Обрабатывает движение пальца.
+   * @param {object} e - Объект события.
+   */
+  const handleTouchMove = (e) => {
+    if (touchStartX.current === null) return;
+    
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    const diffX = touchStartX.current - currentX;
+    const diffY = touchStartY.current - currentY;
+    
+    // Если движение больше по горизонтали, чем по вертикали, это свайп
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      isSwiping.current = true;
       clearTimeout(pressTimer.current);
-      pressTimer.current = null;
-      setEditingTransaction(transaction);
-      setShowAddTransaction(true);
+      // Предотвращаем стандартное поведение (прокрутку) только если это свайп
+      e.preventDefault();
+      
+      // Здесь можно добавить визуальный эффект сдвига
+      e.target.style.transform = `translateX(${-diffX}px)`;
+    } else {
+        // Иначе это прокрутка, сбрасываем все, чтобы не мешать ей
+        handleTouchCancel();
     }
   };
+  
+  /**
+   * Обрабатывает окончание касания.
+   */
+  const handleTouchEnd = (e) => {
+    const endX = e.changedTouches[0].clientX;
+    const diffX = touchStartX.current - endX;
+    
+    // Если это был свайп и он был достаточно длинным
+    if (isSwiping.current && Math.abs(diffX) > swipeThreshold) {
+      handleDelete();
+    }
+    
+    // Сбрасываем все состояния
+    handleTouchCancel();
+  };
 
-  const handlePressCancel = () => {
+  /**
+   * Сбрасывает все состояния касания.
+   */
+  const handleTouchCancel = () => {
     clearTimeout(pressTimer.current);
     pressTimer.current = null;
+    isSwiping.current = false;
+    touchStartX.current = null;
+    touchStartY.current = null;
+    // Сбрасываем трансформацию, если она была
+    if (event.target) {
+        event.target.style.transform = 'translateX(0)';
+    }
   };
 
   return (
     <motion.div
       style={style}
       className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-150"
-      onMouseDown={handlePressStart}
-      onMouseUp={handlePressEnd}
-      onMouseLeave={handlePressCancel}
-      onTouchStart={handlePressStart}
-      onTouchEnd={handlePressEnd}
-      onTouchCancel={handlePressCancel}
-      onContextMenu={(e) => e.preventDefault()}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
+      onMouseDown={(e) => {
+        // Имитируем длинное нажатие для десктопов
+        clearTimeout(pressTimer.current);
+        pressTimer.current = setTimeout(() => {
+          setEditingTransaction(transaction);
+          setShowAddTransaction(true);
+          pressTimer.current = null;
+        }, longPressThreshold);
+      }}
+      onMouseUp={() => clearTimeout(pressTimer.current)}
+      onMouseLeave={() => clearTimeout(pressTimer.current)}
+      onContextMenu={(e) => {
+        // Обработка удаления по правому клику для десктопов
+        e.preventDefault();
+        handleDelete();
+      }}
       whileTap={{ scale: 0.98 }}
       transition={spring}
     >

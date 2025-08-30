@@ -30,6 +30,8 @@ const MyLoansListScreen = lazy(() => import('./features/financialProducts/MyLoan
 const MyDepositsListScreen = lazy(() => import('./features/financialProducts/MyDepositsListScreen'));
 const MyFinancialProductsScreen = lazy(() => import('./features/financialProducts/MyFinancialProductsScreen'));
 const CurrencyScreen = lazy(() => import('./features/profile/CurrencyScreen'));
+// NEW: Import the new modal component
+const AddEditAccountModal = lazy(() => import('./components/modals/AddEditAccountModal'));
 
 /**
  * Основной компонент-контейнер приложения, содержащий логику рендеринга
@@ -54,7 +56,9 @@ const App = () => {
     showAddGoalModal,
     editingGoal,
     showAddCategoryModal,
-    editingCategory
+    editingCategory,
+    // NEW: state for the new modal
+    showAddAccountModal,
   } = useAppContext();
 
   /**
@@ -126,7 +130,6 @@ const App = () => {
         </div>
       }>
         <motion.div
-          key={activeTab + currentScreen}
           variants={fadeInOut}
           initial="initial"
           animate="animate"
@@ -177,6 +180,12 @@ const App = () => {
           {(showAddCategoryModal || editingCategory) && (
             <Suspense fallback={null}>
               <AddEditCategoryModal key="add-edit-category-modal" />
+            </Suspense>
+          )}
+          {/* NEW: Render the new modal */}
+          {showAddAccountModal && (
+            <Suspense fallback={null}>
+              <AddEditAccountModal key="add-edit-account-modal" />
             </Suspense>
           )}
         </AnimatePresence>

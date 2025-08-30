@@ -17,7 +17,7 @@ const SavingsScreen = () => {
     setTransactions,
     totalSavingsBalance,
     currencySymbol,
-    setShowAddFinancialGoalModal
+    setShowAddGoalModal // ИСПРАВЛЕНО: Имя функции изменено на правильное
   } = useAppContext();
   
   const [savingsAction, setSavingsAction] = useState(null);
@@ -340,7 +340,7 @@ const SavingsScreen = () => {
                   Создайте первую копилку для достижения ваших целей
                 </p>
                 <motion.button
-                  onClick={() => setShowAddFinancialGoalModal(true)}
+                  onClick={() => setShowAddGoalModal(true)}
                   className="px-6 py-2 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 transition-colors"
                   whileTap={whileTap}
                   transition={spring}
@@ -355,7 +355,7 @@ const SavingsScreen = () => {
 
       {/* Плавающая кнопка добавления */}
       <motion.button
-        onClick={() => setShowAddFinancialGoalModal(true)}
+        onClick={() => setShowAddGoalModal(true)}
         className="fixed bottom-20 right-6 w-14 h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full flex items-center justify-center transition-colors z-10"
         whileTap={whileTap}
         whileHover={{ scale: 1.05 }}

@@ -1,5 +1,26 @@
 @import "tailwindcss";
 
+/* Отключаем скроллбар для Webkit-браузеров (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* Отключаем скроллбар для Firefox */
+html, body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;  /* Отключаем скроллбар для Internet Explorer и Edge */
+}
+
+/* Отключаем выделение текста и элементов во всем приложении */
+body {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none;
+}
+
 .dark {
   background-color: #1a202c;
   color: #a0aec0;

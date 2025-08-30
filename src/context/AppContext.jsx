@@ -117,6 +117,9 @@ export const AppContextProvider = ({ children }) => {
   // Стек для истории экранов
   const [screenHistory, setScreenHistory] = useState([]);
 
+  // НОВЫЕ СТАТУСЫ ДЛЯ МОДАЛЬНЫХ ОКОН
+  const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+
   // Мемоизируем символ валюты, чтобы он пересчитывался только при изменении кода валюты.
   const currencySymbol = useMemo(() => getCurrencySymbolByCode(currencyCode), [currencyCode]);
 
@@ -352,6 +355,7 @@ export const AppContextProvider = ({ children }) => {
     setEditingGoal(null);
     setShowAddCategoryModal(false);
     setEditingCategory(null);
+    setShowAddAccountModal(false);
   }, []);
 
   /**
@@ -464,9 +468,11 @@ export const AppContextProvider = ({ children }) => {
     goBack,
     screenHistory,
     getMonthlyTransactionsCount,
-    daysActive
+    daysActive,
+    // НОВЫЕ СТАТУСЫ ДЛЯ МОДАЛЬНЫХ ОКОН
+    showAddAccountModal, setShowAddAccountModal,
   }), [
-    activeTab, currentScreen, selectedFinancialItem, isDarkMode, transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, selectedPeriod, dateRange, showAddTransaction, editingTransaction, newTransaction, userProfile, currencyCode, isDataLoaded, currencySymbol, getAccountByName, loansWithBalance, depositsWithBalance, getFilteredTransactions, totalIncome, totalExpenses, totalBudget, totalSavingsBalance, totalPlannedBudget, totalSpentOnBudgets, showAddFinancialItemModal, editingFinancialItem, showEditProfileModal, showAddDebtModal, editingDebt, showAddBudgetModal, editingBudget, showAddGoalModal, editingGoal, closeAllModals, showAddCategoryModal, editingCategory, transactionFilterType, navigateToTransactionHistory, navigateToScreen, goBack, screenHistory, getMonthlyTransactionsCount, daysActive
+    activeTab, currentScreen, selectedFinancialItem, isDarkMode, transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, selectedPeriod, dateRange, showAddTransaction, editingTransaction, newTransaction, userProfile, currencyCode, isDataLoaded, currencySymbol, getAccountByName, loansWithBalance, depositsWithBalance, getFilteredTransactions, totalIncome, totalExpenses, totalBudget, totalSavingsBalance, totalPlannedBudget, totalSpentOnBudgets, showAddFinancialItemModal, editingFinancialItem, showEditProfileModal, showAddDebtModal, editingDebt, showAddBudgetModal, editingBudget, showAddGoalModal, editingGoal, closeAllModals, showAddCategoryModal, editingCategory, transactionFilterType, navigateToTransactionHistory, navigateToScreen, goBack, screenHistory, getMonthlyTransactionsCount, daysActive, showAddAccountModal
   ]);
 
   return (

@@ -89,6 +89,7 @@ const BalanceWidget = ({ netBalance, totalDebts, currencySymbol }) => {
     } rounded-3xl p-6 text-white shadow-lg min-h-[160px] flex flex-col justify-between`}>
       {/* Декоративный элемент */}
       <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+      <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-4">
           <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm">

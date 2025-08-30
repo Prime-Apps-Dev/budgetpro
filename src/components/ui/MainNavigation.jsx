@@ -18,7 +18,26 @@ const MainNavigation = () => {
     setEditingTransaction,
     setCurrentScreen,
     closeAllModals,
-    screenHistory
+    screenHistory,
+    showAddFinancialItemModal,
+    setShowAddFinancialItemModal,
+    showAddDebtModal,
+    setShowAddDebtModal,
+    showAddBudgetModal,
+    setShowAddBudgetModal,
+    showAddGoalModal,
+    setShowAddGoalModal,
+    showAddCategoryModal,
+    setShowAddCategoryModal,
+    showAddAccountModal,
+    setShowAddAccountModal,
+    setEditingFinancialItem,
+    setEditingDebt,
+    setEditingBudget,
+    setEditingGoal,
+    setEditingCategory,
+    // ДОБАВЛЕНО: currentScreen
+    currentScreen 
   } = useAppContext();
 
   /**
@@ -32,6 +51,34 @@ const MainNavigation = () => {
     setCurrentScreen('');
     // Очищаем историю экранов, так как это корневая навигация
     screenHistory.length = 0;
+  };
+  
+  const handlePlusButtonClick = () => {
+    closeAllModals();
+    setEditingTransaction(null);
+    setEditingFinancialItem(null);
+    setEditingDebt(null);
+    setEditingBudget(null);
+    setEditingGoal(null);
+    setEditingCategory(null);
+
+    // Dynamic behavior based on the current screen
+    if (activeTab === 'profile' && currentScreen === 'accounts') {
+      setShowAddAccountModal(true);
+    } else if (activeTab === 'profile' && currentScreen === 'debts') {
+      setShowAddDebtModal(true);
+    } else if (activeTab === 'profile' && currentScreen === 'budget-planning') {
+      setShowAddBudgetModal(true);
+    } else if (activeTab === 'savings') {
+      setShowAddGoalModal(true);
+    } else if (activeTab === 'profile' && (currentScreen === 'my-financial-products' || currentScreen === 'loans-list' || currentScreen === 'deposits-list')) {
+      setShowAddFinancialItemModal(true);
+    } else if (activeTab === 'profile' && currentScreen === 'categories') {
+      setShowAddCategoryModal(true);
+    } else {
+      // Default behavior for home, analytics, transaction history, profile, settings
+      setShowAddTransaction(true);
+    }
   };
 
   return (
@@ -58,11 +105,7 @@ const MainNavigation = () => {
         </button>
 
         <motion.button
-          onClick={() => {
-            console.log('Нажата кнопка "Добавить транзакцию"');
-            setShowAddTransaction(true);
-            setEditingTransaction(null);
-          }}
+          onClick={handlePlusButtonClick}
           className="flex flex-col items-center p-2 bg-blue-600 rounded-full text-white mx-2"
           whileTap={whileTap}
           transition={spring}
