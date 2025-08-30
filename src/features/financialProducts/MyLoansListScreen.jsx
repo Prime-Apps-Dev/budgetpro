@@ -1,9 +1,57 @@
 // src/features/financialProducts/MyLoansListScreen.jsx
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { ICONS } from '../../components/icons';
 import { motion } from 'framer-motion';
 import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
+import FinancialItemCard from '../../components/ui/FinancialItemCard';
+
+/**
+ * Компонент-обертка для обработки долгого нажатия.
+ * @param {object} props - Свойства компонента.
+ * @param {object} props.item - Элемент данных.
+ * @param {function} props.onClick - Обработчик обычного клика.
+ * @param {function} props.onLongPress - Обработчик долгого нажатия.
+ * @param {React.ReactNode} props.children - Дочерние элементы.
+ */
+const LongPressWrapper = ({ item, onClick, onLongPress, children }) => {
+  const pressTimer = useRef(null);
+
+  const handlePressStart = (e) => {
+    if (e.button === 2) return;
+    
+    pressTimer.current = setTimeout(() => {
+      onLongPress(item.id);
+    }, 500);
+  };
+
+  const handlePressEnd = () => {
+    clearTimeout(pressTimer.current);
+    pressTimer.current = null;
+  };
+  
+  const handleClick = (e) => {
+    // Если таймер не сработал (быстрый клик), вызываем onClick
+    if (pressTimer.current) {
+      onClick(item);
+    }
+  }
+
+  return (
+    <motion.div
+      onMouseDown={handlePressStart}
+      onMouseUp={handlePressEnd}
+      onMouseLeave={handlePressEnd}
+      onTouchStart={handlePressStart}
+      onTouchEnd={handlePressEnd}
+      onClick={handleClick}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
 
 /**
  * Компонент экрана "Мои кредиты".
@@ -19,25 +67,12 @@ const MyLoansListScreen = () => {
     currencySymbol,
     setShowAddFinancialItemModal
   } = useAppContext();
-  
-  const [isLongPress, setIsLongPress] = useState(false);
-  const pressTimer = useRef(null);
-
-  /**
-   * Возвращает компонент иконки по имени.
-   * @param {string} iconName - Имя иконки.
-   * @returns {React.Component} - Компонент иконки.
-   */
-  const getIconComponent = (iconName) => {
-    return ICONS[iconName] || ICONS.MinusCircle;
-  };
 
   /**
    * Обрабатывает клик по элементу списка, открывая детали.
    * @param {object} item - Объект кредита.
    */
   const handleItemClick = (item) => {
-    if (isLongPress) return;
     console.log('Нажат элемент списка кредитов:', item.name);
     setSelectedFinancialItem(item);
   };
@@ -51,30 +86,6 @@ const MyLoansListScreen = () => {
       console.log('Кредит удален:', loanId);
       setLoans(prevLoans => prevLoans.filter(loan => loan.id !== loanId));
     }
-  };
-
-  /**
-   * Обрабатывает начало долгого нажатия.
-   * @param {Event} e - Событие.
-   * @param {object} loan - Объект кредита.
-   */
-  const handlePressStart = (e, loan) => {
-    if (e.button === 2) {
-      return;
-    }
-    pressTimer.current = setTimeout(() => {
-      setIsLongPress(true);
-      handleDelete(loan.id);
-    }, 500);
-  };
-
-  /**
-   * Обрабатывает завершение нажатия.
-   */
-  const handlePressEnd = () => {
-    clearTimeout(pressTimer.current);
-    pressTimer.current = null;
-    setIsLongPress(false);
   };
 
   return (
@@ -105,49 +116,53 @@ const MyLoansListScreen = () => {
 
       <div className="space-y-4">
         {loans?.length > 0 ? (
-          loans.map(loan => {
-            const IconComponent = getIconComponent(loan.iconName);
-            let monthlyPaymentText = '';
-            if (loan.loanPaymentType === 'annuity') {
-              monthlyPaymentText = `${loan.monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currencySymbol}/мес.`;
-            } else if (loan.paymentSchedule && loan.paymentSchedule.length > 0) {
-              const firstPayment = loan.paymentSchedule[0].monthlyPayment;
-              const lastPayment = loan.paymentSchedule[loan.paymentSchedule.length - 1].monthlyPayment;
-              monthlyPaymentText = `${firstPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} - ${lastPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currencySymbol}`;
-            }
+          loans.map((loan) => {
+            const progress = ((loan.amount - loan.currentBalance) / loan.amount) * 100;
+            const remainingMonths = loan.term - (loan.paymentHistory ? loan.paymentHistory.length : 0);
 
             return (
-              <motion.div 
-                key={loan.id} 
-                className="bg-white rounded-2xl p-6 shadow-sm flex items-center justify-between dark:bg-gray-800 cursor-pointer"
-                onMouseDown={(e) => handlePressStart(e, loan)}
-                onMouseUp={handlePressEnd}
-                onMouseLeave={handlePressEnd}
-                onTouchStart={(e) => handlePressStart(e, loan)}
-                onTouchEnd={handlePressEnd}
-                onClick={() => handleItemClick(loan)}
-                onContextMenu={(e) => e.preventDefault()}
-                whileTap={whileTap}
-                whileHover={whileHover}
-                transition={spring}
-                variants={zoomInOut}
-                initial="initial"
-                whileInView="whileInView"
-                viewport={{ once: false, amount: 0.2 }}
-              >
-                <div className="flex items-center">
-                  <IconComponent className="w-8 h-8 text-red-500 mr-4" />
-                  <div>
-                    <div className="font-medium text-gray-800 dark:text-gray-200">{loan.name}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{monthlyPaymentText}</div>
-                    <div className="text-xs text-gray-400 dark:text-gray-500">Остаток: {loan.currentBalance.toLocaleString()} {currencySymbol}</div>
-                  </div>
-                </div>
-              </motion.div>
+              <LongPressWrapper key={loan.id} item={loan} onClick={handleItemClick} onLongPress={handleDelete}>
+                <FinancialItemCard
+                  title={loan.name}
+                  subtitle={`${loan.interestRate}% на ${loan.term} мес.`}
+                  amountText={`${loan.currentBalance.toLocaleString()} ${currencySymbol}`}
+                  infoText={`Осталось ${remainingMonths} мес.`}
+                  progress={progress}
+                  gradient="bg-gradient-to-br from-red-500 via-red-600 to-red-700"
+                  iconName={loan.iconName || 'MinusCircle'}
+                  type="loan"
+                />
+              </LongPressWrapper>
             );
           })
         ) : (
-          <p className="text-center text-gray-500 dark:text-gray-400">У вас нет кредитов.</p>
+          <motion.div
+            className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center"
+            variants={zoomInOut}
+            whileInView="whileInView"
+            viewport={{ once: false, amount: 0.2 }}
+          >
+            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+              <ICONS.MinusCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+              Пока нет кредитов
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
+              Добавьте первый кредит, чтобы начать отслеживание
+            </p>
+            <motion.button
+              onClick={() => {
+                setSelectedFinancialItem(null);
+                setShowAddFinancialItemModal(true);
+              }}
+              className="px-6 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+              whileTap={whileTap}
+              transition={spring}
+            >
+              Добавить кредит
+            </motion.button>
+          </motion.div>
         )}
       </div>
     </div>

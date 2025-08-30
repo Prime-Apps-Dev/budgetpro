@@ -18,7 +18,9 @@ const ProfileScreen = () => {
     transactions,
     accounts,
     totalIncome,
-    totalExpenses
+    totalExpenses,
+    getMonthlyTransactionsCount,
+    daysActive
   } = useAppContext();
 
   /**
@@ -29,63 +31,35 @@ const ProfileScreen = () => {
     closeAllModals();
     navigateToScreen(screenName);
   };
-
-  // Статистика пользователя
-  const userStats = {
-    totalTransactions: transactions.length,
-    activeAccounts: accounts.filter(acc => acc.balance > 0).length,
-    categoriesUsed: new Set(transactions.map(t => t.category)).size,
-    daysActive: Math.ceil((new Date() - new Date('2024-01-01')) / (1000 * 60 * 60 * 24))
-  };
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32">
       {/* Header секция с профилем пользователя */}
       <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-700 px-6 py-8">
         <motion.div
-          className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-3xl p-6 border border-white/50 dark:border-gray-700/50 shadow-lg"
+          className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-3xl p-6 border border-white/50 dark:border-gray-700/50 shadow-lg shadow-gray-900/5"
           variants={zoomInOut}
           whileInView="whileInView"
           viewport={{ once: false, amount: 0.2 }}
         >
           <div className="flex items-center mb-6">
             <div
-              className="w-20 h-20 rounded-3xl flex items-center justify-center text-white text-3xl font-bold mr-6 shadow-lg"
+              className="w-20 h-20 rounded-3xl flex items-center justify-center text-white text-3xl font-bold mr-6"
               style={{ backgroundColor: userProfile?.avatarColor }}
             >
               {userProfile?.avatar}
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                {userProfile?.name}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mb-2">{userProfile?.email}</p>
-              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex flex-col gap-1">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {userProfile?.name}
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">{userProfile?.email}</p>
+              </div>
+              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2" />
-                Активен {userStats.daysActive} дней
+                Активен {daysActive} дней
               </div>
-            </div>
-          </div>
-
-          {/* Краткая статистика пользователя */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {userStats.totalTransactions}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Операций</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {userStats.activeAccounts}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Счетов</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {userStats.categoriesUsed}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Категорий</div>
             </div>
           </div>
 
@@ -94,7 +68,7 @@ const ProfileScreen = () => {
               console.log('Нажата кнопка "Редактировать профиль"');
               setShowEditProfileModal(true);
             }}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-2xl font-medium shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30"
+            className="w-full bg-gray-200 text-gray-800 p-4 rounded-2xl font-medium hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
             whileTap={whileTap}
             whileHover={{ scale: 1.02 }}
             transition={spring}
@@ -116,7 +90,7 @@ const ProfileScreen = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <motion.button
               onClick={() => handleScreenChange('financial-goals')}
-              className="relative overflow-hidden bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-3xl p-6 text-white shadow-lg shadow-green-500/20"
+              className="relative overflow-hidden bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-3xl p-6 text-white shadow-lg shadow-green-500/20 text-left"
               whileTap={whileTap}
               whileHover={whileHover}
               transition={spring}
@@ -125,21 +99,23 @@ const ProfileScreen = () => {
               viewport={{ once: false, amount: 0.2 }}
             >
               <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
                   <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm">
                     <ICONS.Target className="w-6 h-6" />
                   </div>
-                  <ICONS.ChevronLeft className="w-5 h-5 opacity-70 transform rotate-180" />
+                  <div>
+                    <div className="text-lg font-semibold">Финансовые цели</div>
+                    <div className="text-sm opacity-80">Планируйте будущее</div>
+                  </div>
                 </div>
-                <div className="text-lg font-semibold mb-1">Финансовые цели</div>
-                <div className="text-sm opacity-80">Планируйте будущее</div>
+                <ICONS.ChevronLeft className="w-5 h-5 opacity-70 transform rotate-180" />
               </div>
             </motion.button>
 
             <motion.button
               onClick={() => handleScreenChange('budget-planning')}
-              className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-3xl p-6 text-white shadow-lg shadow-blue-500/20"
+              className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-3xl p-6 text-white shadow-lg shadow-blue-500/20 text-left"
               whileTap={whileTap}
               whileHover={whileHover}
               transition={spring}
@@ -148,22 +124,24 @@ const ProfileScreen = () => {
               viewport={{ once: false, amount: 0.2 }}
             >
               <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
                   <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm">
                     <ICONS.Wallet className="w-6 h-6" />
                   </div>
-                  <ICONS.ChevronLeft className="w-5 h-5 opacity-70 transform rotate-180" />
+                  <div>
+                    <div className="text-lg font-semibold">Планирование бюджета</div>
+                    <div className="text-sm opacity-80">Контролируйте расходы</div>
+                  </div>
                 </div>
-                <div className="text-lg font-semibold mb-1">Планирование бюджета</div>
-                <div className="text-sm opacity-80">Контролируйте расходы</div>
+                <ICONS.ChevronLeft className="w-5 h-5 opacity-70 transform rotate-180" />
               </div>
             </motion.button>
           </div>
 
           <motion.button
             onClick={() => handleScreenChange('debts')}
-            className="relative overflow-hidden w-full bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 rounded-3xl p-6 text-white shadow-lg shadow-red-500/20"
+            className="relative overflow-hidden w-full bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 rounded-3xl p-6 text-white shadow-lg shadow-red-500/20 text-left"
             whileTap={whileTap}
             whileHover={whileHover}
             transition={spring}
@@ -173,12 +151,12 @@ const ProfileScreen = () => {
           >
             <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
             <div className="relative z-10 flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm mr-4">
+              <div className="flex items-center space-x-2">
+                <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm">
                   <ICONS.Handshake className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="text-lg font-semibold mb-1">Долги</div>
+                  <div className="text-lg font-semibold">Долги</div>
                   <div className="text-sm opacity-80">Управление обязательствами</div>
                 </div>
               </div>
@@ -196,7 +174,7 @@ const ProfileScreen = () => {
           <div className="space-y-3">
             <motion.button
               onClick={() => handleScreenChange('my-financial-products')}
-              className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+              className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm shadow-black/2 border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
               whileTap={whileTap}
               whileHover={{ x: 5 }}
               transition={spring}
@@ -218,7 +196,7 @@ const ProfileScreen = () => {
 
             <motion.button
               onClick={() => handleScreenChange('transaction-history')}
-              className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+              className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm shadow-black/2 border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
               whileTap={whileTap}
               whileHover={{ x: 5 }}
               transition={spring}
@@ -232,7 +210,7 @@ const ProfileScreen = () => {
                 </div>
                 <div className="text-left">
                   <div className="font-medium text-gray-900 dark:text-gray-100">История транзакций</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{userStats.totalTransactions} операций</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Все операции</div>
                 </div>
               </div>
               <ICONS.ChevronLeft className="w-5 h-5 text-gray-400 transform rotate-180" />
@@ -240,7 +218,7 @@ const ProfileScreen = () => {
 
             <motion.button
               onClick={() => handleScreenChange('accounts')}
-              className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+              className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm shadow-black/2 border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
               whileTap={whileTap}
               whileHover={{ x: 5 }}
               transition={spring}
@@ -254,7 +232,7 @@ const ProfileScreen = () => {
                 </div>
                 <div className="text-left">
                   <div className="font-medium text-gray-900 dark:text-gray-100">Счета</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{userStats.activeAccounts} активных</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Управление счетами</div>
                 </div>
               </div>
               <ICONS.ChevronLeft className="w-5 h-5 text-gray-400 transform rotate-180" />
@@ -262,7 +240,7 @@ const ProfileScreen = () => {
 
             <motion.button
               onClick={() => handleScreenChange('categories')}
-              className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+              className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm shadow-black/2 border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
               whileTap={whileTap}
               whileHover={{ x: 5 }}
               transition={spring}
@@ -276,7 +254,7 @@ const ProfileScreen = () => {
                 </div>
                 <div className="text-left">
                   <div className="font-medium text-gray-900 dark:text-gray-100">Категории</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{userStats.categoriesUsed} используется</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Управление категориями</div>
                 </div>
               </div>
               <ICONS.ChevronLeft className="w-5 h-5 text-gray-400 transform rotate-180" />
@@ -292,7 +270,7 @@ const ProfileScreen = () => {
           
           <motion.button
             onClick={() => handleScreenChange('settings')}
-            className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+            className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm shadow-black/2 border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
             whileTap={whileTap}
             whileHover={{ x: 5 }}
             transition={spring}

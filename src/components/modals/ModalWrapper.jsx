@@ -1,93 +1,99 @@
 // src/components/modals/ModalWrapper.jsx
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ICONS } from '../icons';
-import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
-import { spring, whileTap } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 
 /**
- * Универсальный компонент-обертка для модальных окон.
- * Обеспечивает общую логику анимации, жестов и стиля.
- *
+ * Оболочка для модальных окон, обеспечивающая базовую анимацию
+ * и функциональность закрытия.
  * @param {object} props - Свойства компонента.
  * @param {string} props.title - Заголовок модального окна.
+ * @param {React.ReactNode} props.children - Содержимое модального окна.
  * @param {function} props.handleClose - Функция для закрытия модального окна.
- * @param {React.ReactNode} props.children - Дочерние элементы, содержимое модального окна.
- * @param {React.ReactNode} [props.actions] - JSX-элемент для отображения справа от заголовка (например, кнопки "Редактировать", "Удалить").
- * @param {string} [props.className] - Дополнительные CSS-классы для внутреннего контейнера.
- * @returns {JSX.Element}
  */
-const ModalWrapper = ({ title, handleClose, children, actions, className = '' }) => {
+const ModalWrapper = ({ title, children, handleClose }) => {
   const { isDarkMode } = useAppContext();
 
-  const y = useMotionValue(0);
-  const opacity = useTransform(y, [0, 200], [1, 0]);
+  const modalVariants = {
+    hidden: { y: "100%", opacity: 0 },
+    visible: {
+      y: "0%",
+      opacity: 1,
+      transition: {
+        type: "spring",
+        damping: 30,
+        stiffness: 300,
+      },
+    },
+    exit: {
+      y: "100%",
+      opacity: 0,
+      transition: {
+        duration: 0.2,
+      },
+    },
+  };
 
-  /**
-   * Обрабатывает завершение жеста перетаскивания.
-   * Если жест был достаточно сильным, закрывает модальное окно.
-   * @param {Event} event - Событие.
-   * @param {object} info - Информация о жесте.
-   */
-  const handleDragEnd = (event, info) => {
-    // Порог расстояния в пикселях
-    const distanceThreshold = 150; 
-    // Порог скорости в пикселях/секунду
-    const velocityThreshold = 200; 
-    
-    // Проверяем, был ли свайп быстрым вниз
-    const isFastSwipe = info.velocity.y > velocityThreshold;
-    // Проверяем, был ли drag достаточно долгим
-    const isLongDrag = info.offset.y > distanceThreshold;
-
-    if (isFastSwipe || isLongDrag) {
-      handleClose();
-    }
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.1 } },
+    exit: { opacity: 0, transition: { duration: 0.1 } },
   };
 
   return (
-    <>
-      <AnimatePresence>
-        <motion.div
-          className="fixed inset-0 z-40"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ type: "tween", duration: 0.3 }}
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}
-          onClick={handleClose}
-        />
-      </AnimatePresence>
+    <AnimatePresence>
       <motion.div
-        className="fixed inset-x-0 bottom-0 flex items-end justify-center z-50"
-        initial={{ y: "100%" }}
-        animate={{ y: "0%" }}
-        exit={{ y: "100%" }}
-        transition={spring}
-        drag="y"
-        dragConstraints={{ top: 0, bottom: 0 }}
-        onDragEnd={handleDragEnd}
-        style={{ y, opacity }}
+        className="fixed inset-0 z-50 flex items-end justify-center"
+        variants={backdropVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        onClick={handleClose} // Закрытие по клику вне модалки
       >
-        <div className="relative bg-white dark:bg-gray-800 rounded-t-3xl p-6 shadow-xl w-full h-full flex flex-col cursor-grab max-h-[85vh]">
-          <div className="flex justify-center mb-4 cursor-grab" onMouseDown={() => y.set(0)}>
-            <motion.div
+        <motion.div
+          className={`relative w-full max-w-md rounded-t-3xl shadow-lg flex flex-col ${
+            isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800'
+          }`}
+          variants={modalVariants}
+          onClick={(e) => e.stopPropagation()} // Предотвратить закрытие при клике внутри
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }} // Ограничение движения: только вниз, начиная с текущей позиции
+          onDragEnd={(event, info) => {
+            if (info.point.y > window.innerHeight / 2 && info.velocity.y > 0) { // Если модалка пересекла половину экрана и движется вниз
+              handleClose();
+            }
+          }}
+          dragElastic={{ top: 0, bottom: 0.5 }} // Эластичность перетаскивания
+        >
+          {/* Handle для перетаскивания */}
+          <div className="flex justify-center p-4 cursor-grab">
+            <div
+              className={`w-16 h-1.5 rounded-full ${
+                isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+              }`}
+            />
+          </div>
+
+          {/* Заголовок и кнопка закрытия */}
+          <div className="flex justify-between items-center px-6 pb-4">
+            <h2 className="text-2xl font-semibold">{title}</h2>
+            <motion.button
               onClick={handleClose}
-              className="w-12 h-1 bg-gray-300 rounded-full cursor-pointer dark:bg-gray-600"
-              whileTap={{ scale: 0.8 }}
-              transition={spring}
-            ></motion.div>
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+              whileTap={{ scale: 0.9 }}
+            >
+              <ICONS.X className="w-6 h-6" />
+            </motion.button>
           </div>
-          <div className="flex items-center mb-8">
-            <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{title}</h2>
-            {actions && <div className="ml-auto flex items-center space-x-2">{actions}</div>}
-          </div>
-          <div className="flex-grow overflow-y-auto pr-2">
+
+          {/* Содержимое модального окна */}
+          <div className="flex-grow px-6 pb-6 overflow-y-auto custom-scrollbar">
             {children}
           </div>
-        </div>
+        </motion.div>
       </motion.div>
-    </>
+    </AnimatePresence>
   );
 };
 

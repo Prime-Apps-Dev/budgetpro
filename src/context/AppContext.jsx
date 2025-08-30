@@ -59,7 +59,8 @@ export const AppContextProvider = ({ children }) => {
       name: 'Пользователь',
       email: 'user@example.com',
       avatar: '👤',
-      avatarColor: '#3b82f6'
+      avatarColor: '#3b82f6',
+      creationDate: new Date().toISOString().split('T')[0],
     }
   }), []);
 
@@ -259,7 +260,7 @@ export const AppContextProvider = ({ children }) => {
    * Мемоизировано с помощью `useCallback`.
    * @returns {Array} - Отфильтрованный массив транзакций.
    */
-  const getFilteredTransactions = useCallback(() => {
+  const getFilteredTransactions = useCallback((period = 'month') => {
     let filtered = [...transactions];
     const now = new Date();
 
@@ -269,7 +270,7 @@ export const AppContextProvider = ({ children }) => {
         return transactionDate >= new Date(dateRange.start) && transactionDate <= new Date(dateRange.end);
       });
     } else {
-      switch (selectedPeriod) {
+      switch (period) {
         case 'week':
           const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
           filtered = filtered.filter(t => new Date(t.date) >= weekAgo);
@@ -292,10 +293,10 @@ export const AppContextProvider = ({ children }) => {
     }
 
     return filtered;
-  }, [transactions, dateRange, selectedPeriod]);
+  }, [transactions, dateRange]);
 
   // Мемоизируем результаты фильтрации транзакций.
-  const filteredTransactions = useMemo(() => getFilteredTransactions(), [getFilteredTransactions]);
+  const filteredTransactions = useMemo(() => getFilteredTransactions(selectedPeriod), [getFilteredTransactions, selectedPeriod]);
 
   // Мемоизируем общие суммы для производительности.
   const totalIncome = useMemo(() => {
@@ -387,6 +388,26 @@ export const AppContextProvider = ({ children }) => {
     }
   }, [screenHistory]);
 
+  const getMonthlyTransactionsCount = useCallback(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    
+    return transactions.filter(t => {
+      const transactionDate = new Date(t.date);
+      return transactionDate >= startOfMonth && transactionDate <= endOfMonth;
+    }).length;
+  }, [transactions]);
+
+  const daysActive = useMemo(() => {
+    if (!userProfile.creationDate) return 0;
+    const now = new Date();
+    const creationDate = new Date(userProfile.creationDate);
+    const diffTime = Math.abs(now - creationDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    return diffDays;
+  }, [userProfile.creationDate]);
+
   // Мемоизируем весь объект состояния для передачи в провайдер.
   const state = useMemo(() => ({
     activeTab, setActiveTab,
@@ -441,9 +462,11 @@ export const AppContextProvider = ({ children }) => {
     navigateToTransactionHistory,
     navigateToScreen,
     goBack,
-    screenHistory
+    screenHistory,
+    getMonthlyTransactionsCount,
+    daysActive
   }), [
-    activeTab, currentScreen, selectedFinancialItem, isDarkMode, transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, selectedPeriod, dateRange, showAddTransaction, editingTransaction, newTransaction, userProfile, currencyCode, isDataLoaded, currencySymbol, getAccountByName, loansWithBalance, depositsWithBalance, getFilteredTransactions, totalIncome, totalExpenses, totalBudget, totalSavingsBalance, totalPlannedBudget, totalSpentOnBudgets, showAddFinancialItemModal, editingFinancialItem, showEditProfileModal, showAddDebtModal, editingDebt, showAddBudgetModal, editingBudget, showAddGoalModal, editingGoal, closeAllModals, showAddCategoryModal, editingCategory, transactionFilterType, navigateToTransactionHistory, navigateToScreen, goBack, screenHistory
+    activeTab, currentScreen, selectedFinancialItem, isDarkMode, transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, selectedPeriod, dateRange, showAddTransaction, editingTransaction, newTransaction, userProfile, currencyCode, isDataLoaded, currencySymbol, getAccountByName, loansWithBalance, depositsWithBalance, getFilteredTransactions, totalIncome, totalExpenses, totalBudget, totalSavingsBalance, totalPlannedBudget, totalSpentOnBudgets, showAddFinancialItemModal, editingFinancialItem, showEditProfileModal, showAddDebtModal, editingDebt, showAddBudgetModal, editingBudget, showAddGoalModal, editingGoal, closeAllModals, showAddCategoryModal, editingCategory, transactionFilterType, navigateToTransactionHistory, navigateToScreen, goBack, screenHistory, getMonthlyTransactionsCount, daysActive
   ]);
 
   return (

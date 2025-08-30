@@ -27,7 +27,7 @@ const AnalyticsScreen = () => {
     userProfile
   } = useAppContext();
   
-  // Используем useMemo для кэширования результатов фильтрации
+  // Используем useMemo для кэширования результатов фильтрации.
   const filteredTransactions = useMemo(() => getFilteredTransactions(), [getFilteredTransactions]);
 
   // Используем useMemo для мемоизации расчетов расходов по категориям
@@ -124,7 +124,7 @@ const AnalyticsScreen = () => {
     if (recs.length === 0) {
       recs.push({
         type: 'success',
-        icon: 'CheckCircle',
+        icon: 'Check',
         title: 'Ваши финансы в порядке',
         description: 'Продолжайте следить за балансом доходов и расходов.',
         action: 'Установить новые цели'
@@ -157,7 +157,7 @@ const AnalyticsScreen = () => {
           <div>
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center">
-                <ICONS.BarChart3 className="w-6 h-6 text-white" />
+                {ICONS.BarChart3 && <ICONS.BarChart3 className="w-6 h-6 text-white" />}
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
@@ -223,39 +223,42 @@ const AnalyticsScreen = () => {
           </h2>
           
           <div className="space-y-3">
-            {recommendations.map((rec, index) => (
-              <motion.div
-                key={index}
-                className={`relative overflow-hidden p-4 rounded-3xl text-white shadow-lg ${
-                  rec.type === 'success' ? 'bg-gradient-to-br from-green-500 via-green-600 to-green-700 shadow-green-500/20' :
-                  rec.type === 'warning' ? 'bg-gradient-to-br from-yellow-500 via-orange-500 to-red-500 shadow-yellow-500/20' :
-                  rec.type === 'danger' ? 'bg-gradient-to-br from-red-500 via-red-600 to-red-700 shadow-red-500/20' :
-                  'bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 shadow-blue-500/20'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={whileTap}
-                transition={spring}
-                variants={zoomInOut}
-                whileInView="whileInView"
-                viewport={{ once: false, amount: 0.2 }}
-              >
-                <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-                <div className="relative z-10 flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center mb-2">
-                      <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm mr-3">
-                        {React.createElement(ICONS[rec.icon], { className: "w-5 h-5" })}
+            {recommendations.map((rec, index) => {
+              const IconComponent = ICONS[rec.icon];
+              return (
+                <motion.div
+                  key={index}
+                  className={`relative overflow-hidden p-4 rounded-3xl text-white shadow-lg ${
+                    rec.type === 'success' ? 'bg-gradient-to-br from-green-500 via-green-600 to-green-700 shadow-green-500/20' :
+                    rec.type === 'warning' ? 'bg-gradient-to-br from-yellow-500 via-orange-500 to-red-500 shadow-yellow-500/20' :
+                    rec.type === 'danger' ? 'bg-gradient-to-br from-red-500 via-red-600 to-red-700 shadow-red-500/20' :
+                    'bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 shadow-blue-500/20'
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={whileTap}
+                  transition={spring}
+                  variants={zoomInOut}
+                  whileInView="whileInView"
+                  viewport={{ once: false, amount: 0.2 }}
+                >
+                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+                  <div className="relative z-10 flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center mb-2">
+                        <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm mr-3">
+                          {IconComponent && <IconComponent className="w-5 h-5" />}
+                        </div>
+                        <div className="font-semibold">{rec.title}</div>
                       </div>
-                      <div className="font-semibold">{rec.title}</div>
-                    </div>
-                    <p className="text-sm opacity-90 mb-3">{rec.description}</p>
-                    <div className="text-xs font-medium opacity-80 bg-white/20 rounded-xl px-3 py-1 inline-block">
-                      {rec.action}
+                      <p className="text-sm opacity-90 mb-3">{rec.description}</p>
+                      <div className="text-xs font-medium opacity-80 bg-white/20 rounded-xl px-3 py-1 inline-block">
+                        {rec.action}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
 
@@ -383,7 +386,7 @@ const AnalyticsScreen = () => {
             {insights.topExpenseCategory.name && (
               <div className="flex justify-between items-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl">
                 <div className="flex items-center">
-                  <ICONS.TrendingDown className="w-4 h-4 text-orange-500 mr-3" />
+                  {ICONS.TrendingDown && <ICONS.TrendingDown className="w-4 h-4 text-orange-500 mr-3" />}
                   <span className="text-gray-700 dark:text-gray-300 font-medium">Топ расходов: {insights.topExpenseCategory.name}</span>
                 </div>
                 <span className="font-bold text-orange-600 dark:text-orange-400">
@@ -395,7 +398,7 @@ const AnalyticsScreen = () => {
             {insights.topIncomeCategory.name && (
               <div className="flex justify-between items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
                 <div className="flex items-center">
-                  <ICONS.TrendingUp className="w-4 h-4 text-blue-500 mr-3" />
+                  {ICONS.TrendingUp && <ICONS.TrendingUp className="w-4 h-4 text-blue-500 mr-3" />}
                   <span className="text-gray-700 dark:text-gray-300 font-medium">Топ доходов: {insights.topIncomeCategory.name}</span>
                 </div>
                 <span className="font-bold text-blue-600 dark:text-blue-400">
@@ -415,7 +418,7 @@ const AnalyticsScreen = () => {
             viewport={{ once: false, amount: 0.2 }}
           >
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-              <ICONS.BarChart3 className="w-8 h-8 text-gray-400" />
+              {ICONS.BarChart3 && <ICONS.BarChart3 className="w-8 h-8 text-gray-400" />}
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
               Нет данных для анализа

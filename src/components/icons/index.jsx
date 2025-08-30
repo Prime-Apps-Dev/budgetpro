@@ -4,6 +4,7 @@ import {
     PlusCircle,
     PieChart,
     User,
+    Users,
     PiggyBank,
     ChevronLeft,
     ArrowUpCircle,
@@ -77,6 +78,8 @@ import {
     AlertOctagon,
     TrendingUp,
     TrendingDown,
+    ChevronDown,
+    Scale // Добавляем иконку Scale
 } from 'lucide-react';
 
 export const ICONS = {
@@ -84,6 +87,7 @@ export const ICONS = {
     PlusCircle,
     PieChart,
     User,
+    Users,
     PiggyBank,
     ChevronLeft,
     ArrowUpCircle,
@@ -157,4 +161,6 @@ export const ICONS = {
     AlertOctagon,
     TrendingUp,
     TrendingDown,
+    ChevronDown,
+    Scale // Добавляем иконку Scale
 };

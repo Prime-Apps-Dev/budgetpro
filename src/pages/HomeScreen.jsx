@@ -116,7 +116,7 @@ const HomeScreen = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <motion.button
               onClick={() => navigateToTransactionHistory('income')}
-              className="relative overflow-hidden bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-3xl p-6 text-white shadow-lg shadow-green-500/20 text-left"
+              className="relative overflow-hidden bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-3xl p-6 text-white shadow-green-500/5 text-left"
               whileHover={whileHover}
               whileTap={whileTap}
               transition={spring}
@@ -148,7 +148,7 @@ const HomeScreen = () => {
 
             <motion.button
               onClick={() => navigateToTransactionHistory('expense')}
-              className="relative overflow-hidden bg-gradient-to-br from-red-500 via-red-600 to-red-700 rounded-3xl p-6 text-white shadow-lg shadow-red-500/20 text-left"
+              className="relative overflow-hidden bg-gradient-to-br from-red-500 via-red-600 to-red-700 rounded-3xl p-6 text-white shadow-red-500/5 text-left"
               whileHover={whileHover}
               whileTap={whileTap}
               transition={spring}
@@ -183,7 +183,7 @@ const HomeScreen = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <motion.button
               onClick={() => navigateToTransactionHistory('all')}
-              className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-3xl p-6 text-white shadow-lg shadow-blue-500/20 text-left"
+              className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-3xl p-6 text-white shadow-blue-500/5 text-left"
               whileHover={whileHover}
               whileTap={whileTap}
               transition={spring}
@@ -218,7 +218,7 @@ const HomeScreen = () => {
                 setActiveTab('savings');
                 navigateToScreen('savings');
               }}
-              className="relative overflow-hidden bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-3xl p-6 text-white shadow-lg shadow-purple-500/20 text-left"
+              className="relative overflow-hidden bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-3xl p-6 text-white shadow-purple-500/5 text-left"
               whileHover={whileHover}
               whileTap={whileTap}
               transition={spring}

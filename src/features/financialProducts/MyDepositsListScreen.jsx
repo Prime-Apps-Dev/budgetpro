@@ -1,9 +1,55 @@
 // src/features/financialProducts/MyDepositsListScreen.jsx
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { ICONS } from '../../components/icons';
 import { motion } from 'framer-motion';
 import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
+import FinancialItemCard from '../../components/ui/FinancialItemCard';
+
+/**
+ * Компонент-обертка для обработки долгого нажатия.
+ * @param {object} props - Свойства компонента.
+ * @param {object} props.item - Элемент данных.
+ * @param {function} props.onClick - Обработчик обычного клика.
+ * @param {function} props.onLongPress - Обработчик долгого нажатия.
+ * @param {React.ReactNode} props.children - Дочерние элементы.
+ */
+const LongPressWrapper = ({ item, onClick, onLongPress, children }) => {
+  const pressTimer = useRef(null);
+
+  const handlePressStart = (e) => {
+    if (e.button === 2) return;
+    
+    pressTimer.current = setTimeout(() => {
+      onLongPress(item.id);
+    }, 500);
+  };
+
+  const handlePressEnd = () => {
+    clearTimeout(pressTimer.current);
+    pressTimer.current = null;
+  };
+
+  const handleClick = (e) => {
+    if (pressTimer.current) {
+      onClick(item);
+    }
+  }
+
+  return (
+    <motion.div
+      onMouseDown={handlePressStart}
+      onMouseUp={handlePressEnd}
+      onMouseLeave={handlePressEnd}
+      onTouchStart={handlePressStart}
+      onTouchEnd={handlePressEnd}
+      onClick={handleClick}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 /**
  * Компонент экрана "Мои депозиты".
@@ -20,24 +66,11 @@ const MyDepositsListScreen = () => {
     setShowAddFinancialItemModal
   } = useAppContext();
 
-  const [isLongPress, setIsLongPress] = useState(false);
-  const pressTimer = useRef(null);
-
-  /**
-   * Возвращает компонент иконки по имени.
-   * @param {string} iconName - Имя иконки.
-   * @returns {React.Component} - Компонент иконки.
-   */
-  const getIconComponent = (iconName) => {
-    return ICONS[iconName] || ICONS.Banknote;
-  };
-
   /**
    * Обрабатывает клик по элементу списка, открывая детали.
    * @param {object} item - Объект депозита.
    */
   const handleItemClick = (item) => {
-    if (isLongPress) return;
     console.log('Нажат элемент списка депозитов:', item.name);
     setSelectedFinancialItem(item);
   };
@@ -51,30 +84,6 @@ const MyDepositsListScreen = () => {
       console.log('Депозит удален:', depositId);
       setDeposits(prevDeposits => prevDeposits.filter(deposit => deposit.id !== depositId));
     }
-  };
-
-  /**
-   * Обрабатывает начало долгого нажатия.
-   * @param {Event} e - Событие.
-   * @param {object} deposit - Объект депозита.
-   */
-  const handlePressStart = (e, deposit) => {
-    if (e.button === 2) {
-      return;
-    }
-    pressTimer.current = setTimeout(() => {
-      setIsLongPress(true);
-      handleDelete(deposit.id);
-    }, 500);
-  };
-
-  /**
-   * Обрабатывает завершение нажатия.
-   */
-  const handlePressEnd = () => {
-      clearTimeout(pressTimer.current);
-      pressTimer.current = null;
-      setIsLongPress(false);
   };
 
   return (
@@ -105,40 +114,51 @@ const MyDepositsListScreen = () => {
 
       <div className="space-y-4">
         {deposits.length > 0 ? (
-          deposits.map(deposit => {
-            const IconComponent = getIconComponent(deposit.iconName);
+          deposits.map((deposit) => {
+            const progress = (deposit.currentAmount / deposit.totalAmount) * 100;
             return (
-              <motion.div 
-                key={deposit.id} 
-                className="bg-white rounded-2xl p-6 shadow-sm flex items-center justify-between dark:bg-gray-800 cursor-pointer"
-                onMouseDown={(e) => handlePressStart(e, deposit)}
-                onMouseUp={handlePressEnd}
-                onMouseLeave={handlePressEnd}
-                onTouchStart={(e) => handlePressStart(e, deposit)}
-                onTouchEnd={handlePressEnd}
-                onClick={() => handleItemClick(deposit)}
-                onContextMenu={(e) => e.preventDefault()}
-                whileTap={whileTap}
-                whileHover={whileHover}
-                transition={spring}
-                variants={zoomInOut}
-                initial="initial"
-                whileInView="whileInView"
-                viewport={{ once: false, amount: 0.2 }}
-              >
-                <div className="flex items-center">
-                  <IconComponent className="w-8 h-8 text-green-500 mr-4" />
-                  <div>
-                    <div className="font-medium text-gray-800 dark:text-gray-200">{deposit.name}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Доход: {deposit.totalInterest.toLocaleString()} {currencySymbol}</div>
-                    <div className="text-xs text-gray-400 dark:text-gray-500">Баланс: {deposit.currentAmount.toLocaleString()} {currencySymbol}</div>
-                  </div>
-                </div>
-              </motion.div>
+              <LongPressWrapper key={deposit.id} item={deposit} onClick={handleItemClick} onLongPress={handleDelete}>
+                <FinancialItemCard
+                  title={deposit.name}
+                  subtitle={`Банк: ${deposit.bank}`}
+                  amountText={`${deposit.currentAmount.toLocaleString()} ${currencySymbol}`}
+                  infoText={`Доход: ${deposit.totalInterest.toLocaleString()} ${currencySymbol}`}
+                  progress={progress}
+                  gradient="bg-gradient-to-br from-green-500 via-green-600 to-green-700"
+                  iconName={deposit.iconName || 'Banknote'}
+                  type="deposit"
+                />
+              </LongPressWrapper>
             );
           })
         ) : (
-          <p className="text-center text-gray-500 dark:text-gray-400">У вас нет депозитов.</p>
+          <motion.div
+            className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center"
+            variants={zoomInOut}
+            whileInView="whileInView"
+            viewport={{ once: false, amount: 0.2 }}
+          >
+            <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+              <ICONS.Banknote className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+              Пока нет депозитов
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
+              Добавьте первый депозит, чтобы начать получать доход
+            </p>
+            <motion.button
+              onClick={() => {
+                setSelectedFinancialItem(null);
+                setShowAddFinancialItemModal(true);
+              }}
+              className="px-6 py-2 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
+              whileTap={whileTap}
+              transition={spring}
+            >
+              Добавить депозит
+            </motion.button>
+          </motion.div>
         )}
       </div>
     </div>
