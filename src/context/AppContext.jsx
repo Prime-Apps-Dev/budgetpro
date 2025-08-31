@@ -119,6 +119,21 @@ export const AppContextProvider = ({ children }) => {
 
   // НОВЫЕ СТАТУСЫ ДЛЯ МОДАЛЬНЫХ ОКОН
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+  const [selectedDebtToRepay, setSelectedDebtToRepay] = useState(null);
+  
+  // НОВЫЕ СТАТУСЫ ДЛЯ КОПИЛОК
+  const [showGoalTransactionsModal, setShowGoalTransactionsModal] = useState(false);
+  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [showConfirmDeleteGoal, setShowConfirmDeleteGoal] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState(null);
+
+  // НОВЫЕ СТАТУСЫ ДЛЯ ДОЛГОВ
+  const [showDebtTransactionsModal, setShowDebtTransactionsModal] = useState(false);
+  const [selectedDebtForTransactions, setSelectedDebtForTransactions] = useState(null);
+
+  // НОВЫЕ СТАТУСЫ ДЛЯ ТРАНЗАКЦИЙ КРЕДИТОВ/ДЕПОЗИТОВ
+  const [showLoanDepositTransactionModal, setShowLoanDepositTransactionModal] = useState(false);
+  const [selectedLoanDepositForTransaction, setSelectedLoanDepositForTransaction] = useState(null);
 
   // Мемоизируем символ валюты, чтобы он пересчитывался только при изменении кода валюты.
   const currencySymbol = useMemo(() => getCurrencySymbolByCode(currencyCode), [currencyCode]);
@@ -356,6 +371,15 @@ export const AppContextProvider = ({ children }) => {
     setShowAddCategoryModal(false);
     setEditingCategory(null);
     setShowAddAccountModal(false);
+    setSelectedDebtToRepay(null); // Очищаем новое состояние
+    setShowGoalTransactionsModal(false);
+    setSelectedGoal(null);
+    setShowConfirmDeleteGoal(false);
+    setGoalToDelete(null);
+    setShowDebtTransactionsModal(false);
+    setSelectedDebtForTransactions(null);
+    setShowLoanDepositTransactionModal(false);
+    setSelectedLoanDepositForTransaction(null);
   }, []);
 
   /**
@@ -378,6 +402,16 @@ export const AppContextProvider = ({ children }) => {
     setCurrentScreen(screenName);
   }, [currentScreen]);
 
+  /**
+   * Управляет переходом между основными вкладками, сбрасывая вложенные экраны.
+   * @param {string} tabName - Имя вкладки для перехода.
+   */
+  const navigateToTab = useCallback((tabName) => {
+    setActiveTab(tabName);
+    setCurrentScreen('');
+    setScreenHistory([]);
+  }, []);
+  
   /**
    * Возвращается на предыдущий экран из истории.
    */
@@ -465,14 +499,27 @@ export const AppContextProvider = ({ children }) => {
     transactionFilterType, setTransactionFilterType,
     navigateToTransactionHistory,
     navigateToScreen,
+    navigateToTab,
     goBack,
     screenHistory,
     getMonthlyTransactionsCount,
     daysActive,
     // НОВЫЕ СТАТУСЫ ДЛЯ МОДАЛЬНЫХ ОКОН
     showAddAccountModal, setShowAddAccountModal,
+    selectedDebtToRepay, setSelectedDebtToRepay,
+    // НОВЫЕ СТАТУСЫ ДЛЯ КОПИЛОК
+    showGoalTransactionsModal, setShowGoalTransactionsModal,
+    selectedGoal, setSelectedGoal,
+    showConfirmDeleteGoal, setShowConfirmDeleteGoal,
+    goalToDelete, setGoalToDelete,
+    // НОВЫЕ СТАТУСЫ ДЛЯ ДОЛГОВ
+    showDebtTransactionsModal, setShowDebtTransactionsModal,
+    selectedDebtForTransactions, setSelectedDebtForTransactions,
+    // НОВЫЕ СТАТУСЫ ДЛЯ ТРАНЗАКЦИЙ КРЕДИТОВ/ДЕПОЗИТОВ
+    showLoanDepositTransactionModal, setShowLoanDepositTransactionModal,
+    selectedLoanDepositForTransaction, setSelectedLoanDepositForTransaction,
   }), [
-    activeTab, currentScreen, selectedFinancialItem, isDarkMode, transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, selectedPeriod, dateRange, showAddTransaction, editingTransaction, newTransaction, userProfile, currencyCode, isDataLoaded, currencySymbol, getAccountByName, loansWithBalance, depositsWithBalance, getFilteredTransactions, totalIncome, totalExpenses, totalBudget, totalSavingsBalance, totalPlannedBudget, totalSpentOnBudgets, showAddFinancialItemModal, editingFinancialItem, showEditProfileModal, showAddDebtModal, editingDebt, showAddBudgetModal, editingBudget, showAddGoalModal, editingGoal, closeAllModals, showAddCategoryModal, editingCategory, transactionFilterType, navigateToTransactionHistory, navigateToScreen, goBack, screenHistory, getMonthlyTransactionsCount, daysActive, showAddAccountModal
+    activeTab, currentScreen, selectedFinancialItem, isDarkMode, transactions, loans, deposits, loanTransactions, depositTransactions, debts, budgets, categories, accounts, financialGoals, selectedPeriod, dateRange, showAddTransaction, editingTransaction, newTransaction, userProfile, currencyCode, isDataLoaded, currencySymbol, getAccountByName, loansWithBalance, depositsWithBalance, getFilteredTransactions, totalIncome, totalExpenses, totalBudget, totalSavingsBalance, totalPlannedBudget, totalSpentOnBudgets, showAddFinancialItemModal, editingFinancialItem, showEditProfileModal, showAddDebtModal, editingDebt, showAddBudgetModal, editingBudget, showAddGoalModal, editingGoal, closeAllModals, showAddCategoryModal, editingCategory, transactionFilterType, navigateToTransactionHistory, navigateToScreen, navigateToTab, goBack, screenHistory, getMonthlyTransactionsCount, daysActive, showAddAccountModal, selectedDebtToRepay, showGoalTransactionsModal, selectedGoal, showConfirmDeleteGoal, goalToDelete, showDebtTransactionsModal, selectedDebtForTransactions, showLoanDepositTransactionModal, selectedLoanDepositForTransaction
   ]);
 
   return (

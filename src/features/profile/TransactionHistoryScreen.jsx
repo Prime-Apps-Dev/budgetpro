@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { whileTap, spring } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
 import { FixedSizeList as List } from 'react-window';
+import TabSwitcher from '../../components/ui/TabSwitcher';
+import AlertModal from '../../components/modals/AlertModal';
 
 /**
  * Компонент, который будет рендерить одну строку в виртуализированном списке.
@@ -17,10 +19,25 @@ import { FixedSizeList as List } from 'react-window';
  * @returns {JSX.Element}
  */
 const TransactionRow = ({ index, style, data }) => {
-  const transaction = data[index];
+  const { filteredTransactions, handleEditTransaction, setTransactionToDelete, setShowConfirmDelete } = data;
+  const transaction = filteredTransactions[index];
+
+  const handleDelete = () => {
+    setTransactionToDelete(transaction);
+    setShowConfirmDelete(true);
+  };
+
+  const handleEdit = () => {
+    handleEditTransaction(transaction);
+  };
+
   return (
     <div style={style}>
-      <TransactionItem transaction={transaction} />
+      <TransactionItem
+        transaction={transaction}
+        onDelete={handleDelete}
+        onEdit={handleEdit}
+      />
     </div>
   );
 };
@@ -31,13 +48,87 @@ const TransactionHistoryScreen = () => {
     goBack,
     currencySymbol,
     transactionFilterType,
-    setTransactionFilterType
+    setTransactionFilterType,
+    setTransactions,
+    setLoans,
+    loans,
+    deposits,
+    setDeposits,
+    loanTransactions,
+    setLoanTransactions,
+    depositTransactions,
+    setDepositTransactions,
+    setShowAddTransaction,
+    setEditingTransaction,
   } = useAppContext();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
+
+  /**
+   * Обрабатывает удаление транзакции.
+   */
+  const handleDeleteTransaction = (transaction) => {
+    // Проверяем, является ли транзакция связанной с кредитом или депозитом
+    const isDepositTransaction = transaction.category === 'Пополнение депозита' || transaction.category === 'Снятие с депозита';
+    const isLoanTransaction = transaction.category === 'Погашение кредита';
+
+    // Удаляем из общего списка
+    setTransactions(prevTransactions => prevTransactions.filter(t => t.id !== transaction.id));
+
+    // Обновляем связанные списки, если это необходимо
+    if (isDepositTransaction && transaction.financialItemId) {
+      setDeposits(prevDeposits => prevDeposits.map(d => {
+        if (d.id === transaction.financialItemId) {
+          const newAmount = transaction.category === 'Пополнение депозита'
+            ? d.currentAmount - transaction.amount
+            : d.currentAmount + transaction.amount;
+          return { ...d, currentAmount: newAmount };
+        }
+        return d;
+      }));
+      setDepositTransactions(prevDepositTransactions => prevDepositTransactions.filter(t => t.id !== transaction.id));
+    }
+    else if (isLoanTransaction && transaction.financialItemId) {
+      setLoans(prevLoans => prevLoans.map(l => {
+        if (l.id === transaction.financialItemId) {
+          return { ...l, currentBalance: l.currentBalance + transaction.amount };
+        }
+        return l;
+      }));
+      setLoanTransactions(prevLoanTransactions => prevLoanTransactions.filter(t => t.id !== transaction.id));
+    }
+  };
+
+  /**
+   * Обрабатывает подтверждение удаления.
+   */
+  const handleConfirmDelete = () => {
+    if (transactionToDelete) {
+      handleDeleteTransaction(transactionToDelete);
+    }
+    setShowConfirmDelete(false);
+    setTransactionToDelete(null);
+  };
+
+  /**
+   * Отменяет удаление.
+   */
+  const handleCancelDelete = () => {
+    setShowConfirmDelete(false);
+    setTransactionToDelete(null);
+  };
+  
+  /**
+   * Обрабатывает редактирование транзакции.
+   */
+  const handleEditTransaction = (transaction) => {
+    setEditingTransaction(transaction);
+    setShowAddTransaction(true);
+  };
 
   // Используем useMemo для мемоизации результатов фильтрации.
-  // Фильтрация будет происходить только при изменении `transactions`, `searchTerm` или `transactionFilterType`.
   const filteredTransactions = useMemo(() => {
     return transactions.slice().reverse().filter(transaction => {
       const matchesSearch = transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -47,6 +138,12 @@ const TransactionHistoryScreen = () => {
       return matchesSearch && matchesType;
     });
   }, [transactions, searchTerm, transactionFilterType]);
+
+  const tabs = [
+    { id: 'all', label: 'Все', icon: ICONS.Layers },
+    { id: 'income', label: 'Доходы', icon: ICONS.ArrowUpCircle },
+    { id: 'expense', label: 'Расходы', icon: ICONS.ArrowDownCircle }
+  ];
 
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
@@ -70,44 +167,7 @@ const TransactionHistoryScreen = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
         />
-        <div className="grid grid-cols-3 gap-3">
-          <motion.button
-            onClick={() => setTransactionFilterType('all')}
-            className={`p-3 rounded-xl font-medium ${
-              transactionFilterType === 'all'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-            }`}
-            whileTap={whileTap}
-            transition={spring}
-          >
-            Все
-          </motion.button>
-          <motion.button
-            onClick={() => setTransactionFilterType('income')}
-            className={`p-3 rounded-xl font-medium ${
-              transactionFilterType === 'income'
-                ? 'bg-green-500 text-white'
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-            }`}
-            whileTap={whileTap}
-            transition={spring}
-          >
-            Доходы
-          </motion.button>
-          <motion.button
-            onClick={() => setTransactionFilterType('expense')}
-            className={`p-3 rounded-xl font-medium ${
-              transactionFilterType === 'expense'
-                ? 'bg-red-500 text-white'
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-            }`}
-            whileTap={whileTap}
-            transition={spring}
-          >
-            Расходы
-          </motion.button>
-        </div>
+        <TabSwitcher activeTab={transactionFilterType} onTabChange={setTransactionFilterType} tabs={tabs} />
       </div>
 
       <div className="space-y-4">
@@ -117,7 +177,12 @@ const TransactionHistoryScreen = () => {
             itemCount={filteredTransactions.length}
             itemSize={100} // Средняя высота элемента списка
             width={'100%'}
-            itemData={filteredTransactions}
+            itemData={{
+              filteredTransactions,
+              handleEditTransaction,
+              setTransactionToDelete,
+              setShowConfirmDelete
+            }}
             className="styled-scrollbars"
           >
             {TransactionRow}
@@ -126,6 +191,14 @@ const TransactionHistoryScreen = () => {
           <p className="text-center text-gray-500 dark:text-gray-400">Транзакций не найдено.</p>
         )}
       </div>
+
+      <AlertModal
+        isVisible={showConfirmDelete}
+        title="Удалить транзакцию?"
+        message={`Транзакция "${transactionToDelete?.category}" на сумму ${transactionToDelete?.amount.toLocaleString()} ${currencySymbol} будет удалена безвозвратно.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

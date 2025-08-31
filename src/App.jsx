@@ -13,6 +13,7 @@ import ModalPortal from './components/modals/ModalPortal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeInOut } from './utils/motion';
 import { useAppContext } from './context/AppContext';
+import AlertModal from './components/modals/AlertModal';
 
 // Динамический импорт всех компонентов для Code Splitting
 const HomeScreen = lazy(() => import('./pages/HomeScreen'));
@@ -26,12 +27,15 @@ const CategoriesScreen = lazy(() => import('./features/profile/CategoriesScreen'
 const SettingsScreen = lazy(() => import('./features/profile/SettingsScreen'));
 const BudgetPlanningScreen = lazy(() => import('./features/profile/BudgetPlanningScreen'));
 const DebtsScreen = lazy(() => import('./features/profile/DebtsScreen'));
-const MyLoansListScreen = lazy(() => import('./features/financialProducts/MyLoansListScreen'));
-const MyDepositsListScreen = lazy(() => import('./features/financialProducts/MyDepositsListScreen'));
-const MyFinancialProductsScreen = lazy(() => import('./features/financialProducts/MyFinancialProductsScreen'));
+import MyFinancialProductsScreen from './features/financialProducts/MyFinancialProductsScreen';
 const CurrencyScreen = lazy(() => import('./features/profile/CurrencyScreen'));
 // NEW: Import the new modal component
 const AddEditAccountModal = lazy(() => import('./components/modals/AddEditAccountModal'));
+const GoalTransactionsModal = lazy(() => import('./components/modals/GoalTransactionsModal'));
+// NEW: Import the new DebtTransactionsModal
+const DebtTransactionsModal = lazy(() => import('./components/modals/DebtTransactionsModal'));
+// NEW: Import the new AddLoanDepositTransactionModal
+const AddLoanDepositTransactionModal = lazy(() => import('./components/modals/AddLoanDepositTransactionModal'));
 
 /**
  * Основной компонент-контейнер приложения, содержащий логику рендеринга
@@ -59,6 +63,16 @@ const App = () => {
     editingCategory,
     // NEW: state for the new modal
     showAddAccountModal,
+    selectedDebtToRepay,
+    // NEW: state for savings goals
+    showGoalTransactionsModal,
+    selectedGoal,
+    // NEW: state for debt transactions modal
+    showDebtTransactionsModal,
+    selectedDebtForTransactions,
+    // NEW: state for loan/deposit transaction modal
+    showLoanDepositTransactionModal,
+    selectedLoanDepositForTransaction,
   } = useAppContext();
 
   /**
@@ -83,9 +97,9 @@ const App = () => {
       case 'my-financial-products':
         return <MyFinancialProductsScreen />;
       case 'loans-list':
-        return <MyLoansListScreen />;
+        return <MyFinancialProductsScreen activeTab="loans" />;
       case 'deposits-list':
-        return <MyDepositsListScreen />;
+        return <MyFinancialProductsScreen activeTab="deposits" />;
       case 'settings':
         return <SettingsScreen />;
       case 'select-currency':
@@ -142,7 +156,7 @@ const App = () => {
       
       <ModalPortal>
         <AnimatePresence>
-          {(showAddTransaction || editingTransaction) && (
+          {(showAddTransaction || editingTransaction || selectedDebtToRepay) && (
             <Suspense fallback={null}>
               <AddEditTransactionModal key="add-edit-transaction-modal" />
             </Suspense>
@@ -186,6 +200,21 @@ const App = () => {
           {showAddAccountModal && (
             <Suspense fallback={null}>
               <AddEditAccountModal key="add-edit-account-modal" />
+            </Suspense>
+          )}
+          {showGoalTransactionsModal && selectedGoal && (
+            <Suspense fallback={null}>
+              <GoalTransactionsModal key="goal-transactions-modal" />
+            </Suspense>
+          )}
+          {showDebtTransactionsModal && selectedDebtForTransactions && (
+            <Suspense fallback={null}>
+              <DebtTransactionsModal key="debt-transactions-modal" />
+            </Suspense>
+          )}
+          {showLoanDepositTransactionModal && selectedLoanDepositForTransaction && (
+            <Suspense fallback={null}>
+              <AddLoanDepositTransactionModal key="add-loan-deposit-transaction-modal" />
             </Suspense>
           )}
         </AnimatePresence>

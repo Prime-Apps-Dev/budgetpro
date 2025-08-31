@@ -296,70 +296,8 @@ const LoanDepositDetailModal = () => {
           </div>
         </motion.div>
         
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          {isLoan ? (
-            <>
-              <motion.button
-                onClick={() => handleAddPayment()}
-                className="w-full bg-blue-500 text-white p-4 rounded-2xl font-semibold hover:bg-blue-600 flex items-center justify-center"
-                whileTap={whileTap}
-                transition={spring}
-                variants={zoomInOut}
-                initial="initial"
-                whileInView="whileInView"
-                viewport={{ once: false, amount: 0.2 }}
-              >
-                <ICONS.Plus className="w-5 h-5 mr-2" />
-                Внести платеж
-              </motion.button>
-              <motion.button
-                onClick={() => setShowEarlyRepaymentModal(true)}
-                className="w-full bg-red-500 text-white p-4 rounded-2xl font-semibold hover:bg-red-600 flex items-center justify-center"
-                whileTap={whileTap}
-                transition={spring}
-                variants={zoomInOut}
-                initial="initial"
-                whileInView="whileInView"
-                viewport={{ once: false, amount: 0.2 }}
-              >
-                <ICONS.MinusCircle className="w-5 h-5 mr-2" />
-                Досрочное погашение
-              </motion.button>
-            </>
-          ) : (
-            <>
-              <motion.button
-                onClick={() => {
-                  setSelectedFinancialItem({ ...currentItem, type: 'deposit', description: `Пополнение депозита "${currentItem.name}"` });
-                  setShowAddTransaction(true);
-                }}
-                className="w-full bg-green-500 text-white p-4 rounded-2xl font-semibold hover:bg-green-600 flex items-center justify-center"
-                whileTap={whileTap}
-                transition={spring}
-                variants={zoomInOut}
-                initial="initial"
-                whileInView="whileInView"
-                viewport={{ once: false, amount: 0.2 }}
-              >
-                <ICONS.Plus className="w-5 h-5 mr-2" />
-                Пополнить
-              </motion.button>
-              <motion.button
-                onClick={() => setShowWithdrawalModal(true)}
-                className="w-full bg-red-500 text-white p-4 rounded-2xl font-semibold hover:bg-red-600 flex items-center justify-center"
-                whileTap={whileTap}
-                transition={spring}
-                variants={zoomInOut}
-                initial="initial"
-                whileInView="whileInView"
-                viewport={{ once: false, amount: 0.2 }}
-              >
-                <ICONS.MinusCircle className="w-5 h-5 mr-2" />
-                Снять
-              </motion.button>
-            </>
-          )}
-        </div>
+        {/* Удаляем кнопки действий */}
+        {/* <div className="grid grid-cols-2 gap-4 mb-8"> ... </div> */}
 
         <motion.div
           className="bg-white rounded-2xl p-6 shadow-sm mt-4 dark:bg-gray-800"

@@ -10,6 +10,9 @@ import {
   LoansWidget,
   DebtsWidget
 } from '../../components/widgets/FinancialWidgets';
+import FinancialItemCard from '../../components/ui/FinancialItemCard';
+import LongPressWrapper from '../../components/ui/LongPressWrapper';
+import InteractiveSavingGoalCard from '../../components/ui/InteractiveSavingGoalCard';
 
 /**
  * Компонент экрана "Финансовые цели" с улучшенным дизайном в стиле HomeScreen.
@@ -29,7 +32,15 @@ const FinancialGoalsScreen = () => {
     setShowAddDebtModal,
     setShowAddFinancialItemModal,
     setEditingDebt,
-    setSelectedFinancialItem
+    setSelectedFinancialItem,
+    setShowLoanDepositTransactionModal,
+    setSelectedLoanDepositForTransaction,
+    setSelectedDebtForTransactions,
+    setShowDebtTransactionsModal,
+    setEditingFinancialItem,
+    setEditingGoal,
+    setActiveTab,
+    navigateToTab, // Добавлено: новая функция для навигации
   } = useAppContext();
 
   const savingsGoals = financialGoals.filter(goal => goal.isSavings);
@@ -51,7 +62,7 @@ const FinancialGoalsScreen = () => {
         <SavingsWidget
           goals={savingsGoals}
           currencySymbol={currencySymbol}
-          onClick={() => navigateToScreen('savings')}
+          onClick={() => navigateToTab('savings')} // Исправлено на navigateToTab
         />
       ),
       color: 'bg-purple-500'
@@ -65,7 +76,7 @@ const FinancialGoalsScreen = () => {
         <DepositsWidget
           deposits={depositsWithBalance}
           currencySymbol={currencySymbol}
-          onClick={() => setSelectedFinancialItem(depositsWithBalance[0])}
+          onClick={() => navigateToScreen('my-financial-products')}
         />
       ),
       color: 'bg-green-500'
@@ -79,7 +90,7 @@ const FinancialGoalsScreen = () => {
         <LoansWidget
           loans={loansWithBalance}
           currencySymbol={currencySymbol}
-          onClick={() => setSelectedFinancialItem(loansWithBalance[0])}
+          onClick={() => navigateToScreen('my-financial-products')}
         />
       ),
       color: 'bg-red-500'
@@ -244,159 +255,110 @@ const FinancialGoalsScreen = () => {
             </div>
 
             <div className="space-y-4">
-              {savingsGoals.map((goal, index) => {
-                const progress = getProgress(goal.current, goal.target);
-                return (
-                  <motion.button
-                    key={goal.id}
-                    onClick={() => navigateToScreen('savings')}
-                    className="w-full text-left relative overflow-hidden bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-3xl p-6 text-white shadow-purple-500/5"
-                    whileTap={whileTap}
-                    whileHover={whileHover}
-                    transition={spring}
-                    variants={zoomInOut}
-                    whileInView="whileInView"
-                    viewport={{ once: false, amount: 0.2 }}
-                    style={{ transitionDelay: `${index * 0.05}s` }}
-                  >
-                    {/* Декоративный элемент */}
-                    <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center">
-                          <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm mr-3">
-                            <ICONS.PiggyBank className="w-6 h-6" />
-                          </div>
-                          <div>
-                            <div className="text-lg font-semibold opacity-95">{goal.title}</div>
-                            <div className="text-sm opacity-70">
-                              {goal.current.toLocaleString()} из {goal.target.toLocaleString()} {currencySymbol}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold">{progress.toFixed(0)}%</div>
-                          <div className="text-xs opacity-70">выполнено</div>
-                        </div>
-                      </div>
-
-                      {/* Прогресс бар */}
-                      <div className="w-full bg-white/20 rounded-full h-2">
-                        <div
-                          className="h-2 rounded-full bg-white/80 transition-all duration-500"
-                          style={{ width: `${Math.min(progress, 100)}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </motion.button>
-                );
-              })}
+              {savingsGoals.map((goal, index) => (
+                <InteractiveSavingGoalCard
+                  key={goal.id}
+                  goal={goal}
+                  currencySymbol={currencySymbol}
+                  onClick={() => navigateToTab('savings')} // Исправлено на navigateToTab
+                  onEdit={() => {
+                    setEditingGoal(goal);
+                    setShowAddGoalModal(true);
+                  }}
+                  onDelete={() => {}} // Placeholder for delete
+                  onDoubleClick={() => {}} // Placeholder for double-click
+                />
+              ))}
             </div>
           </div>
         )}
 
-        {/* Раздел Депозиты и Кредиты - в двух колонках */}
+        {/* Раздел Депозиты и Кредиты - в одну колонку */}
         {(depositsWithBalance.length > 0 || loansWithBalance.length > 0) && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            {/* Депозиты */}
-            {depositsWithBalance.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center px-2">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center">
-                    <ICONS.Banknote className="w-5 h-5 mr-2 text-green-500" />
-                    Депозиты
-                  </h3>
-                </div>
-
-                <div className="space-y-3">
-                  {depositsWithBalance.map((deposit, index) => (
-                    <motion.button
-                      key={deposit.id}
-                      onClick={() => setSelectedFinancialItem(deposit)}
-                      className="w-full text-left bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-green-100 dark:border-green-900/20 hover:shadow-md transition-all"
-                      whileTap={whileTap}
-                      whileHover={whileHover}
-                      transition={spring}
-                      variants={zoomInOut}
-                      whileInView="whileInView"
-                      viewport={{ once: false, amount: 0.2 }}
-                      style={{ transitionDelay: `${index * 0.05}s` }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center mr-3">
-                            <ICONS.Banknote className="w-5 h-5 text-green-500" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-800 dark:text-gray-200">{deposit.name}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              Активный депозит
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-semibold text-green-600 dark:text-green-400">
-                            {deposit.currentAmount.toLocaleString()} {currencySymbol}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">баланс</div>
-                        </div>
-                      </div>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Кредиты */}
-            {loansWithBalance.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center px-2">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center">
-                    <ICONS.MinusCircle className="w-5 h-5 mr-2 text-red-500" />
-                    Кредиты
-                  </h3>
-                </div>
-
-                <div className="space-y-3">
-                  {loansWithBalance.map((loan, index) => (
-                    <motion.button
-                      key={loan.id}
-                      onClick={() => setSelectedFinancialItem(loan)}
-                      className="w-full text-left bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-red-100 dark:border-red-900/20 hover:shadow-md transition-all"
-                      whileTap={whileTap}
-                      whileHover={whileHover}
-                      transition={spring}
-                      variants={zoomInOut}
-                      whileInView="whileInView"
-                      viewport={{ once: false, amount: 0.2 }}
-                      style={{ transitionDelay: `${index * 0.05}s` }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-xl flex items-center justify-center mr-3">
-                            <ICONS.MinusCircle className="w-5 h-5 text-red-500" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-800 dark:text-gray-200">{loan.name}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              Активный кредит
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-semibold text-red-600 dark:text-red-400">
-                            -{loan.currentBalance.toLocaleString()} {currencySymbol}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">остаток</div>
-                        </div>
-                      </div>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            )}
+          <div className="space-y-4">
+            <div className="flex items-center px-2">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center">
+                <ICONS.Banknote className="w-5 h-5 mr-2 text-green-500" />
+                Кредиты и депозиты
+              </h3>
+            </div>
+            
+            <div className="space-y-3">
+              {depositsWithBalance.map((deposit, index) => (
+                <motion.button
+                  key={deposit.id}
+                  onClick={() => navigateToScreen('my-financial-products')}
+                  className="w-full text-left"
+                  whileTap={whileTap}
+                  whileHover={{ scale: 1.02 }}
+                  transition={spring}
+                  variants={zoomInOut}
+                  whileInView="whileInView"
+                  viewport={{ once: false, amount: 0.2 }}
+                  style={{ transitionDelay: `${index * 0.05}s` }}
+                >
+                  <LongPressWrapper
+                    onTap={() => setSelectedFinancialItem(deposit)}
+                    onLongPress={() => {
+                      setEditingFinancialItem(deposit);
+                      setShowAddFinancialItemModal(true);
+                    }}
+                    onDoubleTap={() => {
+                      setSelectedLoanDepositForTransaction(deposit);
+                      setShowLoanDepositTransactionModal(true);
+                    }}
+                  >
+                    <FinancialItemCard
+                      title={deposit.name}
+                      subtitle={`Банк: ${deposit.bank}`}
+                      amountText={`${deposit.currentAmount.toLocaleString()} ${currencySymbol}`}
+                      infoText={`Доход: ${deposit.totalInterest.toLocaleString()} ${currencySymbol}`}
+                      progress={(deposit.currentAmount / deposit.totalAmount) * 100}
+                      gradient="bg-gradient-to-br from-green-500 via-green-600 to-green-700"
+                      iconName={deposit.iconName || 'Banknote'}
+                      type="deposit"
+                    />
+                  </LongPressWrapper>
+                </motion.button>
+              ))}
+              {loansWithBalance.map((loan, index) => (
+                <motion.button
+                  key={loan.id}
+                  onClick={() => navigateToScreen('my-financial-products')}
+                  className="w-full text-left"
+                  whileTap={whileTap}
+                  whileHover={{ scale: 1.02 }}
+                  transition={spring}
+                  variants={zoomInOut}
+                  whileInView="whileInView"
+                  viewport={{ once: false, amount: 0.2 }}
+                  style={{ transitionDelay: `${index * 0.05}s` }}
+                >
+                  <LongPressWrapper
+                    onTap={() => setSelectedFinancialItem(loan)}
+                    onLongPress={() => {
+                      setEditingFinancialItem(loan);
+                      setShowAddFinancialItemModal(true);
+                    }}
+                    onDoubleTap={() => {
+                      setSelectedLoanDepositForTransaction(loan);
+                      setShowLoanDepositTransactionModal(true);
+                    }}
+                  >
+                    <FinancialItemCard
+                      title={loan.name}
+                      subtitle={`${loan.interestRate}% на ${loan.term} мес.`}
+                      amountText={`${loan.currentBalance.toLocaleString()} ${currencySymbol}`}
+                      infoText={`Осталось ${loan.term - (loan.paymentHistory?.length || 0)} мес.`}
+                      progress={((loan.amount - loan.currentBalance) / loan.amount) * 100}
+                      gradient="bg-gradient-to-br from-red-500 via-red-600 to-red-700"
+                      iconName={loan.iconName || 'MinusCircle'}
+                      type="loan"
+                    />
+                  </LongPressWrapper>
+                </motion.button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -411,51 +373,53 @@ const FinancialGoalsScreen = () => {
             </div>
 
             <div className="space-y-3">
-              {debts.map((debt, index) => (
-                <motion.button
-                  key={debt.id}
-                  onClick={() => navigateToScreen('debts')}
-                  className="w-full text-left bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-blue-100 dark:border-blue-900/20 hover:shadow-md transition-all"
-                  whileTap={whileTap}
-                  whileHover={whileHover}
-                  transition={spring}
-                  variants={zoomInOut}
-                  whileInView="whileInView"
-                  viewport={{ once: false, amount: 0.2 }}
-                  style={{ transitionDelay: `${index * 0.05}s` }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mr-3 ${
-                        debt.type === 'i-owe'
-                          ? 'bg-red-100 dark:bg-red-900/20'
-                          : 'bg-green-100 dark:bg-green-900/20'
-                      }`}>
-                        {debt.type === 'i-owe' ? (
-                          <ICONS.ArrowDownCircle className="w-5 h-5 text-red-500" />
-                        ) : (
-                          <ICONS.ArrowUpCircle className="w-5 h-5 text-green-500" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-800 dark:text-gray-200">{debt.person}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {debt.type === 'i-owe' ? 'Я должен' : 'Мне должны'}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={`font-semibold text-lg ${
-                        debt.type === 'i-owe'
-                          ? 'text-red-600 dark:text-red-400'
-                          : 'text-green-600 dark:text-green-400'
-                      }`}>
-                        {debt.type === 'i-owe' ? '-' : '+'}{debt.amount.toLocaleString()} {currencySymbol}
-                      </div>
-                    </div>
-                  </div>
-                </motion.button>
-              ))}
+              {debts.map((debt, index) => {
+                const isIOwe = debt.type === 'i-owe';
+                const gradient = isIOwe
+                  ? 'bg-gradient-to-br from-red-500 via-red-600 to-red-700'
+                  : 'bg-gradient-to-br from-green-500 via-green-600 to-green-700';
+                const iconName = isIOwe ? 'ArrowDownCircle' : 'ArrowUpCircle';
+                
+                return (
+                  <motion.button
+                    key={debt.id}
+                    onClick={() => navigateToScreen('debts')}
+                    className="w-full text-left"
+                    whileTap={whileTap}
+                    whileHover={{ scale: 1.02 }}
+                    transition={spring}
+                    variants={zoomInOut}
+                    whileInView="whileInView"
+                    viewport={{ once: false, amount: 0.2 }}
+                    style={{ transitionDelay: `${index * 0.05}s` }}
+                  >
+                    <LongPressWrapper
+                        onTap={() => {
+                          setSelectedDebtForTransactions(debt);
+                          setShowDebtTransactionsModal(true);
+                        }}
+                        onLongPress={() => {
+                          setEditingDebt(debt);
+                          setShowAddDebtModal(true);
+                        }}
+                        onDoubleTap={() => {
+                          setSelectedDebtToRepay(debt);
+                          setShowAddTransaction(true);
+                        }}
+                      >
+                      <FinancialItemCard
+                        title={debt.person}
+                        subtitle={debt.description || ''}
+                        amountText={`${isIOwe ? '' : '+'}${debt.amount.toLocaleString()} ${currencySymbol}`}
+                        infoText={debt.date}
+                        gradient={gradient}
+                        iconName={iconName}
+                        type={debt.type}
+                      />
+                    </LongPressWrapper>
+                  </motion.button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -481,7 +445,7 @@ const FinancialGoalsScreen = () => {
 
             <div className="flex flex-wrap gap-3 justify-center mt-8">
               <button
-                onClick={() => navigateToScreen('savings')}
+                onClick={() => navigateToTab('savings')} // Исправлено на navigateToTab
                 className="flex items-center space-x-2 px-4 py-2 bg-purple-500 text-white rounded-2xl text-sm font-medium hover:bg-purple-600 transition-colors"
               >
                 <ICONS.PiggyBank className="w-4 h-4" />

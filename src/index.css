@@ -11,6 +11,11 @@
 html, body {
   scrollbar-width: none;
   -ms-overflow-style: none;  /* Отключаем скроллбар для Internet Explorer и Edge */
+  /* Новые правила для отключения зума */
+  touch-action: pan-x pan-y;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Отключаем выделение текста и элементов во всем приложении */

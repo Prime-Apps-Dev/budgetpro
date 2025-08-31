@@ -25,10 +25,11 @@ const AddFinancialItemModal = () => {
     deposits,
     setDeposits,
     setCurrentScreen,
-    editingItem,
+    editingFinancialItem, // Исправлено: изменено с editingItem на editingFinancialItem
     accounts,
     currencySymbol,
-    setShowAddFinancialItemModal
+    setShowAddFinancialItemModal,
+    setEditingFinancialItem // Добавлено: для сброса состояния
   } = useAppContext();
 
   const [name, setName] = useState('');
@@ -44,17 +45,17 @@ const AddFinancialItemModal = () => {
   const [calculationResult, setCalculationResult] = useState(null);
 
   useEffect(() => {
-    if (editingItem) {
-      setName(editingItem.name);
-      setAmount(editingItem.amount.toString());
-      setInterestRate(editingItem.interestRate.toString());
-      setTerm(editingItem.term.toString());
-      setType(editingItem.type);
-      setBank(editingItem.bank || '');
-      setCapitalization(editingItem.capitalization || 'monthly');
-      setDepositType(editingItem.depositType || 'compound');
-      setSelectedIcon(editingItem.iconName || (editingItem.type === 'loan' ? 'MinusCircle' : 'Banknote'));
-      setLoanPaymentType(editingItem.loanPaymentType || 'annuity');
+    if (editingFinancialItem) {
+      setName(editingFinancialItem.name);
+      setAmount(editingFinancialItem.amount.toString());
+      setInterestRate(editingFinancialItem.interestRate.toString());
+      setTerm(editingFinancialItem.term.toString());
+      setType(editingFinancialItem.type);
+      setBank(editingFinancialItem.bank || '');
+      setCapitalization(editingFinancialItem.capitalization || 'monthly');
+      setDepositType(editingFinancialItem.depositType || 'compound');
+      setSelectedIcon(editingFinancialItem.iconName || (editingFinancialItem.type === 'loan' ? 'MinusCircle' : 'Banknote'));
+      setLoanPaymentType(editingFinancialItem.loanPaymentType || 'annuity');
       setCalculationResult(null);
     } else {
       setName('');
@@ -69,7 +70,7 @@ const AddFinancialItemModal = () => {
       setLoanPaymentType('annuity');
       setCalculationResult(null);
     }
-  }, [editingItem]);
+  }, [editingFinancialItem]);
 
   useEffect(() => {
     const handleWorkerMessage = (e) => {
@@ -107,7 +108,7 @@ const AddFinancialItemModal = () => {
 
     if (type === 'loan') {
       const loanData = {
-        id: editingItem ? editingItem.id : Date.now(),
+        id: editingFinancialItem ? editingFinancialItem.id : Date.now(),
         type,
         name,
         amount: parseFloat(amount),
@@ -116,20 +117,20 @@ const AddFinancialItemModal = () => {
         monthlyPayment,
         totalPayment,
         totalInterest,
-        currentBalance: editingItem ? editingItem.currentBalance : parseFloat(amount),
-        paymentHistory: editingItem ? editingItem.paymentHistory : [],
+        currentBalance: editingFinancialItem ? editingFinancialItem.currentBalance : parseFloat(amount),
+        paymentHistory: editingFinancialItem ? editingFinancialItem.paymentHistory : [],
         paymentSchedule,
         iconName: selectedIcon,
         loanPaymentType: loanPaymentType
       };
-      if (editingItem) {
+      if (editingFinancialItem) {
         setLoans(loans.map(loan => loan.id === loanData.id ? loanData : loan));
       } else {
         setLoans(prevLoans => [...prevLoans, loanData]);
       }
     } else {
       const depositData = {
-        id: editingItem ? editingItem.id : Date.now(),
+        id: editingFinancialItem ? editingFinancialItem.id : Date.now(),
         type,
         name,
         amount: parseFloat(amount),
@@ -137,20 +138,21 @@ const AddFinancialItemModal = () => {
         term: parseFloat(term),
         totalAmount: totalPayment,
         totalInterest,
-        currentAmount: editingItem ? editingItem.currentAmount : parseFloat(amount),
-        contributionHistory: editingItem ? editingItem.contributionHistory : [],
+        currentAmount: editingFinancialItem ? editingFinancialItem.currentAmount : parseFloat(amount),
+        contributionHistory: editingFinancialItem ? editingFinancialItem.contributionHistory : [],
         bank,
         depositType,
         capitalization,
         iconName: selectedIcon,
       };
-      if (editingItem) {
+      if (editingFinancialItem) {
         setDeposits(deposits.map(deposit => deposit.id === depositData.id ? depositData : deposit));
       } else {
         setDeposits(prevDeposits => [...prevDeposits, depositData]);
       }
     }
     setShowAddFinancialItemModal(false);
+    setEditingFinancialItem(null); // Сбрасываем состояние редактирования
   };
 
   /**
@@ -158,6 +160,7 @@ const AddFinancialItemModal = () => {
    */
   const handleClose = () => {
     setShowAddFinancialItemModal(false);
+    setEditingFinancialItem(null); // Сбрасываем состояние редактирования
   };
   
   /**
@@ -171,11 +174,11 @@ const AddFinancialItemModal = () => {
 
   return (
     <ModalWrapper
-      title={editingItem ? `Редактировать ${editingItem.type === 'loan' ? 'кредит' : 'депозит'}` : `Новый финансовый продукт`}
+      title={editingFinancialItem ? `Редактировать ${editingFinancialItem.type === 'loan' ? 'кредит' : 'депозит'}` : `Новый финансовый продукт`}
       handleClose={handleClose}
     >
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 dark:bg-gray-800 flex-grow overflow-y-auto">
-        {!editingItem && (
+        {!editingFinancialItem && (
           <div className="grid grid-cols-2 gap-3 mb-6">
             <motion.button
               onClick={() => {
@@ -445,7 +448,7 @@ const AddFinancialItemModal = () => {
             whileTap={whileTap}
             transition={spring}
           >
-            {editingItem ? 'Сохранить изменения' : 'Сохранить'}
+            {editingFinancialItem ? 'Сохранить изменения' : 'Сохранить'}
           </motion.button>
         </div>
       )}

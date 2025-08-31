@@ -4,6 +4,11 @@ import { ICONS } from '../../components/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { spring, whileTap, zoomInOut, whileHover } from '../../utils/motion';
 import { useAppContext } from '../../context/AppContext';
+import FinancialItemCard from '../../components/ui/FinancialItemCard';
+import AlertModal from '../../components/modals/AlertModal';
+import TabSwitcher from '../../components/ui/TabSwitcher';
+import NoItemsPlaceholder from '../../components/ui/NoItemsPlaceholder';
+import LongPressWrapper from '../../components/ui/LongPressWrapper';
 
 /**
  * Виджет для отображения долгов "Я должен"
@@ -201,6 +206,44 @@ const WidgetSwiper = ({ widgets, activeIndex, onIndexChange }) => {
 };
 
 /**
+ * Интерактивная карточка долга с жестами
+ */
+const InteractiveDebtCard = ({ 
+  debt, 
+  currencySymbol,
+  onEdit, 
+  onDelete,
+  onClick,
+  onDoubleClick
+}) => {
+  const isIOwe = debt.type === 'i-owe';
+  const gradient = isIOwe 
+    ? 'bg-gradient-to-br from-red-500 via-red-600 to-red-700' 
+    : 'bg-gradient-to-br from-green-500 via-green-600 to-green-700';
+  const iconName = isIOwe ? 'ArrowDownCircle' : 'ArrowUpCircle';
+  
+  return (
+    <LongPressWrapper
+      onTap={() => onClick(debt)}
+      onLongPress={() => onEdit(debt)}
+      onSwipeLeft={() => onDelete(debt)}
+      onDoubleTap={() => onDoubleClick(debt)}
+      swipeDeleteIcon={ICONS.Trash2} // Добавляем иконку корзины
+    >
+      <FinancialItemCard
+        title={debt.person}
+        subtitle={debt.description}
+        amountText={`${isIOwe ? '' : '+'}${debt.amount.toLocaleString()} ${currencySymbol}`}
+        infoText={debt.date}
+        gradient={gradient}
+        iconName={iconName}
+        type={debt.type}
+      />
+    </LongPressWrapper>
+  );
+};
+
+/**
  * Компонент экрана "Долги" с переработанным дизайном.
  */
 const DebtsScreen = () => {
@@ -208,63 +251,79 @@ const DebtsScreen = () => {
     debts,
     setDebts,
     goBack,
-    setTransactions,
     currencySymbol,
     setShowAddDebtModal,
-    setEditingDebt
+    setEditingDebt,
+    setShowAddTransaction,
+    setSelectedDebtToRepay,
+    setSelectedDebtForTransactions,
+    setShowDebtTransactionsModal,
   } = useAppContext();
+  
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [debtToDelete, setDebtToDelete] = useState(null);
 
   const [activeWidgetIndex, setActiveWidgetIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState('all');
 
   /**
    * Обрабатывает удаление долга.
    */
-  const handleDeleteDebt = (id) => {
-    if (debts.length > 1) {
-      setDebts(debts.filter(debt => debt.id !== id));
+  const handleDeleteDebt = (debt) => {
+    setDebtToDelete(debt);
+    setShowConfirmDelete(true);
+  };
+  
+  const handleConfirmDelete = () => {
+    if (debtToDelete) {
+      setDebts(debts.filter(debt => debt.id !== debtToDelete.id));
     }
+    setShowConfirmDelete(false);
+    setDebtToDelete(null);
+  };
+  
+  const handleCancelDelete = () => {
+    setShowConfirmDelete(false);
+    setDebtToDelete(null);
   };
 
   /**
-   * Обрабатывает погашение долга, который пользователь должен.
+   * Обрабатывает редактирование долга (долгое нажатие).
    */
-  const handlePayBackDebt = (debt) => {
-    const newTransaction = {
-      id: Date.now(),
-      type: 'expense',
-      amount: debt.amount,
-      category: 'Отдача долга',
-      account: 'Основной',
-      date: new Date().toISOString().split('T')[0],
-      description: `Отдача долга ${debt.person}`
-    };
-    setTransactions(prevTransactions => [...prevTransactions, newTransaction]);
-    handleDeleteDebt(debt.id);
+  const handleEditDebt = (debt) => {
+    setEditingDebt(debt);
+    setShowAddDebtModal(true);
   };
 
   /**
-   * Обрабатывает возврат долга, который должны пользователю.
+   * Обрабатывает одиночный клик по карточке, открывая модальное окно с транзакциями.
    */
-  const handleWriteOffDebt = (debt) => {
-    const newTransaction = {
-      id: Date.now(),
-      type: 'income',
-      amount: debt.amount,
-      category: 'Возврат долга',
-      account: 'Основной',
-      date: new Date().toISOString().split('T')[0],
-      description: `Возврат долга от ${debt.person}`
-    };
-    setTransactions(prevTransactions => [...prevTransactions, newTransaction]);
-    handleDeleteDebt(debt.id);
+  const handleDebtCardClick = (debt) => {
+    setSelectedDebtForTransactions(debt);
+    setShowDebtTransactionsModal(true);
   };
 
   /**
-   * Обрабатывает прощение долга, который должны пользователю.
+   * Обрабатывает двойной клик по карточке, открывая модальное окно добавления транзакции.
    */
-  const handleForgiveDebt = (id) => {
-    handleDeleteDebt(id);
+  const handleDebtCardDoubleClick = (debt) => {
+    setSelectedDebtToRepay(debt);
+    setShowAddTransaction(true);
   };
+  
+  const tabs = [
+    { id: 'all', label: 'Все', icon: ICONS.Layers },
+    { id: 'i-owe', label: 'Я должен', icon: ICONS.ArrowDownCircle },
+    { id: 'owed-to-me', label: 'Мне должны', icon: ICONS.ArrowUpCircle }
+  ];
+  
+  const getFilteredDebts = () => {
+    if (activeTab === 'i-owe') return debts.filter(debt => debt.type === 'i-owe');
+    if (activeTab === 'owed-to-me') return debts.filter(debt => debt.type === 'owed-to-me');
+    return debts;
+  };
+  
+  const filteredDebts = getFilteredDebts();
 
   // Расчеты для виджетов
   const owedToMe = debts.filter(debt => debt.type === 'owed-to-me');
@@ -276,6 +335,12 @@ const DebtsScreen = () => {
 
   // Виджеты для свайпера
   const widgets = [
+    <BalanceWidget 
+      key="balance"
+      netBalance={netBalance} 
+      totalDebts={debts.length} 
+      currencySymbol={currencySymbol} 
+    />,
     <IOweWidget 
       key="iowe"
       totalAmount={totalIOwe} 
@@ -287,14 +352,40 @@ const DebtsScreen = () => {
       totalAmount={totalOwedToMe} 
       debtsCount={owedToMe.length} 
       currencySymbol={currencySymbol} 
-    />,
-    <BalanceWidget 
-      key="balance"
-      netBalance={netBalance} 
-      totalDebts={debts.length} 
-      currencySymbol={currencySymbol} 
     />
   ];
+
+  const renderDebtList = (debtList) => {
+    return (
+      <motion.div
+        key={activeTab}
+        className="space-y-3"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.3 }}
+      >
+        {debtList.map((debt, index) => (
+          <motion.div 
+            key={debt.id}
+            variants={zoomInOut}
+            whileInView="whileInView"
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ delay: index * 0.05 }}
+          >
+            <InteractiveDebtCard
+              debt={debt}
+              currencySymbol={currencySymbol}
+              onEdit={handleEditDebt}
+              onDelete={handleDeleteDebt}
+              onClick={handleDebtCardClick}
+              onDoubleClick={handleDebtCardDoubleClick}
+            />
+          </motion.div>
+        ))}
+      </motion.div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32">
@@ -326,14 +417,6 @@ const DebtsScreen = () => {
             whileInView="whileInView"
             viewport={{ once: false, amount: 0.2 }}
           >
-            <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Баланс</div>
-            <div className={`text-xl font-bold ${
-              netBalance >= 0 
-                ? 'text-green-600 dark:text-green-400' 
-                : 'text-red-600 dark:text-red-400'
-            }`}>
-              {netBalance >= 0 ? '+' : ''}{netBalance.toLocaleString()} {currencySymbol}
-            </div>
           </motion.div>
         </div>
         
@@ -341,14 +424,14 @@ const DebtsScreen = () => {
         <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-4 border border-white/50 dark:border-gray-700/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="text-center">
+              <div className="text-left">
                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Всего долгов</div>
                 <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {debts.length}
                 </div>
               </div>
               <div className="w-px h-8 bg-gray-200 dark:bg-gray-600" />
-              <div className="text-center">
+              <div className="text-left">
                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Активных</div>
                 <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {debts.length}
@@ -368,7 +451,7 @@ const DebtsScreen = () => {
       </div>
 
       {/* Основной контент */}
-      <div className="px-6 py-6 space-y-6">
+      <div className="px-6 py-6 space-y-16">
         
         {/* Виджеты с свайпером */}
         <div className="space-y-4">
@@ -389,222 +472,107 @@ const DebtsScreen = () => {
           </motion.div>
         </div>
 
+        {/* Переключатель вкладок */}
+        <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
+
         {/* Детализированные списки долгов */}
         <div className="space-y-8">
-          
-          {/* Секция "Я должен" */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between px-2">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                Я должен
-              </h3>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {iOwe.length} долг{iOwe.length !== 1 ? 'а' : ''}
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              {iOwe.length > 0 ? (
-                iOwe.map((debt, index) => (
-                  <motion.div 
-                    key={debt.id}
-                    className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"
-                    variants={zoomInOut}
-                    whileInView="whileInView"
-                    viewport={{ once: false, amount: 0.2 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mr-4">
-                          <ICONS.ArrowDownCircle className="w-6 h-6 text-red-500" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900 dark:text-gray-100">{debt.person}</div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">{debt.description}</div>
-                          <div className="text-xs text-gray-400 dark:text-gray-500">{debt.date}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-3">
-                        <div className="text-right">
-                          <div className="font-bold text-red-600 text-lg">
-                            {debt.amount.toLocaleString()} {currencySymbol}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-1">
-                          <motion.button
-                            onClick={() => handlePayBackDebt(debt)}
-                            className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-xl transition-colors"
-                            whileTap={whileTap}
-                            whileHover={whileHover}
-                            transition={spring}
-                            title="Погасить долг"
-                          >
-                            <ICONS.Check className="w-5 h-5" />
-                          </motion.button>
-                          <motion.button
-                            onClick={() => {
-                              setEditingDebt(debt);
-                              setShowAddDebtModal(true);
-                            }}
-                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-colors"
-                            whileTap={whileTap}
-                            whileHover={whileHover}
-                            transition={spring}
-                            title="Редактировать"
-                          >
-                            <ICONS.Edit className="w-5 h-5" />
-                          </motion.button>
-                          <motion.button
-                            onClick={() => handleDeleteDebt(debt.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors"
-                            whileTap={whileTap}
-                            whileHover={whileHover}
-                            transition={spring}
-                            title="Удалить"
-                          >
-                            <ICONS.Trash2 className="w-5 h-5" />
-                          </motion.button>
-                        </div>
+          <AnimatePresence mode="wait">
+            {activeTab === 'all' ? (
+              <motion.div key="all-debts" className="space-y-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {iOwe.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between px-2">
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                        Я должен
+                      </h3>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {iOwe.length} долг{iOwe.length !== 1 ? 'а' : ''}
                       </div>
                     </div>
-                  </motion.div>
-                ))
-              ) : (
-                <motion.div 
-                  className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center"
-                  variants={zoomInOut}
-                  whileInView="whileInView"
-                  viewport={{ once: false, amount: 0.2 }}
-                >
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                    <ICONS.ArrowDownCircle className="w-8 h-8 text-gray-400" />
+                    {renderDebtList(iOwe)}
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                    У вас нет долгов
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">
-                    Отличная финансовая дисциплина!
-                  </p>
-                </motion.div>
-              )}
-            </div>
-          </div>
-
-          {/* Секция "Мне должны" */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between px-2">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                Мне должны
-              </h3>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {owedToMe.length} долг{owedToMe.length !== 1 ? 'а' : ''}
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              {owedToMe.length > 0 ? (
-                owedToMe.map((debt, index) => (
-                  <motion.div 
-                    key={debt.id}
-                    className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"
-                    variants={zoomInOut}
-                    whileInView="whileInView"
-                    viewport={{ once: false, amount: 0.2 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mr-4">
-                          <ICONS.ArrowUpCircle className="w-6 h-6 text-green-500" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900 dark:text-gray-100">{debt.person}</div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">{debt.description}</div>
-                          <div className="text-xs text-gray-400 dark:text-gray-500">{debt.date}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-3">
-                        <div className="text-right">
-                          <div className="font-bold text-green-600 text-lg">
-                            +{debt.amount.toLocaleString()} {currencySymbol}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-1">
-                          <motion.button
-                            onClick={() => handleWriteOffDebt(debt)}
-                            className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-xl transition-colors"
-                            whileTap={whileTap}
-                            whileHover={whileHover}
-                            transition={spring}
-                            title="Получить возврат"
-                          >
-                            <ICONS.Check className="w-5 h-5" />
-                          </motion.button>
-                          <motion.button
-                            onClick={() => handleForgiveDebt(debt.id)}
-                            className="p-2 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-xl transition-colors"
-                            whileTap={whileTap}
-                            whileHover={whileHover}
-                            transition={spring}
-                            title="Простить долг"
-                          >
-                            <ICONS.X className="w-5 h-5" />
-                          </motion.button>
-                          <motion.button
-                            onClick={() => {
-                              setEditingDebt(debt);
-                              setShowAddDebtModal(true);
-                            }}
-                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-colors"
-                            whileTap={whileTap}
-                            whileHover={whileHover}
-                            transition={spring}
-                            title="Редактировать"
-                          >
-                            <ICONS.Edit className="w-5 h-5" />
-                          </motion.button>
-                          <motion.button
-                            onClick={() => handleDeleteDebt(debt.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors"
-                            whileTap={whileTap}
-                            whileHover={whileHover}
-                            transition={spring}
-                            title="Удалить"
-                          >
-                            <ICONS.Trash2 className="w-5 h-5" />
-                          </motion.button>
-                        </div>
+                )}
+                {owedToMe.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between px-2">
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                        Мне должны
+                      </h3>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {owedToMe.length} долг{owedToMe.length !== 1 ? 'а' : ''}
                       </div>
                     </div>
-                  </motion.div>
-                ))
-              ) : (
-                <motion.div 
-                  className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center"
-                  variants={zoomInOut}
-                  whileInView="whileInView"
-                  viewport={{ once: false, amount: 0.2 }}
-                >
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                    <ICONS.ArrowUpCircle className="w-8 h-8 text-gray-400" />
+                    {renderDebtList(owedToMe)}
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                    Вам никто не должен
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">
-                    Все долги возвращены или вы пока никому не одалживали
-                  </p>
-                </motion.div>
-              )}
-            </div>
-          </div>
+                )}
+                {debts.length === 0 && (
+                  <NoItemsPlaceholder
+                    iconName="Layers"
+                    iconColor="#3b82f6"
+                    title="У вас нет долгов"
+                    description="Отличная финансовая дисциплина!"
+                    actions={[
+                      { label: 'Добавить долг', onClick: () => setShowAddDebtModal(true), colorClass: 'bg-blue-600 hover:bg-blue-700' }
+                    ]}
+                  />
+                )}
+              </motion.div>
+            ) : (
+              <motion.div key={activeTab} className="space-y-3"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {filteredDebts.length > 0 ? (
+                  filteredDebts.map((debt, index) => (
+                    <motion.div 
+                      key={debt.id}
+                      variants={zoomInOut}
+                      whileInView="whileInView"
+                      viewport={{ once: false, amount: 0.2 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <InteractiveDebtCard
+                        debt={debt}
+                        currencySymbol={currencySymbol}
+                        onEdit={handleEditDebt}
+                        onDelete={handleDeleteDebt}
+                        onClick={handleDebtCardClick}
+                        onDoubleClick={handleDebtCardDoubleClick}
+                      />
+                    </motion.div>
+                  ))
+                ) : (
+                  <NoItemsPlaceholder
+                    iconName={activeTab === 'i-owe' ? 'ArrowDownCircle' : 'ArrowUpCircle'}
+                    iconColor={activeTab === 'i-owe' ? '#ef4444' : '#22c55e'}
+                    title={activeTab === 'i-owe' ? 'У вас нет долгов' : 'Вам никто не должен'}
+                    description={activeTab === 'i-owe' ? 'Отличная финансовая дисциплина!' : 'Все долги возвращены или вы пока никому не одалживали'}
+                    actions={[
+                      { label: 'Добавить долг', onClick: () => setShowAddDebtModal(true), colorClass: 'bg-blue-600 hover:bg-blue-700' }
+                    ]}
+                  />
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
+      
+      <AlertModal
+        isVisible={showConfirmDelete}
+        title="Удалить долг?"
+        message={`Долг "${debtToDelete?.person}" на сумму ${debtToDelete?.amount.toLocaleString()} ${currencySymbol} будет удален безвозвратно. Это действие нельзя отменить.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

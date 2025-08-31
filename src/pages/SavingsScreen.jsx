@@ -4,6 +4,11 @@ import { ICONS } from '../components/icons';
 import { motion } from 'framer-motion';
 import { whileTap, whileHover, spring, zoomInOut } from '../utils/motion';
 import { useAppContext } from '../context/AppContext';
+import InteractiveSavingGoalCard from '../components/ui/InteractiveSavingGoalCard';
+import AlertModal from '../components/modals/AlertModal';
+import GoalTransactionsModal from '../components/modals/GoalTransactionsModal';
+import LongPressWrapper from '../components/ui/LongPressWrapper';
+import FinancialItemCard from '../components/ui/FinancialItemCard';
 
 /**
  * Переработанный компонент экрана "Копилка" в стиле HomeScreen и ProfileScreen.
@@ -17,13 +22,22 @@ const SavingsScreen = () => {
     setTransactions,
     totalSavingsBalance,
     currencySymbol,
-    setShowAddGoalModal // ИСПРАВЛЕНО: Имя функции изменено на правильное
+    setShowAddGoalModal,
+    setEditingGoal,
+    setShowAddTransaction,
+    selectedGoal,
+    setSelectedGoal,
+    showGoalTransactionsModal,
+    setShowGoalTransactionsModal,
+    editingTransaction,
+    setEditingTransaction
   } = useAppContext();
   
   const [savingsAction, setSavingsAction] = useState(null);
   const [savingsAmount, setSavingsAmount] = useState('');
-  const [selectedGoal, setSelectedGoal] = useState(null);
-
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState(null);
+  
   const savingsGoals = financialGoals.filter(goal => goal.isSavings);
 
   /**
@@ -60,6 +74,65 @@ const SavingsScreen = () => {
     setSavingsAction(null);
     setSelectedGoal(null);
   };
+  
+  /**
+   * Обрабатывает клик по карточке цели, открывая транзакции.
+   */
+  const handleGoalClick = (goal) => {
+    setSelectedGoal(goal);
+    setShowGoalTransactionsModal(true);
+  };
+  
+  /**
+   * Обрабатывает долгое нажатие для редактирования цели.
+   */
+  const handleEditGoal = (goal) => {
+    setEditingGoal(goal);
+    setShowAddGoalModal(true);
+  };
+
+  /**
+   * Открывает модальное окно подтверждения удаления.
+   */
+  const handleDeleteGoal = (goal) => {
+    setGoalToDelete(goal);
+    setShowConfirmDelete(true);
+  };
+  
+  /**
+   * Обрабатывает двойной клик для добавления транзакции.
+   */
+  const handleDoubleClickGoal = (goal) => {
+    setSelectedGoal(goal);
+    setShowAddTransaction(true);
+  };
+
+  /**
+   * Подтверждает удаление цели.
+   */
+  const handleConfirmDelete = () => {
+    if (goalToDelete) {
+      setFinancialGoals(financialGoals.filter(goal => goal.id !== goalToDelete.id));
+      setTransactions(transactions.filter(t => !t.description.includes(`копилки "${goalToDelete.title}"`)));
+    }
+    setShowConfirmDelete(false);
+    setGoalToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirmDelete(false);
+    setGoalToDelete(null);
+  };
+  
+  const handleDepositToGoal = (goal) => {
+    setSavingsAction('deposit');
+    setSelectedGoal(goal);
+  };
+  
+  const handleWithdrawFromGoal = (goal) => {
+    setSavingsAction('withdraw');
+    setSelectedGoal(goal);
+  };
 
   // Находим ближайшую к завершению копилку
   const nearestGoal = savingsGoals
@@ -68,6 +141,10 @@ const SavingsScreen = () => {
 
   // Вычисляем недостающую сумму до ближайшей цели
   const nextMilestone = nearestGoal ? nearestGoal.target - nearestGoal.current : 0;
+  
+  const getProgress = (current, target) => {
+    return target > 0 ? (current / target) * 100 : 0;
+  };
 
   if (savingsAction) {
     return (
@@ -187,42 +264,49 @@ const SavingsScreen = () => {
             whileInView="whileInView"
             viewport={{ once: false, amount: 0.2 }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <div className="p-3 bg-purple-500/20 rounded-2xl mr-4">
-                  <ICONS.Target className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <LongPressWrapper
+              onTap={() => handleGoalClick(nearestGoal)}
+              onLongPress={() => handleEditGoal(nearestGoal)}
+              onDoubleTap={() => handleDoubleClickGoal(nearestGoal)}
+              onSwipeLeft={() => handleDeleteGoal(nearestGoal)}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <div className="p-3 bg-purple-500/20 rounded-2xl mr-4">
+                    <ICONS.Target className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Ближайшая цель</div>
+                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      {nearestGoal.title}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Ближайшая цель</div>
-                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    {nearestGoal.title}
+                <div className="text-right">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Осталось</div>
+                  <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                    {nextMilestone.toLocaleString()} {currencySymbol}
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-sm text-gray-600 dark:text-gray-400">Осталось</div>
-                <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                  {nextMilestone.toLocaleString()} {currencySymbol}
+              
+              <div className="mb-3">
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  <span>{nearestGoal.current.toLocaleString()} {currencySymbol}</span>
+                  <span>{nearestGoal.target.toLocaleString()} {currencySymbol}</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <div
+                    className="h-3 rounded-full bg-purple-500 transition-all duration-300"
+                    style={{ width: `${Math.min((nearestGoal.current / nearestGoal.target) * 100, 100)}%` }}
+                  />
                 </div>
               </div>
-            </div>
-            
-            <div className="mb-3">
-              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-                <span>{nearestGoal.current.toLocaleString()} {currencySymbol}</span>
-                <span>{nearestGoal.target.toLocaleString()} {currencySymbol}</span>
+              
+              <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+                {((nearestGoal.current / nearestGoal.target) * 100).toFixed(1)}% выполнено
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                <div
-                  className="h-3 rounded-full bg-purple-500 transition-all duration-300"
-                  style={{ width: `${Math.min((nearestGoal.current / nearestGoal.target) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
-            
-            <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-              {((nearestGoal.current / nearestGoal.target) * 100).toFixed(1)}% выполнено
-            </div>
+            </LongPressWrapper>
           </motion.div>
         ) : (
           <motion.div
@@ -260,69 +344,17 @@ const SavingsScreen = () => {
           
           <div className="space-y-3">
             {savingsGoals.length > 0 ? (
-              savingsGoals.map((goal, index) => {
-                const progress = goal.target > 0 ? (goal.current / goal.target) * 100 : 0;
-                const isCompleted = progress >= 100;
-                
-                return (
-                  <motion.div 
-                    key={goal.id} 
-                    className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700"
-                    variants={zoomInOut}
-                    whileInView="whileInView"
-                    viewport={{ once: false, amount: 0.2 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center">
-                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mr-3 ${
-                          isCompleted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-purple-100 dark:bg-purple-900/30'
-                        }`}>
-                          <ICONS.PiggyBank className={`w-5 h-5 ${
-                            isCompleted ? 'text-green-600 dark:text-green-400' : 'text-purple-600 dark:text-purple-400'
-                          }`} />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-gray-100">{goal.title}</h4>
-                          {goal.deadline && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">до {goal.deadline}</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                          {goal.current.toLocaleString()} {currencySymbol}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          из {goal.target.toLocaleString()} {currencySymbol}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-3">
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full transition-all duration-300 ${
-                            isCompleted ? 'bg-green-500' : 'bg-purple-500'
-                          }`}
-                          style={{ width: `${Math.min(progress, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                        {progress.toFixed(1)}% достигнуто
-                      </span>
-                      {isCompleted && (
-                        <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 rounded-full text-xs font-medium text-green-600 dark:text-green-400">
-                          Выполнено
-                        </span>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })
+              savingsGoals.map((goal, index) => (
+                <InteractiveSavingGoalCard
+                  key={goal.id}
+                  goal={goal}
+                  currencySymbol={currencySymbol}
+                  onClick={() => handleGoalClick(goal)}
+                  onEdit={() => handleEditGoal(goal)}
+                  onDelete={() => handleDeleteGoal(goal)}
+                  onDoubleClick={() => handleDoubleClickGoal(goal)}
+                />
+              ))
             ) : (
               <motion.div 
                 className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 text-center"
@@ -363,6 +395,16 @@ const SavingsScreen = () => {
       >
         <ICONS.Plus className="w-6 h-6" />
       </motion.button>
+
+      {/* Модальное окно подтверждения удаления */}
+      <AlertModal
+        isVisible={showConfirmDelete}
+        title="Удалить копилку?"
+        message={`Копилка "${goalToDelete?.title}" будет удалена безвозвратно. Это также удалит все связанные операции.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
+      {showGoalTransactionsModal && selectedGoal && <GoalTransactionsModal />}
     </div>
   );
 };

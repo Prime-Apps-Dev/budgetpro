@@ -37,7 +37,7 @@ const ProfileScreen = () => {
       {/* Header секция с профилем пользователя */}
       <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-700 px-6 py-8">
         <motion.div
-          className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-3xl p-6 border border-white/50 dark:border-gray-700/50 shadow-lg shadow-gray-900/5"
+          className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-3xl p-6 border border-white/50 dark:border-gray-700/50 shadow-lg shadow-gray-900/2"
           variants={zoomInOut}
           whileInView="whileInView"
           viewport={{ once: false, amount: 0.2 }}
@@ -51,7 +51,7 @@ const ProfileScreen = () => {
             </div>
             <div className="flex-1">
               <div className="flex flex-col gap-1">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                <h1 className="text-2xl leading-5 font-bold text-gray-900 dark:text-gray-100">
                   {userProfile?.name}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">{userProfile?.email}</p>
@@ -68,7 +68,7 @@ const ProfileScreen = () => {
               console.log('Нажата кнопка "Редактировать профиль"');
               setShowEditProfileModal(true);
             }}
-            className="w-full bg-gray-200 text-gray-800 p-4 rounded-2xl font-medium hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            className="w-full bg-gray-100 text-gray-800 p-4 rounded-2xl font-medium hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
             whileTap={whileTap}
             whileHover={{ scale: 1.02 }}
             transition={spring}
@@ -105,7 +105,7 @@ const ProfileScreen = () => {
                     <ICONS.Target className="w-6 h-6" />
                   </div>
                   <div>
-                    <div className="text-lg font-semibold">Финансовые цели</div>
+                    <div className="text-lg leading-5 font-semibold">Финансовые цели</div>
                     <div className="text-sm opacity-80">Планируйте будущее</div>
                   </div>
                 </div>
@@ -130,7 +130,7 @@ const ProfileScreen = () => {
                     <ICONS.Wallet className="w-6 h-6" />
                   </div>
                   <div>
-                    <div className="text-lg font-semibold">Планирование бюджета</div>
+                    <div className="text-lg leading-5 font-semibold">Планирование бюджета</div>
                     <div className="text-sm opacity-80">Контролируйте расходы</div>
                   </div>
                 </div>
@@ -156,7 +156,7 @@ const ProfileScreen = () => {
                   <ICONS.Handshake className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="text-lg font-semibold">Долги</div>
+                  <div className="text-lg leading-5 font-semibold">Долги</div>
                   <div className="text-sm opacity-80">Управление обязательствами</div>
                 </div>
               </div>
@@ -187,7 +187,7 @@ const ProfileScreen = () => {
                   <ICONS.Banknote className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div className="text-left">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">Кредиты и депозиты</div>
+                  <div className="font-medium leading-5 text-gray-900 dark:text-gray-100">Кредиты и депозиты</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Финансовые продукты</div>
                 </div>
               </div>
@@ -209,7 +209,7 @@ const ProfileScreen = () => {
                   <ICONS.Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
                 <div className="text-left">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">История транзакций</div>
+                  <div className="font-medium leading-5 text-gray-900 dark:text-gray-100">История транзакций</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Все операции</div>
                 </div>
               </div>
@@ -231,7 +231,7 @@ const ProfileScreen = () => {
                   <ICONS.CreditCard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="text-left">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">Счета</div>
+                  <div className="font-medium leading-5 text-gray-900 dark:text-gray-100">Счета</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Управление счетами</div>
                 </div>
               </div>
@@ -253,7 +253,7 @@ const ProfileScreen = () => {
                   <ICONS.LayoutGrid className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div className="text-left">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">Категории</div>
+                  <div className="font-medium leading-5 text-gray-900 dark:text-gray-100">Категории</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Управление категориями</div>
                 </div>
               </div>
@@ -283,7 +283,7 @@ const ProfileScreen = () => {
                 <ICONS.Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </div>
               <div className="text-left">
-                <div className="font-medium text-gray-900 dark:text-gray-100">Настройки приложения</div>
+                <div className="font-medium leading-5 text-gray-900 dark:text-gray-100">Настройки приложения</div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">Персонализация и безопасность</div>
               </div>
             </div>

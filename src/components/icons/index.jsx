@@ -79,7 +79,8 @@ import {
     TrendingUp,
     TrendingDown,
     ChevronDown,
-    Scale // Добавляем иконку Scale
+    Scale,
+    Layers 
 } from 'lucide-react';
 
 export const ICONS = {
@@ -162,5 +163,7 @@ export const ICONS = {
     TrendingUp,
     TrendingDown,
     ChevronDown,
-    Scale // Добавляем иконку Scale
+    Scale,
+    Layers,
+    Trash2 // Добавляем иконку Trash2
 };

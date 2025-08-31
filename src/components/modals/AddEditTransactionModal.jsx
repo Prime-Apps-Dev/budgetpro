@@ -33,21 +33,22 @@ const AddEditTransactionModal = () => {
     depositTransactions,
     setDepositTransactions,
     currencySymbol,
+    selectedDebtToRepay,
+    setDebts,
+    debts,
+    closeAllModals // Добавлена новая функция для закрытия всех модалок
   } = useAppContext();
 
   /**
    * Закрывает модальное окно и сбрасывает состояния.
    */
   const handleClose = () => {
-    if (editingTransaction) {
-      setEditingTransaction(null);
-    }
-    setSelectedFinancialItem(null);
-    setShowAddTransaction(false);
+    closeAllModals();
   };
   
   const isEditing = !!editingTransaction;
   const isFinancialTransaction = selectedFinancialItem && (selectedFinancialItem.type === 'loan' || selectedFinancialItem.type === 'deposit');
+  const isDebtTransaction = !!selectedDebtToRepay;
 
   const [formData, setFormData] = useState(
     isEditing ? { ...editingTransaction } : newTransaction
@@ -85,12 +86,22 @@ const AddEditTransactionModal = () => {
         });
         setSelectedDeposit(selectedFinancialItem.id);
       }
+    } else if (selectedDebtToRepay) {
+      setFormData({
+        type: selectedDebtToRepay.type === 'i-owe' ? 'expense' : 'income',
+        amount: selectedDebtToRepay.amount,
+        category: selectedDebtToRepay.type === 'i-owe' ? 'Отдача долга' : 'Возврат долга',
+        account: 'Основной',
+        date: new Date().toISOString().split('T')[0],
+        description: selectedDebtToRepay.description || '',
+        linkedDebtId: selectedDebtToRepay.id,
+      });
     } else {
       setFormData(newTransaction);
       setSelectedLoan('');
       setSelectedDeposit('');
     }
-  }, [editingTransaction, newTransaction, selectedFinancialItem, setNewTransaction]);
+  }, [editingTransaction, newTransaction, selectedFinancialItem, selectedDebtToRepay, setNewTransaction]);
   
   /**
    * Обрабатывает отправку формы, сохраняя новую или обновляя существующую транзакцию.
@@ -101,6 +112,7 @@ const AddEditTransactionModal = () => {
         ...formData,
         amount: parseFloat(formData.amount),
         financialItemId: formData.category === 'Погашение кредита' ? selectedLoan : (formData.category === 'Пополнение депозита' || formData.category === 'Снятие с депозита' ? selectedDeposit : null),
+        linkedDebtId: selectedDebtToRepay ? selectedDebtToRepay.id : null,
         id: isEditing ? editingTransaction.id : Date.now()
       };
 
@@ -149,8 +161,8 @@ const AddEditTransactionModal = () => {
           };
           setDepositTransactions(depositTransactions.map(t => t.id === oldTransaction.id ? updatedDepositTransaction : t));
         }
-
         setEditingTransaction(null);
+
       } else {
         if (selectedFinancialItem && selectedFinancialItem.type === 'loan') {
           setLoanTransactions([...loanTransactions, transactionData]);
@@ -176,6 +188,11 @@ const AddEditTransactionModal = () => {
             return deposit;
           }));
 
+        } else if (selectedDebtToRepay) {
+          // Удаление долга после создания транзакции
+          setDebts(debts.filter(d => d.id !== selectedDebtToRepay.id));
+          setTransactions([...transactions, transactionData]);
+
         } else {
           setTransactions([...transactions, transactionData]);
         }
@@ -190,10 +207,11 @@ const AddEditTransactionModal = () => {
         });
       }
       
-      setShowAddTransaction(false);
-      
+      closeAllModals(); // Вызываем общую функцию для закрытия
     }
   };
+
+  const isDebtOrFinancialTransaction = isFinancialTransaction || isDebtTransaction;
 
   return (
     <ModalWrapper
@@ -204,26 +222,26 @@ const AddEditTransactionModal = () => {
       <div className="space-y-8">
         <div className="grid grid-cols-2 gap-3">
           <motion.button
-            onClick={() => !isFinancialTransaction && setFormData({ ...formData, type: 'expense', category: '', description: '' })}
+            onClick={() => !isDebtOrFinancialTransaction && setFormData({ ...formData, type: 'expense', category: '', description: '' })}
             className={`p-4 rounded-2xl border-2 font-medium ${
               formData.type === 'expense'
                 ? 'border-red-500 bg-red-50 text-red-700 dark:border-red-400 dark:bg-red-900 dark:text-red-300'
                 : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
-            } ${isFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
-            disabled={isFinancialTransaction}
+            } ${isDebtOrFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
+            disabled={isDebtOrFinancialTransaction}
             whileTap={whileTap}
             transition={spring}
           >
             Расход
           </motion.button>
           <motion.button
-            onClick={() => !isFinancialTransaction && setFormData({ ...formData, type: 'income', category: '', description: '' })}
+            onClick={() => !isDebtOrFinancialTransaction && setFormData({ ...formData, type: 'income', category: '', description: '' })}
             className={`p-4 rounded-2xl border-2 font-medium ${
               formData.type === 'income'
                 ? 'border-green-500 bg-green-50 text-green-700 dark:border-green-400 dark:bg-green-900 dark:text-green-300'
                 : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
-            } ${isFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
-            disabled={isFinancialTransaction}
+            } ${isDebtOrFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
+            disabled={isDebtOrFinancialTransaction}
             whileTap={whileTap}
             transition={spring}
           >
@@ -251,8 +269,8 @@ const AddEditTransactionModal = () => {
               setSelectedLoan('');
               setSelectedDeposit('');
             }}
-            className={`w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 ${isFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
-            disabled={isFinancialTransaction}
+            className={`w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 ${isDebtOrFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
+            disabled={isDebtOrFinancialTransaction}
           >
             <option value="">Выберите категорию</option>
             {categories[formData.type].map(category => (
@@ -313,8 +331,8 @@ const AddEditTransactionModal = () => {
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Описание транзакции"
-            className={`w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 ${isFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
-            disabled={isFinancialTransaction}
+            className={`w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 ${isDebtOrFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
+            disabled={isDebtOrFinancialTransaction}
           />
         </div>
 

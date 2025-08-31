@@ -5,6 +5,8 @@ import TransactionItem from '../components/ui/TransactionItem';
 import { motion } from 'framer-motion';
 import { whileHover, whileTap, spring, zoomInOut } from '../utils/motion';
 import { useAppContext } from '../context/AppContext';
+import { useState } from 'react';
+import AlertModal from '../components/modals/AlertModal'; // Импортируем модальное окно подтверждения
 
 /**
  * Компонент главного экрана приложения с улучшенным дизайном и 8-point grid системой.
@@ -18,16 +20,79 @@ const HomeScreen = () => {
     totalBudget,
     totalSavingsBalance,
     transactions,
+    setTransactions,
     currencySymbol,
     setActiveTab,
     navigateToScreen,
-    navigateToTransactionHistory
+    navigateToTransactionHistory,
+    setShowAddTransaction,
+    setEditingTransaction,
+    depositTransactions,
+    setDepositTransactions,
+    setLoans,
+    loans,
+    deposits,
+    setDeposits,
+    loanTransactions,
+    setLoanTransactions
   } = useAppContext();
+
+  // Состояние для модального окна подтверждения удаления
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
 
   // Расчет баланса для отображения
   const balance = totalIncome - totalExpenses;
   const isPositiveBalance = balance >= 0;
 
+  /**
+   * Обрабатывает удаление транзакции.
+   */
+  const handleDeleteTransaction = (transaction) => {
+    // Проверяем, является ли транзакция связанной с кредитом или депозитом
+    const isDepositTransaction = transaction.category === 'Пополнение депозита' || transaction.category === 'Снятие с депозита';
+    const isLoanTransaction = transaction.category === 'Погашение кредита';
+
+    // Удаляем из общего списка
+    setTransactions(prevTransactions => prevTransactions.filter(t => t.id !== transaction.id));
+
+    // Обновляем связанные списки, если это необходимо
+    if (isDepositTransaction && transaction.financialItemId) {
+      setDeposits(prevDeposits => prevDeposits.map(d => {
+        if (d.id === transaction.financialItemId) {
+          const newAmount = transaction.category === 'Пополнение депозита'
+            ? d.currentAmount - transaction.amount
+            : d.currentAmount + transaction.amount;
+          return { ...d, currentAmount: newAmount };
+        }
+        return d;
+      }));
+      setDepositTransactions(prevDepositTransactions => prevDepositTransactions.filter(t => t.id !== transaction.id));
+    }
+    else if (isLoanTransaction && transaction.financialItemId) {
+      setLoans(prevLoans => prevLoans.map(l => {
+        if (l.id === transaction.financialItemId) {
+          return { ...l, currentBalance: l.currentBalance + transaction.amount };
+        }
+        return l;
+      }));
+      setLoanTransactions(prevLoanTransactions => prevLoanTransactions.filter(t => t.id !== transaction.id));
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (transactionToDelete) {
+      handleDeleteTransaction(transactionToDelete);
+    }
+    setShowConfirmDelete(false);
+    setTransactionToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirmDelete(false);
+    setTransactionToDelete(null);
+  };
+  
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32">
       {/* Персонализированный header - 8pt grid: py-8 (32px), px-6 (24px) */}
@@ -52,28 +117,13 @@ const HomeScreen = () => {
               </div>
             </div>
           </div>
-          <motion.div
-            className="text-right"
-            variants={zoomInOut}
-            whileInView="whileInView"
-            viewport={{ once: false, amount: 0.2 }}
-          >
-            <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Баланс</div>
-            <div className={`text-2xl font-bold ${
-              isPositiveBalance 
-                ? 'text-green-600 dark:text-green-400' 
-                : 'text-red-600 dark:text-red-400'
-            }`}>
-              {isPositiveBalance ? '+' : ''}{balance.toLocaleString()} {currencySymbol}
-            </div>
-          </motion.div>
         </div>
         
         {/* Краткая сводка дня */}
         <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-4 border border-white/50 dark:border-gray-700/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="text-center">
+              <div className="text-left">
                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Операций сегодня</div>
                 <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {transactions.filter(t => {
@@ -84,7 +134,7 @@ const HomeScreen = () => {
                 </div>
               </div>
               <div className="w-px h-8 bg-gray-200 dark:bg-gray-600" />
-              <div className="text-center">
+              <div className="text-left">
                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Категорий</div>
                 <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {new Set(transactions.map(t => t.category)).size}
@@ -139,10 +189,6 @@ const HomeScreen = () => {
                 <div className="text-2xl font-bold mb-1">
                   {totalIncome.toLocaleString()} {currencySymbol}
                 </div>
-                <div className="flex items-center text-sm opacity-80">
-                  <div className="w-1 h-1 bg-white rounded-full mr-2" />
-                  Положительный поток
-                </div>
               </div>
             </motion.button>
 
@@ -170,10 +216,6 @@ const HomeScreen = () => {
                 </div>
                 <div className="text-2xl font-bold mb-1">
                   {totalExpenses.toLocaleString()} {currencySymbol}
-                </div>
-                <div className="flex items-center text-sm opacity-80">
-                  <div className="w-1 h-1 bg-white rounded-full mr-2" />
-                  Отрицательный поток
                 </div>
               </div>
             </motion.button>
@@ -206,10 +248,6 @@ const HomeScreen = () => {
                 <div className="text-2xl font-bold mb-1">
                   {totalBudget.toLocaleString()} {currencySymbol}
                 </div>
-                <div className="flex items-center text-sm opacity-80">
-                  <div className="w-1 h-1 bg-white rounded-full mr-2" />
-                  Планируемые средства
-                </div>
               </div>
             </motion.button>
 
@@ -241,10 +279,6 @@ const HomeScreen = () => {
                 <div className="text-2xl font-bold mb-1">
                   {totalSavingsBalance.toLocaleString()} {currencySymbol}
                 </div>
-                <div className="flex items-center text-sm opacity-80">
-                  <div className="w-1 h-1 bg-white rounded-full mr-2" />
-                  Отложенные средства
-                </div>
               </div>
             </motion.button>
           </div>
@@ -273,7 +307,17 @@ const HomeScreen = () => {
                   viewport={{ once: false, amount: 0.2 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <TransactionItem transaction={transaction} />
+                  <TransactionItem 
+                    transaction={transaction}
+                    onDelete={() => {
+                      setTransactionToDelete(transaction);
+                      setShowConfirmDelete(true);
+                    }}
+                    onEdit={() => {
+                      setEditingTransaction(transaction);
+                      setShowAddTransaction(true);
+                    }}
+                  />
                 </motion.div>
               ))
             ) : (
@@ -297,6 +341,14 @@ const HomeScreen = () => {
           </div>
         </div>
       </div>
+      
+      <AlertModal
+        isVisible={showConfirmDelete}
+        title="Удалить транзакцию?"
+        message={`Транзакция "${transactionToDelete?.category}" на сумму ${transactionToDelete?.amount.toLocaleString()} ${currencySymbol} будет удалена безвозвратно.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

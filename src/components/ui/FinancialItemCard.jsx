@@ -1,7 +1,7 @@
 // src/components/ui/FinancialItemCard.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { spring, whileTap, whileHover, zoomInOut } from '../../utils/motion';
+import { whileHover, zoomInOut } from '../../utils/motion';
 import { ICONS } from '../icons';
 
 /**
@@ -15,9 +15,7 @@ import { ICONS } from '../icons';
  * @param {number} props.progress - Прогресс в процентах для заполнения прогресс-бара.
  * @param {string} props.gradient - Классы Tailwind для градиента.
  * @param {string} props.iconName - Имя иконки.
- * @param {React.ReactNode} props.actions - Дополнительные кнопки действий.
- * @param {function} props.onClick - Обработчик клика.
- * @param {string} props.type - Тип элемента ('loan', 'deposit', 'i-owe', 'owed-to-me').
+ * @param {string} props.type - Тип элемента ('loan', 'deposit', 'i-owe', 'owed-to-me', 'savings').
  * @returns {JSX.Element}
  */
 const FinancialItemCard = ({
@@ -28,28 +26,15 @@ const FinancialItemCard = ({
   progress,
   gradient,
   iconName,
-  actions,
-  onClick,
   type
 }) => {
   const IconComponent = ICONS[iconName] || ICONS.MinusCircle;
-
-  const isLoan = type === 'loan';
-  const isIOwe = type === 'i-owe';
 
   const gradientClass = gradient || 'bg-white dark:bg-gray-800';
 
   return (
     <motion.div
-      className={`relative overflow-hidden rounded-3xl p-6 text-white shadow-lg ${gradientClass}`}
-      onClick={onClick}
-      whileTap={whileTap}
-      whileHover={whileHover}
-      transition={spring}
-      variants={zoomInOut}
-      initial="initial"
-      whileInView="whileInView"
-      viewport={{ once: false, amount: 0.2 }}
+      className={`relative overflow-hidden rounded-3xl p-6 shadow-lg ${gradientClass}`}
     >
       {/* Декоративный элемент */}
       <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
@@ -60,21 +45,16 @@ const FinancialItemCard = ({
             <IconComponent className="w-6 h-6 text-white" />
           </div>
           <div>
-            <div className="text-lg font-semibold opacity-95">{title}</div>
-            {subtitle && <div className="text-sm opacity-70">{subtitle}</div>}
+            <div className="text-lg font-semibold text-white opacity-95">{title}</div>
+            {subtitle && <div className="text-sm text-white opacity-70">{subtitle}</div>}
           </div>
         </div>
-        {actions && (
-          <div className="flex items-center space-x-2">
-            {actions}
-          </div>
-        )}
       </div>
       
       {amountText && (
         <div className="mb-3">
-          <div className="text-2xl font-bold mb-1">{amountText}</div>
-          {infoText && <div className="text-sm opacity-80">{infoText}</div>}
+          <div className="text-2xl font-bold mb-1 text-white">{amountText}</div>
+          {infoText && <div className="text-sm opacity-80 text-white">{infoText}</div>}
         </div>
       )}
 

@@ -1,6 +1,6 @@
 // src/components/modals/ModalWrapper.jsx
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { ICONS } from '../icons';
 import { useAppContext } from '../../context/AppContext';
 
@@ -14,6 +14,7 @@ import { useAppContext } from '../../context/AppContext';
  */
 const ModalWrapper = ({ title, children, handleClose }) => {
   const { isDarkMode } = useAppContext();
+  const dragControls = useDragControls();
 
   const modalVariants = {
     hidden: { y: "100%", opacity: 0 },
@@ -41,6 +42,10 @@ const ModalWrapper = ({ title, children, handleClose }) => {
     exit: { opacity: 0, transition: { duration: 0.1 } },
   };
 
+  function startDrag(event) {
+    dragControls.start(event);
+  }
+
   return (
     <AnimatePresence>
       <motion.div
@@ -58,16 +63,20 @@ const ModalWrapper = ({ title, children, handleClose }) => {
           variants={modalVariants}
           onClick={(e) => e.stopPropagation()} // Предотвратить закрытие при клике внутри
           drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }} // Ограничение движения: только вниз, начиная с текущей позиции
+          dragControls={dragControls}
           onDragEnd={(event, info) => {
-            if (info.point.y > window.innerHeight / 2 && info.velocity.y > 0) { // Если модалка пересекла половину экрана и движется вниз
+            if (info.velocity.y > 0 && info.point.y > window.innerHeight * 0.5) {
               handleClose();
             }
           }}
-          dragElastic={{ top: 0, bottom: 0.5 }} // Эластичность перетаскивания
+          dragConstraints={{ top: 0 }} // Ограничение движения: только вниз от начальной позиции
+          dragElastic={0.5} // Эластичность перетаскивания
         >
           {/* Handle для перетаскивания */}
-          <div className="flex justify-center p-4 cursor-grab">
+          <div
+            className="flex justify-center p-4 cursor-grab"
+            onPointerDown={startDrag} // Начинаем перетаскивание при нажатии на ручку
+          >
             <div
               className={`w-16 h-1.5 rounded-full ${
                 isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
