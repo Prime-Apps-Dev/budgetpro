@@ -28,7 +28,11 @@ const LoanDepositDetailModal = () => {
     depositTransactions,
     setDepositTransactions,
     accounts,
-    currencySymbol
+    currencySymbol,
+    setEditingTransaction,
+    setShowAddTransaction,
+    selectedLoanDepositForTransaction,
+    setShowLoanDepositTransactionModal
   } = useAppContext();
   
   const [showEarlyRepaymentModal, setShowEarlyRepaymentModal] = useState(false);
@@ -202,6 +206,39 @@ const LoanDepositDetailModal = () => {
     setSelectedFinancialItem(null);
   };
   
+  /**
+   * Обрабатывает удаление транзакции.
+   */
+  const handleDeleteTransaction = (transaction) => {
+    setTransactions(prevTransactions => prevTransactions.filter(t => t.id !== transaction.id));
+    if (isLoan) {
+        setLoanTransactions(prevLoanTransactions => prevLoanTransactions.filter(t => t.id !== transaction.id));
+        setLoans(prevLoans => prevLoans.map(loan => {
+            if (loan.id === currentItem.id) {
+                return { ...loan, currentBalance: loan.currentBalance + transaction.amount };
+            }
+            return loan;
+        }));
+    } else {
+        setDepositTransactions(prevDepositTransactions => prevDepositTransactions.filter(t => t.id !== transaction.id));
+        setDeposits(prevDeposits => prevDeposits.map(deposit => {
+            if (deposit.id === currentItem.id) {
+                const newAmount = transaction.type === 'income' ? deposit.currentAmount - transaction.amount : deposit.currentAmount + transaction.amount;
+                return { ...deposit, currentAmount: newAmount };
+            }
+            return deposit;
+        }));
+    }
+  };
+
+  /**
+   * Обрабатывает редактирование транзакции.
+   */
+  const handleEditTransaction = (transaction) => {
+    setEditingTransaction(transaction);
+    setShowAddTransaction(true);
+  };
+  
   const formattedMonthlyPayment = isLoan && currentItem.loanPaymentType === 'annuity'
     ? currentItem.monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })
     : isLoan && currentItem.loanPaymentType === 'differentiated'
@@ -313,6 +350,8 @@ const LoanDepositDetailModal = () => {
                 <TransactionItem
                   key={transaction.id}
                   transaction={transaction}
+                  onEdit={handleEditTransaction} // <-- ДОБАВЛЕНО
+                  onDelete={handleDeleteTransaction} // <-- ДОБАВЛЕНО
                 />
               ))
             ) : (

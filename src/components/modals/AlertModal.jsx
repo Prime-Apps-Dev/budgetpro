@@ -18,6 +18,19 @@ import { useAppContext } from '../../context/AppContext';
 const AlertModal = ({ isVisible, title, message, onConfirm, onCancel }) => {
   const { isDarkMode } = useAppContext();
 
+  console.log('🟣 AlertModal rendered');
+  console.log('🟣 isVisible:', isVisible);
+  console.log('🟣 title:', title);
+  console.log('🟣 message:', message);
+
+  React.useEffect(() => {
+    if (isVisible) {
+      console.log('🟣 AlertModal became visible!');
+    } else {
+      console.log('🟣 AlertModal became hidden');
+    }
+  }, [isVisible]);
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -26,12 +39,20 @@ const AlertModal = ({ isVisible, title, message, onConfirm, onCancel }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6"
+          onClick={(e) => {
+            console.log('🟣 AlertModal backdrop clicked');
+            e.stopPropagation();
+          }}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             className={`rounded-3xl p-6 max-w-sm w-full ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
+            onClick={(e) => {
+              console.log('🟣 AlertModal content clicked');
+              e.stopPropagation();
+            }}
           >
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -47,7 +68,10 @@ const AlertModal = ({ isVisible, title, message, onConfirm, onCancel }) => {
             
             <div className="flex space-x-3">
               <motion.button
-                onClick={onCancel}
+                onClick={() => {
+                  console.log('🟣 Cancel button clicked');
+                  onCancel();
+                }}
                 className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-2xl font-medium"
                 whileTap={whileTap}
                 transition={spring}
@@ -55,7 +79,10 @@ const AlertModal = ({ isVisible, title, message, onConfirm, onCancel }) => {
                 Отмена
               </motion.button>
               <motion.button
-                onClick={onConfirm}
+                onClick={() => {
+                  console.log('🟣 Confirm button clicked');
+                  onConfirm();
+                }}
                 className="flex-1 py-3 px-4 bg-red-500 text-white rounded-2xl font-medium"
                 whileTap={whileTap}
                 transition={spring}

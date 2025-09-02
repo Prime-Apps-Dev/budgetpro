@@ -18,6 +18,9 @@ const DebtTransactionsModal = () => {
         setShowAddTransaction,
         setEditingTransaction,
         currencySymbol,
+        setTransactions,
+        setDebts,
+        debts
     } = useAppContext();
 
     if (!selectedDebtForTransactions) {
@@ -34,6 +37,28 @@ const DebtTransactionsModal = () => {
     
     const handleClose = () => {
         setShowDebtTransactionsModal(false);
+    };
+
+    /**
+     * Обрабатывает удаление транзакции.
+     * @param {object} transaction - Объект транзакции.
+     */
+    const handleDeleteTransaction = (transaction) => {
+        // Удаляем из общего списка
+        setTransactions(prevTransactions => prevTransactions.filter(t => t.id !== transaction.id));
+        // Удаляем связанный долг, если транзакция была его погашением
+        if (transaction.linkedDebtId) {
+            setDebts(debts.filter(d => d.id !== transaction.linkedDebtId));
+        }
+    };
+
+    /**
+     * Обрабатывает редактирование транзакции.
+     * @param {object} transaction - Объект транзакции.
+     */
+    const handleEditTransaction = (transaction) => {
+        setEditingTransaction(transaction);
+        setShowAddTransaction(true);
     };
 
     return (
@@ -79,10 +104,8 @@ const DebtTransactionsModal = () => {
                                 <TransactionItem
                                     key={transaction.id}
                                     transaction={transaction}
-                                    onEdit={() => {
-                                        setEditingTransaction(transaction);
-                                        setShowAddTransaction(true);
-                                    }}
+                                    onEdit={handleEditTransaction} // <-- ИСПРАВЛЕНО
+                                    onDelete={handleDeleteTransaction} // <-- ДОБАВЛЕНО
                                 />
                             ))}
                         </div>

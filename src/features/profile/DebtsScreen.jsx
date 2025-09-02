@@ -214,7 +214,7 @@ const InteractiveDebtCard = ({
   onEdit, 
   onDelete,
   onClick,
-  onDoubleClick
+  onDoubleTap
 }) => {
   const isIOwe = debt.type === 'i-owe';
   const gradient = isIOwe 
@@ -224,11 +224,12 @@ const InteractiveDebtCard = ({
   
   return (
     <LongPressWrapper
-      onTap={() => onClick(debt)}
-      onLongPress={() => onEdit(debt)}
-      onSwipeLeft={() => onDelete(debt)}
-      onDoubleTap={() => onDoubleClick(debt)}
-      swipeDeleteIcon={ICONS.Trash2} // Добавляем иконку корзины
+      onTap={onClick} // <-- ИСПРАВЛЕНО: Одиночное нажатие для добавления транзакции
+      onLongPress={onEdit} // <-- ИСПРАВЛЕНО: Долгое нажатие для редактирования
+      onSwipeLeft={() => onDelete(debt)} // <-- ИСПРАВЛЕНО: Явно передаем долг
+      onDoubleTap={onDoubleTap} // <-- ИСПРАВЛЕНО: Двойное нажатие для истории
+      swipeDeleteIcon={ICONS.Trash2}
+      item={debt}
     >
       <FinancialItemCard
         title={debt.person}
@@ -270,19 +271,23 @@ const DebtsScreen = () => {
    * Обрабатывает удаление долга.
    */
   const handleDeleteDebt = (debt) => {
+    console.log('🔴 DebtsScreen: handleDeleteDebt called with:', debt);
     setDebtToDelete(debt);
     setShowConfirmDelete(true);
   };
   
   const handleConfirmDelete = () => {
+    console.log('🔴 DebtsScreen: handleConfirmDelete called');
     if (debtToDelete) {
       setDebts(debts.filter(debt => debt.id !== debtToDelete.id));
+      console.log('🟢 DebtsScreen: Debt deleted successfully.');
     }
     setShowConfirmDelete(false);
     setDebtToDelete(null);
   };
   
   const handleCancelDelete = () => {
+    console.log('🔴 DebtsScreen: handleCancelDelete called');
     setShowConfirmDelete(false);
     setDebtToDelete(null);
   };
@@ -296,19 +301,19 @@ const DebtsScreen = () => {
   };
 
   /**
-   * Обрабатывает одиночный клик по карточке, открывая модальное окно с транзакциями.
+   * Обрабатывает одиночный клик по карточке, открывая модальное окно для добавления транзакции.
    */
-  const handleDebtCardClick = (debt) => {
-    setSelectedDebtForTransactions(debt);
-    setShowDebtTransactionsModal(true);
+  const handleDebtCardTap = (debt) => {
+    setSelectedDebtToRepay(debt);
+    setShowAddTransaction(true);
   };
 
   /**
-   * Обрабатывает двойной клик по карточке, открывая модальное окно добавления транзакции.
+   * Обрабатывает двойной клик по карточке, открывая модальное окно с транзакциями.
    */
   const handleDebtCardDoubleClick = (debt) => {
-    setSelectedDebtToRepay(debt);
-    setShowAddTransaction(true);
+    setSelectedDebtForTransactions(debt);
+    setShowDebtTransactionsModal(true);
   };
   
   const tabs = [
@@ -378,8 +383,8 @@ const DebtsScreen = () => {
               currencySymbol={currencySymbol}
               onEdit={handleEditDebt}
               onDelete={handleDeleteDebt}
-              onClick={handleDebtCardClick}
-              onDoubleClick={handleDebtCardDoubleClick}
+              onClick={handleDebtCardTap}
+              onDoubleTap={handleDebtCardDoubleClick}
             />
           </motion.div>
         ))}
@@ -388,7 +393,7 @@ const DebtsScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32">
+    <><div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32">
       {/* Header в стиле HomeScreen */}
       <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-700 px-6 py-8">
         <div className="flex items-center justify-between mb-6">
@@ -410,7 +415,7 @@ const DebtsScreen = () => {
               </p>
             </div>
           </div>
-          
+
           <motion.div
             className="text-right"
             variants={zoomInOut}
@@ -419,7 +424,7 @@ const DebtsScreen = () => {
           >
           </motion.div>
         </div>
-        
+
         {/* Краткая сводка */}
         <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-4 border border-white/50 dark:border-gray-700/50">
           <div className="flex items-center justify-between">
@@ -439,9 +444,7 @@ const DebtsScreen = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${
-                netBalance >= 0 ? 'bg-green-500' : 'bg-red-500'
-              }`} />
+              <div className={`w-2 h-2 rounded-full ${netBalance >= 0 ? 'bg-green-500' : 'bg-red-500'}`} />
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {netBalance >= 0 ? 'В плюсе' : 'В минусе'}
               </span>
@@ -452,23 +455,22 @@ const DebtsScreen = () => {
 
       {/* Основной контент */}
       <div className="px-6 py-6 space-y-16">
-        
+
         {/* Виджеты с свайпером */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 px-2">
             Обзор долгов
           </h2>
-          
+
           <motion.div
             variants={zoomInOut}
             whileInView="whileInView"
             viewport={{ once: false, amount: 0.2 }}
           >
-            <WidgetSwiper 
+            <WidgetSwiper
               widgets={widgets}
               activeIndex={activeWidgetIndex}
-              onIndexChange={setActiveWidgetIndex}
-            />
+              onIndexChange={setActiveWidgetIndex} />
           </motion.div>
         </div>
 
@@ -476,104 +478,97 @@ const DebtsScreen = () => {
         <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
 
         {/* Детализированные списки долгов */}
-        <div className="space-y-8">
-          <AnimatePresence mode="wait">
-            {activeTab === 'all' ? (
-              <motion.div key="all-debts" className="space-y-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {iOwe.length > 0 && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between px-2">
-                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                        Я должен
-                      </h3>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {iOwe.length} долг{iOwe.length !== 1 ? 'а' : ''}
-                      </div>
+        <AnimatePresence mode="wait">
+          {activeTab === 'all' ? (
+            <motion.div key="all-debts" className="space-y-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {iOwe.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between px-2">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                      Я должен
+                    </h3>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {iOwe.length} долг{iOwe.length !== 1 ? 'а' : ''}
                     </div>
-                    {renderDebtList(iOwe)}
                   </div>
-                )}
-                {owedToMe.length > 0 && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between px-2">
-                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                        Мне должны
-                      </h3>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {owedToMe.length} долг{owedToMe.length !== 1 ? 'а' : ''}
-                      </div>
+                  {renderDebtList(iOwe)}
+                </div>
+              )}
+              {owedToMe.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between px-2">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                      Мне должны
+                    </h3>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {owedToMe.length} долг{owedToMe.length !== 1 ? 'а' : ''}
                     </div>
-                    {renderDebtList(owedToMe)}
                   </div>
-                )}
-                {debts.length === 0 && (
-                  <NoItemsPlaceholder
-                    iconName="Layers"
-                    iconColor="#3b82f6"
-                    title="У вас нет долгов"
-                    description="Отличная финансовая дисциплина!"
-                    actions={[
-                      { label: 'Добавить долг', onClick: () => setShowAddDebtModal(true), colorClass: 'bg-blue-600 hover:bg-blue-700' }
-                    ]}
-                  />
-                )}
-              </motion.div>
-            ) : (
-              <motion.div key={activeTab} className="space-y-3"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                {filteredDebts.length > 0 ? (
-                  filteredDebts.map((debt, index) => (
-                    <motion.div 
-                      key={debt.id}
-                      variants={zoomInOut}
-                      whileInView="whileInView"
-                      viewport={{ once: false, amount: 0.2 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <InteractiveDebtCard
-                        debt={debt}
-                        currencySymbol={currencySymbol}
-                        onEdit={handleEditDebt}
-                        onDelete={handleDeleteDebt}
-                        onClick={handleDebtCardClick}
-                        onDoubleClick={handleDebtCardDoubleClick}
-                      />
-                    </motion.div>
-                  ))
-                ) : (
-                  <NoItemsPlaceholder
-                    iconName={activeTab === 'i-owe' ? 'ArrowDownCircle' : 'ArrowUpCircle'}
-                    iconColor={activeTab === 'i-owe' ? '#ef4444' : '#22c55e'}
-                    title={activeTab === 'i-owe' ? 'У вас нет долгов' : 'Вам никто не должен'}
-                    description={activeTab === 'i-owe' ? 'Отличная финансовая дисциплина!' : 'Все долги возвращены или вы пока никому не одалживали'}
-                    actions={[
-                      { label: 'Добавить долг', onClick: () => setShowAddDebtModal(true), colorClass: 'bg-blue-600 hover:bg-blue-700' }
-                    ]}
-                  />
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                  {renderDebtList(owedToMe)}
+                </div>
+              )}
+              {debts.length === 0 && (
+                <NoItemsPlaceholder
+                  iconName="Layers"
+                  iconColor="#3b82f6"
+                  title="У вас нет долгов"
+                  description="Отличная финансовая дисциплина!"
+                  actions={[
+                    { label: 'Добавить долг', onClick: () => setShowAddDebtModal(true), colorClass: 'bg-blue-600 hover:bg-blue-700' }
+                  ]} />
+              )}
+            </motion.div>
+          ) : (
+            <motion.div key={activeTab} className="space-y-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {filteredDebts.length > 0 ? (
+                filteredDebts.map((debt, index) => (
+                  <motion.div
+                    key={debt.id}
+                    variants={zoomInOut}
+                    whileInView="whileInView"
+                    viewport={{ once: false, amount: 0.2 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <InteractiveDebtCard
+                      debt={debt}
+                      currencySymbol={currencySymbol}
+                      onEdit={handleEditDebt}
+                      onDelete={handleDeleteDebt}
+                      onClick={handleDebtCardTap}
+                      onDoubleTap={handleDebtCardDoubleClick} />
+                  </motion.div>
+                ))
+              ) : (
+                <NoItemsPlaceholder
+                  iconName={activeTab === 'i-owe' ? 'ArrowDownCircle' : 'ArrowUpCircle'}
+                  iconColor={activeTab === 'i-owe' ? '#ef4444' : '#22c55e'}
+                  title={activeTab === 'i-owe' ? 'У вас нет долгов' : 'Вам никто не должен'}
+                  description={activeTab === 'i-owe' ? 'Отличная финансовая дисциплина!' : 'Все долги возвращены или вы пока никому не одалживали'}
+                  actions={[
+                    { label: 'Добавить долг', onClick: () => setShowAddDebtModal(true), colorClass: 'bg-blue-600 hover:bg-blue-700' }
+                  ]} />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-      
-      <AlertModal
+    </div><AlertModal
         isVisible={showConfirmDelete}
         title="Удалить долг?"
         message={`Долг "${debtToDelete?.person}" на сумму ${debtToDelete?.amount.toLocaleString()} ${currencySymbol} будет удален безвозвратно. Это действие нельзя отменить.`}
         onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-      />
-    </div>
+        onCancel={handleCancelDelete} />
+    </>
   );
 };
 

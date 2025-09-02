@@ -16,10 +16,10 @@ import { ICONS } from '../icons';
  * @param {function} props.onDelete - Обработчик удаления.
  * @param {function} props.onEdit - Обработчик редактирования.
  * @param {function} props.onClick - Обработчик клика.
- * @param {function} props.onDoubleClick - Обработчик двойного клика.
+ * @param {function} props.onDoubleTap - Обработчик двойного клика.
  * @returns {JSX.Element}
  */
-const InteractiveSavingGoalCard = ({ goal, currencySymbol, onDelete, onEdit, onClick, onDoubleClick }) => {
+const InteractiveSavingGoalCard = ({ goal, currencySymbol, onDelete, onEdit, onClick, onDoubleTap }) => {
     const progress = goal.target > 0 ? (goal.current / goal.target) * 100 : 0;
     const isCompleted = progress >= 100;
     
@@ -31,11 +31,12 @@ const InteractiveSavingGoalCard = ({ goal, currencySymbol, onDelete, onEdit, onC
             viewport={{ once: false, amount: 0.2 }}
         >
             <LongPressWrapper
-                onTap={() => onClick(goal)}
-                onLongPress={() => onEdit(goal)}
-                onSwipeLeft={() => onDelete(goal)}
-                onDoubleTap={() => onDoubleClick(goal)}
-                swipeDeleteIcon={ICONS.Trash2} // Добавляем иконку корзины
+                onTap={() => onClick(goal)} // <-- ИСПРАВЛЕНО: Одиночное нажатие для добавления транзакции
+                onLongPress={() => onEdit(goal)} // <-- ИСПРАВЛЕНО: Долгое нажатие для редактирования
+                onSwipeLeft={() => onDelete(goal)} // <-- ИСПРАВЛЕНО: Явно передаем цель
+                onDoubleTap={() => onDoubleTap(goal)} // <-- ИСПРАВЛЕНО: Двойное нажатие для истории
+                swipeDeleteIcon={ICONS.Trash2}
+                item={goal}
             >
                 <motion.div
                     className="relative"

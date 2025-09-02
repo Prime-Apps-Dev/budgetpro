@@ -95,6 +95,7 @@ const SavingsScreen = () => {
    * Открывает модальное окно подтверждения удаления.
    */
   const handleDeleteGoal = (goal) => {
+    console.log('🔴 SavingsScreen: handleDeleteGoal called with:', goal);
     setGoalToDelete(goal);
     setShowConfirmDelete(true);
   };
@@ -111,15 +112,18 @@ const SavingsScreen = () => {
    * Подтверждает удаление цели.
    */
   const handleConfirmDelete = () => {
+    console.log('🔴 SavingsScreen: handleConfirmDelete called');
     if (goalToDelete) {
       setFinancialGoals(financialGoals.filter(goal => goal.id !== goalToDelete.id));
       setTransactions(transactions.filter(t => !t.description.includes(`копилки "${goalToDelete.title}"`)));
+      console.log('🟢 SavingsScreen: Goal deleted successfully.');
     }
     setShowConfirmDelete(false);
     setGoalToDelete(null);
   };
 
   const handleCancelDelete = () => {
+    console.log('🔴 SavingsScreen: handleCancelDelete called');
     setShowConfirmDelete(false);
     setGoalToDelete(null);
   };
@@ -269,6 +273,7 @@ const SavingsScreen = () => {
               onLongPress={() => handleEditGoal(nearestGoal)}
               onDoubleTap={() => handleDoubleClickGoal(nearestGoal)}
               onSwipeLeft={() => handleDeleteGoal(nearestGoal)}
+              item={nearestGoal} // <-- ИСПРАВЛЕНО
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
@@ -351,7 +356,7 @@ const SavingsScreen = () => {
                   currencySymbol={currencySymbol}
                   onClick={() => handleGoalClick(goal)}
                   onEdit={() => handleEditGoal(goal)}
-                  onDelete={() => handleDeleteGoal(goal)}
+                  onDelete={handleDeleteGoal}
                   onDoubleClick={() => handleDoubleClickGoal(goal)}
                 />
               ))

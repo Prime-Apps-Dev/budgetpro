@@ -14,6 +14,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fadeInOut } from './utils/motion';
 import { useAppContext } from './context/AppContext';
 import AlertModal from './components/modals/AlertModal';
+import { TransactionsProvider } from './context/useTransactions';
+import { FinancialProductsProvider } from './context/useFinancialProducts';
+import { DebtsProvider } from './context/useDebts';
+import { BudgetsProvider } from './context/useBudgets';
+import { GoalsProvider } from './context/useGoals';
+import { SettingsProvider } from './context/useSettings';
+
 
 // Динамический импорт всех компонентов для Code Splitting
 const HomeScreen = lazy(() => import('./pages/HomeScreen'));

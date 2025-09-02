@@ -17,7 +17,9 @@ const GoalTransactionsModal = () => {
         setShowGoalTransactionsModal,
         setShowAddTransaction,
         setEditingTransaction,
-        setTransactions
+        setTransactions,
+        financialGoals,
+        setFinancialGoals
     } = useAppContext();
 
     if (!selectedGoal) {
@@ -33,6 +35,34 @@ const GoalTransactionsModal = () => {
     
     const handleClose = () => {
         setShowGoalTransactionsModal(false);
+    };
+
+    /**
+     * Обрабатывает удаление транзакции.
+     * @param {object} transaction - Объект транзакции.
+     */
+    const handleDeleteTransaction = (transaction) => {
+        // Удаляем из общего списка
+        setTransactions(prevTransactions => prevTransactions.filter(t => t.id !== transaction.id));
+        // Обновляем цель, возвращая средства
+        setFinancialGoals(prevGoals => prevGoals.map(g => {
+            if (g.id === selectedGoal.id) {
+                const newCurrent = transaction.category === 'В копилку'
+                    ? g.current - transaction.amount
+                    : g.current + transaction.amount;
+                return { ...g, current: newCurrent };
+            }
+            return g;
+        }));
+    };
+
+    /**
+     * Обрабатывает редактирование транзакции.
+     * @param {object} transaction - Объект транзакции.
+     */
+    const handleEditTransaction = (transaction) => {
+        setEditingTransaction(transaction);
+        setShowAddTransaction(true);
     };
 
     return (
@@ -76,10 +106,8 @@ const GoalTransactionsModal = () => {
                                 <TransactionItem
                                     key={transaction.id}
                                     transaction={transaction}
-                                    onEdit={() => {
-                                        setEditingTransaction(transaction);
-                                        setShowAddTransaction(true);
-                                    }}
+                                    onEdit={handleEditTransaction} // <-- ИСПРАВЛЕНО
+                                    onDelete={handleDeleteTransaction} // <-- ДОБАВЛЕНО
                                 />
                             ))}
                         </div>

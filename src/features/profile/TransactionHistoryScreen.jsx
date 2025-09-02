@@ -22,12 +22,27 @@ const TransactionRow = ({ index, style, data }) => {
   const { filteredTransactions, handleEditTransaction, setTransactionToDelete, setShowConfirmDelete } = data;
   const transaction = filteredTransactions[index];
 
-  const handleDelete = () => {
-    setTransactionToDelete(transaction);
+  console.log('🟠 TransactionRow rendered for transaction:', transaction?.id);
+  console.log('🟠 setTransactionToDelete exists:', typeof setTransactionToDelete);
+  console.log('🟠 setShowConfirmDelete exists:', typeof setShowConfirmDelete);
+
+  const handleDelete = (transactionToDelete) => {
+    console.log('🟠 TransactionRow handleDelete called');
+    console.log('🟠 Transaction to delete:', transactionToDelete);
+    console.log('🟠 Original transaction:', transaction);
+    
+    const finalTransaction = transactionToDelete || transaction;
+    console.log('🟠 Final transaction for deletion:', finalTransaction);
+    
+    console.log('🟠 Setting transaction to delete...');
+    setTransactionToDelete(finalTransaction);
+    console.log('🟠 Setting show confirm delete to true...');
     setShowConfirmDelete(true);
+    console.log('🟠 Modal should now be visible');
   };
 
   const handleEdit = () => {
+    console.log('🟠 TransactionRow handleEdit called');
     handleEditTransaction(transaction);
   };
 
@@ -65,6 +80,16 @@ const TransactionHistoryScreen = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
+
+  // Добавляем логирование изменений состояния
+  React.useEffect(() => {
+    console.log('🔴 showConfirmDelete changed to:', showConfirmDelete);
+  }, [showConfirmDelete]);
+
+  React.useEffect(() => {
+    console.log('🔴 transactionToDelete changed to:', transactionToDelete);
+  }, [transactionToDelete]);
+
 
   /**
    * Обрабатывает удаление транзакции.
@@ -105,6 +130,9 @@ const TransactionHistoryScreen = () => {
    * Обрабатывает подтверждение удаления.
    */
   const handleConfirmDelete = () => {
+    console.log('🔴 handleConfirmDelete called');
+    console.log('🔴 transactionToDelete:', transactionToDelete);
+    
     if (transactionToDelete) {
       handleDeleteTransaction(transactionToDelete);
     }
@@ -116,6 +144,7 @@ const TransactionHistoryScreen = () => {
    * Отменяет удаление.
    */
   const handleCancelDelete = () => {
+    console.log('🔴 handleCancelDelete called');
     setShowConfirmDelete(false);
     setTransactionToDelete(null);
   };
@@ -144,6 +173,18 @@ const TransactionHistoryScreen = () => {
     { id: 'income', label: 'Доходы', icon: ICONS.ArrowUpCircle },
     { id: 'expense', label: 'Расходы', icon: ICONS.ArrowDownCircle }
   ];
+
+  const itemData = {
+    filteredTransactions,
+    handleEditTransaction,
+    setTransactionToDelete,
+    setShowConfirmDelete
+  };
+
+  console.log('🔴 Rendering TransactionHistoryScreen');
+  console.log('🔴 showConfirmDelete:', showConfirmDelete);
+  console.log('🔴 transactionToDelete:', transactionToDelete);
+  console.log('🔴 itemData:', itemData);
 
   return (
     <div className="p-6 pb-24 bg-gray-50 min-h-screen dark:bg-gray-900">
@@ -177,12 +218,7 @@ const TransactionHistoryScreen = () => {
             itemCount={filteredTransactions.length}
             itemSize={100} // Средняя высота элемента списка
             width={'100%'}
-            itemData={{
-              filteredTransactions,
-              handleEditTransaction,
-              setTransactionToDelete,
-              setShowConfirmDelete
-            }}
+            itemData={itemData}
             className="styled-scrollbars"
           >
             {TransactionRow}

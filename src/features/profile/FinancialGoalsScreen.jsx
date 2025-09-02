@@ -298,15 +298,16 @@ const FinancialGoalsScreen = () => {
                   style={{ transitionDelay: `${index * 0.05}s` }}
                 >
                   <LongPressWrapper
-                    onTap={() => setSelectedFinancialItem(deposit)}
-                    onLongPress={() => {
-                      setEditingFinancialItem(deposit);
+                    onTap={(item) => setSelectedFinancialItem(item)} // <-- ИСПРАВЛЕНО
+                    onLongPress={(item) => { // <-- ИСПРАВЛЕНО
+                      setEditingFinancialItem(item);
                       setShowAddFinancialItemModal(true);
                     }}
-                    onDoubleTap={() => {
-                      setSelectedLoanDepositForTransaction(deposit);
+                    onDoubleTap={(item) => { // <-- ИСПРАВЛЕНО
+                      setSelectedLoanDepositForTransaction(item);
                       setShowLoanDepositTransactionModal(true);
                     }}
+                    item={deposit} // <-- ИСПРАВЛЕНО
                   >
                     <FinancialItemCard
                       title={deposit.name}
@@ -335,15 +336,16 @@ const FinancialGoalsScreen = () => {
                   style={{ transitionDelay: `${index * 0.05}s` }}
                 >
                   <LongPressWrapper
-                    onTap={() => setSelectedFinancialItem(loan)}
-                    onLongPress={() => {
-                      setEditingFinancialItem(loan);
+                    onTap={(item) => setSelectedFinancialItem(item)} // <-- ИСПРАВЛЕНО
+                    onLongPress={(item) => { // <-- ИСПРАВЛЕНО
+                      setEditingFinancialItem(item);
                       setShowAddFinancialItemModal(true);
                     }}
-                    onDoubleTap={() => {
-                      setSelectedLoanDepositForTransaction(loan);
+                    onDoubleTap={(item) => { // <-- ИСПРАВЛЕНО
+                      setSelectedLoanDepositForTransaction(item);
                       setShowLoanDepositTransactionModal(true);
                     }}
+                    item={loan} // <-- ИСПРАВЛЕНО
                   >
                     <FinancialItemCard
                       title={loan.name}
@@ -394,18 +396,19 @@ const FinancialGoalsScreen = () => {
                     style={{ transitionDelay: `${index * 0.05}s` }}
                   >
                     <LongPressWrapper
-                        onTap={() => {
-                          setSelectedDebtForTransactions(debt);
+                        onTap={(item) => { // <-- ИСПРАВЛЕНО
+                          setSelectedDebtForTransactions(item);
                           setShowDebtTransactionsModal(true);
                         }}
-                        onLongPress={() => {
-                          setEditingDebt(debt);
+                        onLongPress={(item) => { // <-- ИСПРАВЛЕНО
+                          setEditingDebt(item);
                           setShowAddDebtModal(true);
                         }}
-                        onDoubleTap={() => {
-                          setSelectedDebtToRepay(debt);
+                        onDoubleTap={(item) => { // <-- ИСПРАВЛЕНО
+                          setSelectedDebtToRepay(item);
                           setShowAddTransaction(true);
                         }}
+                        item={debt} // <-- ИСПРАВЛЕНО
                       >
                       <FinancialItemCard
                         title={debt.person}

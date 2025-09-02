@@ -95,10 +95,19 @@ const MyFinancialProductsScreen = () => {
   };
 
   /**
-   * Обрабатывает клик по элементу списка, открывая детали.
+   * Обрабатывает одиночное нажатие по элементу, открывая модальное окно для добавления транзакции.
    */
-  const handleItemClick = (item) => {
-    console.log('Нажат элемент:', item.name, item.type);
+  const handleItemTap = (item) => {
+    closeAllModals();
+    setSelectedLoanDepositForTransaction(item);
+    setShowLoanDepositTransactionModal(true);
+  };
+  
+  /**
+   * Обрабатывает двойное нажатие для просмотра деталей.
+   */
+  const handleItemDoubleTap = (item) => {
+    console.log('Двойной клик на продукт:', item.name);
     setSelectedFinancialItem(item);
   };
 
@@ -112,31 +121,25 @@ const MyFinancialProductsScreen = () => {
     setEditingFinancialItem(item); // Устанавливаем редактируемый элемент
     setShowAddFinancialItemModal(true); // Открываем модальное окно редактирования
   };
-  
-  /**
-   * Обрабатывает двойной клик для добавления транзакции.
-   */
-  const handleDoubleClick = (item) => {
-    closeAllModals();
-    console.log('Двойной клик на продукт:', item.name);
-    setSelectedLoanDepositForTransaction(item);
-    setShowLoanDepositTransactionModal(true);
-  };
 
   /**
    * Обрабатывает удаление элемента
    */
   const handleDelete = (item) => {
+    console.log('🔴 MyFinancialProductsScreen: handleDelete called with:', item);
     setItemToDelete(item);
     setShowConfirmDelete(true);
   };
   
   const handleConfirmDelete = () => {
+    console.log('🔴 MyFinancialProductsScreen: handleConfirmDelete called');
     if (itemToDelete) {
       if (itemToDelete.type === 'loan') {
         setLoans(prevLoans => prevLoans.filter(loan => loan.id !== itemToDelete.id));
+        console.log('🟢 MyFinancialProductsScreen: Loan deleted successfully.');
       } else {
         setDeposits(prevDeposits => prevDeposits.filter(deposit => deposit.id !== itemToDelete.id));
+        console.log('🟢 MyFinancialProductsScreen: Deposit deleted successfully.');
       }
     }
     setShowConfirmDelete(false);
@@ -144,6 +147,7 @@ const MyFinancialProductsScreen = () => {
   };
   
   const handleCancelDelete = () => {
+    console.log('🔴 MyFinancialProductsScreen: handleCancelDelete called');
     setShowConfirmDelete(false);
     setItemToDelete(null);
   };
@@ -216,11 +220,12 @@ const MyFinancialProductsScreen = () => {
                 variants={slideUp}
               >
                 <LongPressWrapper
-                  onTap={() => handleItemClick(item)}
-                  onLongPress={() => handleLongPress(item)}
+                  onTap={handleItemTap}
+                  onLongPress={handleLongPress}
                   onSwipeLeft={() => handleDelete(item)}
-                  onDoubleTap={() => handleDoubleClick(item)}
+                  onDoubleTap={handleItemDoubleTap}
                   swipeDeleteIcon={ICONS.Trash2}
+                  item={item}
                 >
                   {item.type === 'loan' ? (
                     <FinancialItemCard

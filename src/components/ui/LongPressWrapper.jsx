@@ -10,8 +10,8 @@ const LongPressWrapper = ({
   onLongPress,
   className = "",
   disabled = false,
-  item = null, // Добавляем item для передачи в обработчики
-  swipeDeleteIcon: SwipeDeleteIcon = null // Опциональная иконка для удаления
+  item = null,
+  swipeDeleteIcon: SwipeDeleteIcon = null
 }) => {
   const [isPressed, setIsPressed] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
@@ -24,16 +24,15 @@ const LongPressWrapper = ({
   const hasMoved = useRef(false);
   const hasTriggeredLongPress = useRef(false);
   const isScrolling = useRef(false);
+  const elementRef = useRef(null);
   
-  // Константы для настройки жестов
-  const LONG_PRESS_DURATION = 500; // мс
-  const DOUBLE_TAP_DELAY = 300; // мс
-  const SWIPE_THRESHOLD = 50; // пикселей
-  const MOVE_THRESHOLD = 10; // пикселей для определения движения
-  const SCROLL_THRESHOLD = 5; // пикселей для начала скролла
-  const MAX_SWIPE_DISTANCE = 80; // максимальное расстояние свайпа для анимации
+  const LONG_PRESS_DURATION = 500;
+  const DOUBLE_TAP_DELAY = 300;
+  const SWIPE_THRESHOLD = 50;
+  const MOVE_THRESHOLD = 10;
+  const SCROLL_THRESHOLD = 5;
+  const MAX_SWIPE_DISTANCE = 80;
 
-  // Настройки анимации (аналог spring и whileTap из оригинала)
   const springConfig = { 
     type: "spring", 
     stiffness: 300, 
@@ -66,10 +65,31 @@ const LongPressWrapper = ({
   }, []);
 
   const getEventPos = useCallback((e) => {
-    if (e.touches && e.touches[0]) {
-      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    console.log('🔍 getEventPos called with event:', e.type);
+    
+    // Для touch событий
+    if (e.touches && e.touches.length > 0) {
+      const pos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      console.log('🔍 Touch position (touches):', pos);
+      return pos;
     }
-    return { x: e.clientX, y: e.clientY };
+    
+    // Для touchend/touchcancel используем changedTouches
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      const pos = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+      console.log('🔍 Touch position (changedTouches):', pos);
+      return pos;
+    }
+    
+    // Для mouse событий
+    if (e.clientX !== undefined && e.clientY !== undefined) {
+      const pos = { x: e.clientX, y: e.clientY };
+      console.log('🔍 Mouse position:', pos);
+      return pos;
+    }
+    
+    console.log('🔴 No valid coordinates found in event!');
+    return { x: 0, y: 0 };
   }, []);
 
   const calculateDistance = useCallback((pos1, pos2) => {
@@ -81,22 +101,25 @@ const LongPressWrapper = ({
   const handleStart = useCallback((e) => {
     if (disabled) return;
     
-    // Предотвращаем всплытие только для touch событий
-    if (e.type === 'touchstart') {
-      e.stopPropagation();
+    console.log('🟢 LongPressWrapper handleStart called');
+    const pos = getEventPos(e);
+    console.log('🟢 Start position:', pos);
+    
+    // Проверяем валидность координат
+    if (isNaN(pos.x) || isNaN(pos.y)) {
+      console.log('🔴 Invalid start position, aborting');
+      return;
     }
     
-    const pos = getEventPos(e);
     setStartPos(pos);
     setCurrentPos(pos);
     setIsPressed(true);
-    setSwipeDistance(0); // Сбрасываем свайп при новом нажатии
+    setSwipeDistance(0);
     
     hasMoved.current = false;
     hasTriggeredLongPress.current = false;
     isScrolling.current = false;
 
-    // Запускаем таймер для долгого нажатия
     pressTimer.current = setTimeout(() => {
       if (!hasMoved.current && !hasTriggeredLongPress.current) {
         hasTriggeredLongPress.current = true;
@@ -115,39 +138,38 @@ const LongPressWrapper = ({
     const deltaX = pos.x - startPos.x;
     const deltaY = pos.y - startPos.y;
     
-    // Определяем, началось ли движение
     if (distance > MOVE_THRESHOLD) {
       hasMoved.current = true;
       
-      // Определяем направление движения
       const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY);
       const isVertical = Math.abs(deltaY) > Math.abs(deltaX);
       
-      // Если движение вертикальное и превышает порог - это скролл
       if (isVertical && Math.abs(deltaY) > SCROLL_THRESHOLD) {
         isScrolling.current = true;
-        setSwipeDistance(0); // Сбрасываем свайп при скролле
+        setSwipeDistance(0);
         clearTimers();
-        // Позволяем событию всплыть для скролла
         return;
       }
       
-      // Если движение горизонтальное - обрабатываем свайп и предотвращаем скролл
       if (isHorizontal) {
-        e.preventDefault();
-        e.stopPropagation();
+        // ИСПРАВЛЕНИЕ: Вместо preventDefault используем return false
+        // и добавляем проверку на пассивные слушатели
+        try {
+          e.preventDefault();
+          e.stopPropagation();
+        } catch (error) {
+          // Игнорируем ошибки passive listener
+        }
         
-        // Обновляем расстояние свайпа (только влево)
         if (deltaX < 0) {
           const swipe = Math.min(Math.abs(deltaX), MAX_SWIPE_DISTANCE);
           setSwipeDistance(swipe);
         } else {
-          setSwipeDistance(0); // Сбрасываем при свайпе вправо
+          setSwipeDistance(0);
         }
       }
     }
     
-    // Отменяем долгое нажатие при движении
     if (hasMoved.current && pressTimer.current) {
       clearTimeout(pressTimer.current);
       pressTimer.current = null;
@@ -163,33 +185,36 @@ const LongPressWrapper = ({
     const distance = calculateDistance(startPos, pos);
     const deltaX = pos.x - startPos.x;
     
-    // Если это был скролл - игнорируем
     if (isScrolling.current) {
       resetState();
       return;
     }
     
-    // Если сильно сдвинули - проверяем на свайп
     if (distance > SWIPE_THRESHOLD) {
-      // Свайп влево
       if (deltaX < -SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(pos.y - startPos.y)) {
-        e.preventDefault();
-        e.stopPropagation();
+        try {
+          e.preventDefault();
+          e.stopPropagation();
+        } catch (error) {
+          // Игнорируем ошибки passive listener
+        }
         onSwipeLeft?.(item || undefined);
         resetState();
         return;
       }
     }
     
-    // Если не было движения и не было долгого нажатия - это тап
     if (!hasMoved.current && !hasTriggeredLongPress.current) {
-      e.preventDefault();
-      e.stopPropagation();
+      try {
+        e.preventDefault();
+        e.stopPropagation();
+      } catch (error) {
+        // Игнорируем ошибки passive listener
+      }
       
       tapCount.current += 1;
       
       if (tapCount.current === 1) {
-        // Ждем возможный второй тап
         tapTimer.current = setTimeout(() => {
           if (tapCount.current === 1) {
             onTap?.(item || undefined);
@@ -197,7 +222,6 @@ const LongPressWrapper = ({
           resetState();
         }, DOUBLE_TAP_DELAY);
       } else if (tapCount.current === 2) {
-        // Двойной тап
         clearTimeout(tapTimer.current);
         onDoubleTap?.(item || undefined);
         resetState();
@@ -214,16 +238,38 @@ const LongPressWrapper = ({
     resetState, 
     onSwipeLeft, 
     onTap, 
-    onDoubleTap
+    onDoubleTap,
+    item
   ]);
 
-  // Обработчики для отмены действий при уходе курсора/пальца
   const handleCancel = useCallback(() => {
     clearTimers();
     resetState();
   }, [clearTimers, resetState]);
 
-  // Clean up timers on unmount
+  // ИСПРАВЛЕНИЕ: Используем useEffect для добавления слушателей с { passive: false }
+  useEffect(() => {
+    const element = elementRef.current;
+    if (!element) return;
+
+    const touchStartHandler = (e) => handleStart(e);
+    const touchMoveHandler = (e) => handleMove(e);
+    const touchEndHandler = (e) => handleEnd(e);
+    const touchCancelHandler = (e) => handleCancel(e);
+
+    element.addEventListener('touchstart', touchStartHandler, { passive: false });
+    element.addEventListener('touchmove', touchMoveHandler, { passive: false });
+    element.addEventListener('touchend', touchEndHandler, { passive: false });
+    element.addEventListener('touchcancel', touchCancelHandler, { passive: false });
+
+    return () => {
+      element.removeEventListener('touchstart', touchStartHandler);
+      element.removeEventListener('touchmove', touchMoveHandler);
+      element.removeEventListener('touchend', touchEndHandler);
+      element.removeEventListener('touchcancel', touchCancelHandler);
+    };
+  }, [handleStart, handleMove, handleEnd, handleCancel]);
+
   useEffect(() => {
     return () => {
       clearTimeout(pressTimer.current);
@@ -231,21 +277,20 @@ const LongPressWrapper = ({
     };
   }, []);
 
-  // Обработчик для предотвращения контекстного меню
   const handleContextMenu = useCallback((e) => {
     e.preventDefault();
   }, []);
 
-  // Определяем, показывать ли кнопку удаления
   const showDeleteButton = swipeDistance > SWIPE_THRESHOLD;
 
   return (
     <div className="relative">
       <motion.div
+        ref={elementRef}
         className={`${className} ${isPressed && !isScrolling.current ? 'pressed' : ''}`}
         style={{ 
           x: -swipeDistance,
-          touchAction: 'pan-y', // Разрешаем вертикальный скролл
+          touchAction: 'pan-y',
           userSelect: 'none',
           WebkitUserSelect: 'none'
         }}
@@ -254,10 +299,6 @@ const LongPressWrapper = ({
         onMouseMove={handleMove}
         onMouseUp={handleEnd}
         onMouseLeave={handleCancel}
-        onTouchStart={handleStart}
-        onTouchMove={handleMove}
-        onTouchEnd={handleEnd}
-        onTouchCancel={handleCancel}
         onContextMenu={handleContextMenu}
         whileTap={swipeDistance === 0 ? whileTapConfig : {}}
       >

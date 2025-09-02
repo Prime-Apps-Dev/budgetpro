@@ -17,6 +17,10 @@ import { AnimatePresence } from 'framer-motion';
  * @param {object} props.style - Стили для виртуализации.
  */
 const TransactionItem = memo(({ transaction, onDelete, onEdit, style }) => {
+  console.log('🟡 TransactionItem rendered with transaction:', transaction?.id);
+  console.log('🟡 onDelete function exists:', typeof onDelete);
+  console.log('🟡 onEdit function exists:', typeof onEdit);
+
   const {
     getAccountByName,
     currencySymbol
@@ -46,20 +50,35 @@ const TransactionItem = memo(({ transaction, onDelete, onEdit, style }) => {
   };
 
   const handleEdit = () => {
+    console.log('🟡 TransactionItem handleEdit called for transaction:', transaction?.id);
     if (onEdit) onEdit(transaction);
   };
   
-  const handleDelete = () => {
-    if (onDelete) onDelete(transaction);
+  const handleDelete = (receivedItem) => {
+    console.log('🟡 TransactionItem handleDelete called');
+    console.log('🟡 Received item:', receivedItem);
+    console.log('🟡 Transaction:', transaction);
+    console.log('🟡 onDelete function:', typeof onDelete);
+    
+    if (onDelete) {
+      console.log('🟡 Calling parent onDelete...');
+      onDelete(receivedItem || transaction);
+      console.log('🟡 Parent onDelete called');
+    } else {
+      console.log('🔴 ERROR: onDelete is not defined in TransactionItem!');
+    }
   };
   
   return (
     <div style={style}>
         <LongPressWrapper
-            onTap={() => {}} // Обычный клик ничего не делает
+            onTap={() => {
+              console.log('🟡 TransactionItem tap');
+            }} // Одиночное нажатие для TransactionItem не используется
             onLongPress={handleEdit}
             onSwipeLeft={handleDelete}
-            swipeDeleteIcon={ICONS.Trash2} // Добавляем иконку корзины
+            swipeDeleteIcon={ICONS.Trash2}
+            item={transaction} // ВАЖНО: передаем transaction как item
         >
             <div className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-150">
                 <div className="flex items-center justify-between">
