@@ -1,15 +1,27 @@
 // src/context/useBudgets.jsx
-import React, { createContext, useState, useContext, useMemo } from 'react';
+import React, { createContext, useState, useContext, useMemo, useCallback } from 'react';
 import { useTransactions } from './useTransactions';
 
 const BudgetsContext = createContext(null);
 
-export const BudgetsProvider = ({ children }) => {
-  const { transactions } = useTransactions();
-  const [budgets, setBudgets] = useState([]);
+export const BudgetsProvider = ({ children, budgets, setBudgets }) => {
   const [showAddBudgetModal, setShowAddBudgetModal] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
+  const [showBudgetTransactionsModal, setShowBudgetTransactionsModal] = useState(false);
+  const [selectedBudgetForTransactions, setSelectedBudgetForTransactions] = useState(null);
 
+  const { transactions } = useTransactions();
+
+  const addOrUpdateBudget = useCallback((newBudget) => {
+    setBudgets(prevBudgets => {
+      if (newBudget.id) {
+        return prevBudgets.map(b => b.id === newBudget.id ? newBudget : b);
+      } else {
+        return [...prevBudgets, { ...newBudget, id: Date.now() }];
+      }
+    });
+  }, [setBudgets]);
+  
   const totalPlannedBudget = useMemo(() => {
     return budgets.reduce((sum, budget) => sum + budget.limit, 0);
   }, [budgets]);
@@ -27,14 +39,15 @@ export const BudgetsProvider = ({ children }) => {
     budgets, setBudgets,
     showAddBudgetModal, setShowAddBudgetModal,
     editingBudget, setEditingBudget,
+    showBudgetTransactionsModal, setShowBudgetTransactionsModal,
+    selectedBudgetForTransactions, setSelectedBudgetForTransactions,
     totalPlannedBudget,
     totalSpentOnBudgets,
+    addOrUpdateBudget,
   }), [
-    budgets, setBudgets,
-    showAddBudgetModal, setShowAddBudgetModal,
-    editingBudget, setEditingBudget,
-    totalPlannedBudget,
-    totalSpentOnBudgets,
+    budgets, showAddBudgetModal, editingBudget,
+    showBudgetTransactionsModal, selectedBudgetForTransactions,
+    totalPlannedBudget, totalSpentOnBudgets, addOrUpdateBudget, setBudgets
   ]);
 
   return <BudgetsContext.Provider value={value}>{children}</BudgetsContext.Provider>;

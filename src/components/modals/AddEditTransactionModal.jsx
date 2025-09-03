@@ -20,6 +20,8 @@ const AddEditTransactionModal = () => {
     setShowAddTransaction,
     newTransaction,
     setNewTransaction,
+    prefilledTransaction,
+    setPrefilledTransaction,
     categories,
     accounts,
     loans,
@@ -49,9 +51,10 @@ const AddEditTransactionModal = () => {
   const isEditing = !!editingTransaction;
   const isFinancialTransaction = selectedFinancialItem && (selectedFinancialItem.type === 'loan' || selectedFinancialItem.type === 'deposit');
   const isDebtTransaction = !!selectedDebtToRepay;
+  const isPrefilled = !!prefilledTransaction;
 
   const [formData, setFormData] = useState(
-    isEditing ? { ...editingTransaction } : newTransaction
+    isEditing ? { ...editingTransaction } : (isPrefilled ? prefilledTransaction : newTransaction)
   );
   const [selectedLoan, setSelectedLoan] = useState(editingTransaction?.category === 'Погашение кредита' ? editingTransaction.financialItemId : '');
   const [selectedDeposit, setSelectedDeposit] = useState(editingTransaction?.category === 'Пополнение депозита' || editingTransaction?.category === 'Снятие с депозита' ? editingTransaction.financialItemId : '');
@@ -61,6 +64,9 @@ const AddEditTransactionModal = () => {
       setFormData({ ...editingTransaction, description: editingTransaction.description || '' });
       setSelectedLoan(editingTransaction.category === 'Погашение кредита' ? editingTransaction.financialItemId : '');
       setSelectedDeposit(editingTransaction.category === 'Пополнение депозита' || editingTransaction.category === 'Снятие с депозита' ? editingTransaction.financialItemId : '');
+    } else if (prefilledTransaction) {
+        setFormData(prefilledTransaction);
+        // Не нужно устанавливать selectedLoan/Deposit, так как prefilledTransaction не используется для этих целей в текущей логике
     } else if (selectedFinancialItem) {
       if (selectedFinancialItem.type === 'loan') {
         const nextPaymentAmount = selectedFinancialItem.monthlyPayment;
@@ -101,7 +107,7 @@ const AddEditTransactionModal = () => {
       setSelectedLoan('');
       setSelectedDeposit('');
     }
-  }, [editingTransaction, newTransaction, selectedFinancialItem, selectedDebtToRepay, setNewTransaction]);
+  }, [editingTransaction, newTransaction, selectedFinancialItem, selectedDebtToRepay, prefilledTransaction]);
   
   /**
    * Обрабатывает отправку формы, сохраняя новую или обновляя существующую транзакцию.
@@ -212,6 +218,9 @@ const AddEditTransactionModal = () => {
   };
 
   const isDebtOrFinancialTransaction = isFinancialTransaction || isDebtTransaction;
+  const isCategoryLocked = isPrefilled || isDebtOrFinancialTransaction;
+  const isDescriptionLocked = isDebtOrFinancialTransaction;
+
 
   return (
     <ModalWrapper
@@ -222,26 +231,26 @@ const AddEditTransactionModal = () => {
       <div className="space-y-8">
         <div className="grid grid-cols-2 gap-3">
           <motion.button
-            onClick={() => !isDebtOrFinancialTransaction && setFormData({ ...formData, type: 'expense', category: '', description: '' })}
+            onClick={() => !isCategoryLocked && setFormData({ ...formData, type: 'expense', category: '', description: '' })}
             className={`p-4 rounded-2xl border-2 font-medium ${
               formData.type === 'expense'
                 ? 'border-red-500 bg-red-50 text-red-700 dark:border-red-400 dark:bg-red-900 dark:text-red-300'
                 : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
-            } ${isDebtOrFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
-            disabled={isDebtOrFinancialTransaction}
+            } ${isCategoryLocked ? 'cursor-not-allowed opacity-50' : ''}`}
+            disabled={isCategoryLocked}
             whileTap={whileTap}
             transition={spring}
           >
             Расход
           </motion.button>
           <motion.button
-            onClick={() => !isDebtOrFinancialTransaction && setFormData({ ...formData, type: 'income', category: '', description: '' })}
+            onClick={() => !isCategoryLocked && setFormData({ ...formData, type: 'income', category: '', description: '' })}
             className={`p-4 rounded-2xl border-2 font-medium ${
               formData.type === 'income'
                 ? 'border-green-500 bg-green-50 text-green-700 dark:border-green-400 dark:bg-green-900 dark:text-green-300'
                 : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
-            } ${isDebtOrFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
-            disabled={isDebtOrFinancialTransaction}
+            } ${isCategoryLocked ? 'cursor-not-allowed opacity-50' : ''}`}
+            disabled={isCategoryLocked}
             whileTap={whileTap}
             transition={spring}
           >
@@ -269,8 +278,8 @@ const AddEditTransactionModal = () => {
               setSelectedLoan('');
               setSelectedDeposit('');
             }}
-            className={`w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 ${isDebtOrFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
-            disabled={isDebtOrFinancialTransaction}
+            className={`w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 ${isCategoryLocked ? 'cursor-not-allowed opacity-50' : ''}`}
+            disabled={isCategoryLocked}
           >
             <option value="">Выберите категорию</option>
             {categories[formData.type].map(category => (
@@ -331,8 +340,8 @@ const AddEditTransactionModal = () => {
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Описание транзакции"
-            className={`w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 ${isDebtOrFinancialTransaction ? 'cursor-not-allowed opacity-50' : ''}`}
-            disabled={isDebtOrFinancialTransaction}
+            className={`w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 ${isDescriptionLocked ? 'cursor-not-allowed opacity-50' : ''}`}
+            disabled={isDescriptionLocked}
           />
         </div>
 

@@ -56,26 +56,26 @@ const AddLoanDepositTransactionModal = () => {
     if (isNaN(transactionAmount) || transactionAmount <= 0) return;
 
     const isLoan = formData.financialItem.type === 'loan';
-    const category = isLoan ? 'Погашение кредита' : (transactionAmount > 0 ? 'Пополнение депозита' : 'Снятие с депозита');
-    const type = isLoan ? 'expense' : (transactionAmount > 0 ? 'expense' : 'income'); // Снимаем с счета и вносим на депозит (expense), или наоборот (income)
+    const transactionType = isLoan ? 'expense' : 'transfer'; // Depsoit transaction is a transfer
+    const category = isLoan ? 'Погашение кредита' : 'Пополнение депозита';
     
     // Создаем транзакцию, которую добавляем в общий список
     const mainTransaction = {
       id: Date.now(),
-      type: isLoan ? 'expense' : (type === 'expense' ? 'expense' : 'income'),
+      type: transactionType,
       amount: Math.abs(transactionAmount),
-      category: isLoan ? 'Погашение кредита' : (transactionAmount > 0 ? 'Пополнение депозита' : 'Снятие с депозита'),
+      category: category,
       account: formData.account,
       date: formData.date,
-      description: isLoan ? `Платеж по кредиту "${formData.financialItem.name}"` : `Операция по депозиту "${formData.financialItem.name}"`,
+      description: isLoan ? `Платеж по кредиту "${formData.financialItem.name}"` : `Пополнение депозита "${formData.financialItem.name}"`,
       financialItemId: formData.financialItem.id,
     };
 
     // Создаем транзакцию для детализации кредита/депозита
     const financialTransaction = {
       ...mainTransaction,
-      account: isLoan ? 'Погашение кредита' : (transactionAmount > 0 ? 'Пополнение депозита' : 'Снятие с депозита'),
-      type: isLoan ? 'expense' : (transactionAmount > 0 ? 'income' : 'expense'),
+      type: isLoan ? 'expense' : 'income',
+      account: isLoan ? `Кредит: ${formData.financialItem.name}` : `Депозит: ${formData.financialItem.name}`,
     };
     
     // Обновляем состояния

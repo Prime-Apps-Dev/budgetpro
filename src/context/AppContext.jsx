@@ -1,144 +1,154 @@
 // src/context/AppContext.jsx
 import React, { createContext, useState, useEffect, useMemo, useContext, useCallback } from 'react';
-import { CURRENCIES, getCurrencySymbolByCode } from '../constants/currencies';
-import { TransactionsProvider, useTransactions } from './useTransactions';
-import { FinancialProductsProvider, useFinancialProducts } from './useFinancialProducts';
-import { DebtsProvider, useDebts } from './useDebts';
-import { BudgetsProvider, useBudgets } from './useBudgets';
-import { GoalsProvider, useGoals } from './useGoals';
-import { SettingsProvider, useSettings } from './useSettings';
+import { useSettings, SettingsProvider } from './useSettings';
+import { useTransactions, TransactionsProvider } from './useTransactions';
+import { useFinancialProducts, FinancialProductsProvider } from './useFinancialProducts';
+import { useDebts, DebtsProvider } from './useDebts';
+import { useBudgets, BudgetsProvider } from './useBudgets';
+import { useGoals, GoalsProvider } from './useGoals';
+import { useData } from './useData';
 
 export const AppContext = createContext(null);
 
-const AppContextInternal = ({ children }) => {
-  const { 
+const AppContextInternal = ({ children, data, setData }) => {
+  const [activeTab, setActiveTab] = useState('home');
+  const [currentScreen, setCurrentScreen] = useState('');
+  const [screenHistory, setScreenHistory] = useState([]);
+  
+  // Settings
+  const {
     isDarkMode, setIsDarkMode,
     currencyCode, setCurrencyCode,
     userProfile, setUserProfile,
     accounts, setAccounts,
     categories, setCategories,
-    defaultState
+    showEditProfileModal, setShowEditProfileModal,
+    showAddAccountModal, setShowAddAccountModal,
+    editingAccount, setEditingAccount,
+    showAddCategoryModal, setShowAddCategoryModal,
+    editingCategory, setEditingCategory,
+    getAccountByName,
+    currencySymbol,
+    daysActive,
   } = useSettings();
-  
+
+  // Transactions
   const {
     transactions, setTransactions,
     loanTransactions, setLoanTransactions,
     depositTransactions, setDepositTransactions,
+    showAddTransaction, setShowAddTransaction,
+    editingTransaction, setEditingTransaction,
+    newTransaction, setNewTransaction,
+    prefilledTransaction, setPrefilledTransaction,
+    transactionFilterType, setTransactionFilterType,
+    selectedPeriod, setSelectedPeriod,
+    dateRange, setDateRange,
+    getFilteredTransactions,
+    filteredTransactions,
+    totalIncome,
+    totalExpenses,
+    totalBudget,
+    getMonthlyTransactionsCount,
   } = useTransactions();
   
+  // Financial Products
   const {
     loans, setLoans,
     deposits, setDeposits,
+    showAddFinancialItemModal, setShowAddFinancialItemModal,
+    editingFinancialItem, setEditingFinancialItem,
+    selectedFinancialItem, setSelectedFinancialItem,
+    loansWithBalance,
+    depositsWithBalance,
+    showLoanDepositTransactionModal, setShowLoanDepositTransactionModal,
+    selectedLoanDepositForTransaction, setSelectedLoanDepositForTransaction,
   } = useFinancialProducts();
   
+  // Debts
   const {
     debts, setDebts,
+    showAddDebtModal, setShowAddDebtModal,
+    editingDebt, setEditingDebt,
+    selectedDebtToRepay, setSelectedDebtToRepay,
+    showDebtTransactionsModal, setShowDebtTransactionsModal,
+    selectedDebtForTransactions, setSelectedDebtForTransactions,
   } = useDebts();
   
+  // Budgets
   const {
     budgets, setBudgets,
+    showAddBudgetModal, setShowAddBudgetModal,
+    editingBudget, setEditingBudget,
+    showBudgetTransactionsModal, setShowBudgetTransactionsModal,
+    selectedBudgetForTransactions, setSelectedBudgetForTransactions,
+    totalPlannedBudget,
+    addOrUpdateBudget
   } = useBudgets();
   
+  // Goals
   const {
     financialGoals, setFinancialGoals,
+    showAddGoalModal, setShowAddGoalModal,
+    editingGoal, setEditingGoal,
+    showGoalTransactionsModal, setShowGoalTransactionsModal,
+    selectedGoal, setSelectedGoal,
+    showConfirmDeleteGoal, setShowConfirmDeleteGoal,
+    goalToDelete, setGoalToDelete,
   } = useGoals();
+
+  const totalSavingsBalance = useMemo(() => {
+    return financialGoals
+      .filter(goal => goal.isSavings)
+      .reduce((sum, goal) => sum + goal.current, 0);
+  }, [financialGoals]);
   
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const [activeTab, setActiveTab] = useState('home');
-  const [currentScreen, setCurrentScreen] = useState('');
-  const [screenHistory, setScreenHistory] = useState([]);
-
-  useEffect(() => {
-    try {
-      const savedState = JSON.parse(localStorage.getItem('financialAppState'));
-      if (savedState) {
-        setTransactions(savedState.transactions || defaultState.transactions);
-        setLoans(savedState.loans || defaultState.loans);
-        setDeposits(savedState.deposits || defaultState.deposits);
-        setLoanTransactions(savedState.loanTransactions || defaultState.loanTransactions);
-        setDepositTransactions(savedState.depositTransactions || defaultState.depositTransactions);
-        setDebts(savedState.debts || defaultState.debts);
-        setBudgets(savedState.budgets || defaultState.budgets);
-        setCategories(savedState.categories || defaultState.categories);
-        setAccounts(savedState.accounts || defaultState.accounts);
-        setFinancialGoals(savedState.financialGoals || defaultState.financialGoals);
-        setUserProfile(savedState.userProfile || defaultState.userProfile);
-        setIsDarkMode(savedState.isDarkMode || false);
-        setCurrencyCode(savedState.currencyCode || 'RUB');
-      } else {
-        setTransactions(defaultState.transactions);
-        setLoans(defaultState.loans);
-        setDeposits(defaultState.deposits);
-        setLoanTransactions(defaultState.loanTransactions);
-        setDepositTransactions(defaultState.depositTransactions);
-        setDebts(defaultState.debts);
-        setBudgets(defaultState.budgets);
-        setCategories(defaultState.categories);
-        setAccounts(defaultState.accounts);
-        setFinancialGoals(defaultState.financialGoals);
-        setUserProfile(defaultState.userProfile);
-        setCurrencyCode(defaultState.currencyCode);
-      }
-    } catch (error) {
-      console.error("Failed to load state from localStorage:", error);
-      setTransactions(defaultState.transactions);
-      setLoans(defaultState.loans);
-      setDeposits(defaultState.deposits);
-      setLoanTransactions(defaultState.loanTransactions);
-      setDepositTransactions(defaultState.depositTransactions);
-      setDebts(defaultState.debts);
-      setBudgets(defaultState.budgets);
-      setCategories(defaultState.categories);
-      setAccounts(defaultState.accounts);
-      setFinancialGoals(defaultState.financialGoals);
-      setUserProfile(defaultState.userProfile);
-      setCurrencyCode(defaultState.currencyCode);
-    } finally {
-      setIsDataLoaded(true);
-    }
-  }, [
-    defaultState,
-    setTransactions, setLoans, setDeposits, setLoanTransactions, setDepositTransactions,
-    setDebts, setBudgets, setCategories, setAccounts, setFinancialGoals,
-    setUserProfile, setIsDarkMode, setCurrencyCode
-  ]);
-
-  useEffect(() => {
-    if (!isDataLoaded) return;
-    const stateToSave = {
-      transactions,
-      loans,
-      deposits,
-      loanTransactions,
-      depositTransactions,
-      debts,
-      budgets,
-      categories,
-      accounts,
-      financialGoals,
-      userProfile,
-      isDarkMode,
-      currencyCode
-    };
-    try {
-      localStorage.setItem('financialAppState', JSON.stringify(stateToSave));
-    } catch (error) {
-      console.error("Failed to save state to localStorage:", error);
-    }
-  }, [
-    transactions, loans, deposits, loanTransactions, depositTransactions,
-    debts, budgets, categories, accounts, financialGoals, userProfile,
-    isDarkMode, isDataLoaded, currencyCode
-  ]);
-
+  const totalSpentOnBudgets = useMemo(() => {
+    return budgets.reduce((totalSpent, budget) => {
+      const spentForCategory = transactions
+        .filter(t => t.category === budget.category && t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+      return totalSpent + spentForCategory;
+    }, 0);
+  }, [budgets, transactions]);
+  
   const closeAllModals = useCallback(() => {
-    // This function will need to be updated to use the new hooks' state setters
-    // For now, it is a placeholder. We will fix this in a later step.
-  }, []);
-
-  const navigateToTransactionHistory = useCallback((type) => {
-    setCurrentScreen('transaction-history');
-  }, []);
+    setShowAddTransaction(false);
+    setEditingTransaction(null);
+    setSelectedFinancialItem(null);
+    setShowAddFinancialItemModal(false);
+    setEditingFinancialItem(null);
+    setSelectedDebtToRepay(null);
+    setShowAddDebtModal(false);
+    setEditingDebt(null);
+    setShowAddBudgetModal(false);
+    setEditingBudget(null);
+    setShowAddGoalModal(false);
+    setEditingGoal(null);
+    setShowAddCategoryModal(false);
+    setEditingCategory(null);
+    setShowEditProfileModal(false);
+    setShowAddAccountModal(false);
+    setEditingAccount(null);
+    setShowGoalTransactionsModal(false);
+    setSelectedGoal(null);
+    setShowDebtTransactionsModal(false);
+    setSelectedDebtForTransactions(null);
+    setShowLoanDepositTransactionModal(false);
+    setSelectedLoanDepositForTransaction(null);
+    setShowBudgetTransactionsModal(false);
+    setSelectedBudgetForTransactions(null);
+    setPrefilledTransaction(null);
+  }, [
+    setShowAddTransaction, setEditingTransaction, setSelectedFinancialItem,
+    setShowAddFinancialItemModal, setEditingFinancialItem, setSelectedDebtToRepay,
+    setShowAddDebtModal, setEditingDebt, setShowAddBudgetModal, setEditingBudget,
+    setShowAddGoalModal, setEditingGoal, setShowAddCategoryModal, setEditingCategory,
+    setShowEditProfileModal, setShowAddAccountModal, setEditingAccount,
+    setShowGoalTransactionsModal, setSelectedGoal, setShowDebtTransactionsModal,
+    setSelectedDebtForTransactions, setShowLoanDepositTransactionModal, setSelectedLoanDepositForTransaction,
+    setShowBudgetTransactionsModal, setSelectedBudgetForTransactions, setPrefilledTransaction
+  ]);
 
   const navigateToScreen = useCallback((screenName) => {
     if (currentScreen) {
@@ -163,8 +173,12 @@ const AppContextInternal = ({ children }) => {
     }
   }, [screenHistory]);
 
+  const navigateToTransactionHistory = useCallback(() => {
+    setCurrentScreen('transaction-history');
+  }, []);
+
   const value = useMemo(() => ({
-    isDataLoaded,
+    // Навигация
     activeTab, setActiveTab,
     currentScreen, setCurrentScreen,
     screenHistory,
@@ -173,32 +187,141 @@ const AppContextInternal = ({ children }) => {
     navigateToTab,
     goBack,
     closeAllModals,
-    defaultState,
+    
+    // Хук настроек
+    isDarkMode, setIsDarkMode: (value) => setData(prev => ({ ...prev, settings: { ...prev.settings, isDarkMode: value } })),
+    currencyCode, setCurrencyCode: (value) => setData(prev => ({ ...prev, settings: { ...prev.settings, currencyCode: value } })),
+    userProfile, setUserProfile: (value) => setData(prev => ({ ...prev, settings: { ...prev.settings, userProfile: value } })),
+    accounts, setAccounts: (value) => setData(prev => ({ ...prev, settings: { ...prev.settings, accounts: value } })),
+    categories, setCategories: (value) => setData(prev => ({ ...prev, settings: { ...prev.settings, categories: value } })),
+    showEditProfileModal, setShowEditProfileModal,
+    showAddAccountModal, setShowAddAccountModal,
+    editingAccount, setEditingAccount,
+    showAddCategoryModal, setShowAddCategoryModal,
+    editingCategory, setEditingCategory,
+    getAccountByName,
+    currencySymbol,
+    daysActive,
+    
+    // Хук транзакций
+    transactions, setTransactions: (value) => setData(prev => ({ ...prev, transactions: { ...prev.transactions, transactions: value } })),
+    loanTransactions, setLoanTransactions: (value) => setData(prev => ({ ...prev, transactions: { ...prev.transactions, loanTransactions: value } })),
+    depositTransactions, setDepositTransactions: (value) => setData(prev => ({ ...prev, transactions: { ...prev.transactions, depositTransactions: value } })),
+    showAddTransaction, setShowAddTransaction,
+    editingTransaction, setEditingTransaction,
+    newTransaction, setNewTransaction,
+    prefilledTransaction, setPrefilledTransaction,
+    transactionFilterType, setTransactionFilterType,
+    selectedPeriod, setSelectedPeriod,
+    dateRange, setDateRange,
+    getFilteredTransactions,
+    filteredTransactions,
+    totalIncome,
+    totalExpenses,
+    totalBudget,
+    getMonthlyTransactionsCount,
+    
+    // Хук финансовых продуктов
+    loans, setLoans: (value) => setData(prev => ({ ...prev, financialProducts: { ...prev.financialProducts, loans: value } })),
+    deposits, setDeposits: (value) => setData(prev => ({ ...prev, financialProducts: { ...prev.financialProducts, deposits: value } })),
+    showAddFinancialItemModal, setShowAddFinancialItemModal,
+    editingFinancialItem, setEditingFinancialItem,
+    selectedFinancialItem, setSelectedFinancialItem,
+    loansWithBalance,
+    depositsWithBalance,
+    showLoanDepositTransactionModal, setShowLoanDepositTransactionModal,
+    selectedLoanDepositForTransaction, setSelectedLoanDepositForTransaction,
+
+    // Хук долгов
+    debts, setDebts: (value) => setData(prev => ({ ...prev, debts: value })),
+    showAddDebtModal, setShowAddDebtModal,
+    editingDebt, setEditingDebt,
+    selectedDebtToRepay, setSelectedDebtToRepay,
+    showDebtTransactionsModal, setShowDebtTransactionsModal,
+    selectedDebtForTransactions, setSelectedDebtForTransactions,
+
+    // Хук бюджетов
+    budgets, setBudgets: (value) => setData(prev => ({ ...prev, budgets: value })),
+    showAddBudgetModal, setShowAddBudgetModal,
+    editingBudget, setEditingBudget,
+    showBudgetTransactionsModal, setShowBudgetTransactionsModal,
+    selectedBudgetForTransactions, setSelectedBudgetForTransactions,
+    totalPlannedBudget,
+    totalSpentOnBudgets,
+
+    // Хук целей
+    financialGoals, setFinancialGoals: (value) => setData(prev => ({ ...prev, goals: value })),
+    showAddGoalModal, setShowAddGoalModal,
+    editingGoal, setEditingGoal,
+    showGoalTransactionsModal, setShowGoalTransactionsModal,
+    selectedGoal, setSelectedGoal,
+    showConfirmDeleteGoal, setShowConfirmDeleteGoal,
+    goalToDelete, setGoalToDelete,
+    totalSavingsBalance,
+    
+    addOrUpdateBudget: (newBudget) => {
+      setData(prev => {
+        const budgets = prev.budgets;
+        if (newBudget.id) {
+          return { ...prev, budgets: budgets.map(b => b.id === newBudget.id ? newBudget : b) };
+        } else {
+          return { ...prev, budgets: [...budgets, { ...newBudget, id: Date.now() }] };
+        }
+      });
+    }
+
   }), [
-    isDataLoaded,
-    activeTab, setActiveTab,
-    currentScreen, setCurrentScreen,
-    screenHistory,
-    navigateToTransactionHistory,
-    navigateToScreen,
-    navigateToTab,
-    goBack,
-    closeAllModals,
-    defaultState,
+    // Навигация
+    activeTab, currentScreen, screenHistory,
+    navigateToTransactionHistory, navigateToScreen, navigateToTab, goBack, closeAllModals,
+    // Хук настроек
+    isDarkMode, currencyCode, userProfile, accounts, categories, showEditProfileModal,
+    showAddAccountModal, editingAccount, showAddCategoryModal, editingCategory,
+    getAccountByName, currencySymbol, daysActive,
+    // Хук транзакций
+    transactions, loanTransactions, depositTransactions, showAddTransaction, editingTransaction,
+    newTransaction, prefilledTransaction, transactionFilterType, selectedPeriod, dateRange, getFilteredTransactions,
+    filteredTransactions, totalIncome, totalExpenses, totalBudget, getMonthlyTransactionsCount,
+    // Хук фин. продуктов
+    loans, deposits, showAddFinancialItemModal, editingFinancialItem, selectedFinancialItem,
+    loansWithBalance, depositsWithBalance, showLoanDepositTransactionModal,
+    selectedLoanDepositForTransaction,
+    // Хук долгов
+    debts, showAddDebtModal, editingDebt, selectedDebtToRepay, showDebtTransactionsModal,
+    selectedDebtForTransactions,
+    // Хук бюджетов
+    budgets, showAddBudgetModal, editingBudget, showBudgetTransactionsModal,
+    selectedBudgetForTransactions, totalPlannedBudget, totalSpentOnBudgets,
+    // Хук целей
+    financialGoals, showAddGoalModal, editingGoal, showGoalTransactionsModal,
+    selectedGoal, showConfirmDeleteGoal, goalToDelete, totalSavingsBalance,
+    setData
   ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
 export const AppContextProvider = ({ children }) => {
+    const { data, setData, isDataLoaded } = useData();
+
+    if (!isDataLoaded) {
+      return (
+        <div className={`max-w-md mx-auto min-h-screen relative flex items-center justify-center`}>
+          <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            Загрузка...
+          </div>
+        </div>
+      );
+    }
+  
     return (
-      <SettingsProvider>
-        <TransactionsProvider>
-          <FinancialProductsProvider>
-            <DebtsProvider>
-              <BudgetsProvider>
-                <GoalsProvider>
-                  <AppContextInternal>{children}</AppContextInternal>
+      <SettingsProvider settings={data.settings} setSettings={(setter) => setData(prev => ({...prev, settings: setter(prev.settings)}))}>
+        <TransactionsProvider transactionsState={data.transactions} setTransactionsState={(setter) => setData(prev => ({...prev, transactions: setter(prev.transactions)}))}>
+          <FinancialProductsProvider financialProducts={data.financialProducts} setFinancialProducts={(setter) => setData(prev => ({...prev, financialProducts: setter(prev.financialProducts)}))}>
+            <DebtsProvider debts={data.debts} setDebts={(setter) => setData(prev => ({...prev, debts: setter(prev.debts)}))}>
+              <BudgetsProvider budgets={data.budgets} setBudgets={(setter) => setData(prev => ({...prev, budgets: setter(prev.budgets)}))}>
+                <GoalsProvider financialGoals={data.goals} setFinancialGoals={(setter) => setData(prev => ({...prev, goals: setter(prev.goals)}))}>
+                  <AppContextInternal data={data} setData={setData}>{children}</AppContextInternal>
                 </GoalsProvider>
               </BudgetsProvider>
             </DebtsProvider>
@@ -213,13 +336,5 @@ export const useAppContext = () => {
   if (context === null) {
     throw new Error('useAppContext must be used within an AppContextProvider');
   }
-  return {
-    ...context,
-    ...useTransactions(),
-    ...useFinancialProducts(),
-    ...useDebts(),
-    ...useBudgets(),
-    ...useGoals(),
-    ...useSettings(),
-  };
+  return context;
 };

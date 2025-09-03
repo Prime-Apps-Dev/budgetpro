@@ -8,46 +8,59 @@ import ModalWrapper from './ModalWrapper';
 const AddEditBudgetModal = () => {
   const {
     budgets,
-    setBudgets,
     categories,
     setShowAddBudgetModal,
     editingBudget,
-    setEditingBudget
+    setEditingBudget,
+    addOrUpdateBudget
   } = useAppContext();
 
+  const isEditing = !!editingBudget?.id;
+  
   const [formData, setFormData] = useState({
     category: '',
     limit: ''
   });
+  const [selectedDate, setSelectedDate] = useState(
+    editingBudget?.monthKey
+      ? new Date(editingBudget.monthKey.split('-')[0], editingBudget.monthKey.split('-')[1] - 1, 1)
+      : new Date()
+  );
 
   useEffect(() => {
     if (editingBudget) {
       setFormData({
         category: editingBudget.category,
-        limit: editingBudget.limit.toString()
+        limit: editingBudget.limit?.toString() || ''
       });
+      if (editingBudget.monthKey) {
+        const [year, month] = editingBudget.monthKey.split('-');
+        setSelectedDate(new Date(year, month - 1, 1));
+      }
     } else {
       setFormData({
         category: '',
         limit: ''
       });
+      setSelectedDate(new Date());
     }
   }, [editingBudget]);
 
   const handleSaveBudget = () => {
     if (!formData.category || !formData.limit) return;
+    
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const monthKey = `${year}-${month}`;
+
     const newBudget = {
-      id: editingBudget ? editingBudget.id : Date.now(),
+      id: isEditing ? editingBudget.id : null,
       category: formData.category,
       limit: parseFloat(formData.limit),
-      spent: 0
+      monthKey,
     };
-
-    if (editingBudget) {
-      setBudgets(budgets.map(b => b.id === newBudget.id ? newBudget : b));
-    } else {
-      setBudgets([...budgets, newBudget]);
-    }
+    
+    addOrUpdateBudget(newBudget);
 
     setFormData({ category: '', limit: '' });
     setShowAddBudgetModal(false);
@@ -59,10 +72,16 @@ const AddEditBudgetModal = () => {
     setEditingBudget(null);
     setFormData({ category: '', limit: '' });
   };
+  
+  const handleMonthChange = (e) => {
+    const [year, month] = e.target.value.split('-');
+    setSelectedDate(new Date(year, month - 1, 1));
+  };
+
 
   return (
     <ModalWrapper
-      title={editingBudget ? 'Редактировать бюджет' : 'Создать бюджет'}
+      title={isEditing ? 'Редактировать бюджет' : 'Создать бюджет'}
       handleClose={handleClose}
     >
       <div className="flex-grow overflow-y-auto pr-2">
@@ -90,13 +109,22 @@ const AddEditBudgetModal = () => {
               className="w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-gray-400">Месяц</label>
+            <input
+              type="month"
+              value={`${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}`}
+              onChange={handleMonthChange}
+              className="w-full p-4 border border-gray-300 rounded-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
+            />
+          </div>
           <motion.button
             onClick={handleSaveBudget}
             className="w-full bg-blue-600 text-white p-4 rounded-2xl font-semibold hover:bg-blue-700"
             whileTap={whileTap}
             transition={spring}
           >
-            {editingBudget ? 'Сохранить изменения' : 'Создать бюджет'}
+            {isEditing ? 'Сохранить изменения' : 'Создать бюджет'}
           </motion.button>
         </div>
       </div>

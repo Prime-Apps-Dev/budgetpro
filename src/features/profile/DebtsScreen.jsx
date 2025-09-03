@@ -24,7 +24,9 @@ const IOweWidget = ({ totalAmount, debtsCount, currencySymbol }) => (
         </div>
         <div className="text-right">
           <div className="text-sm font-medium opacity-90">Я должен</div>
-          <div className="text-xs opacity-70">{debtsCount} долг{debtsCount > 1 ? 'а' : ''}</div>
+          <div className="text-xs opacity-70">
+            {debtsCount === 1 ? '1 долг' : `${debtsCount} долга`}
+          </div>
         </div>
       </div>
       
@@ -59,7 +61,9 @@ const OweMeWidget = ({ totalAmount, debtsCount, currencySymbol }) => (
         </div>
         <div className="text-right">
           <div className="text-sm font-medium opacity-90">Мне должны</div>
-          <div className="text-xs opacity-70">{debtsCount} долг{debtsCount > 1 ? 'а' : ''}</div>
+          <div className="text-xs opacity-70">
+            {debtsCount === 1 ? '1 долг' : `${debtsCount} долга`}
+          </div>
         </div>
       </div>
       
@@ -493,7 +497,7 @@ const DebtsScreen = () => {
                       Я должен
                     </h3>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {iOwe.length} долг{iOwe.length !== 1 ? 'а' : ''}
+                      {iOwe.length} {iOwe.length === 1 ? 'долг' : 'долга'}
                     </div>
                   </div>
                   {renderDebtList(iOwe)}
@@ -506,7 +510,7 @@ const DebtsScreen = () => {
                       Мне должны
                     </h3>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {owedToMe.length} долг{owedToMe.length !== 1 ? 'а' : ''}
+                      {owedToMe.length} {owedToMe.length === 1 ? 'долг' : 'долга'}
                     </div>
                   </div>
                   {renderDebtList(owedToMe)}

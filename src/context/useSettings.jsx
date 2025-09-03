@@ -1,46 +1,32 @@
 // src/context/useSettings.jsx
-import React, { createContext, useState, useContext, useMemo, useCallback, useEffect } from 'react';
+import React, { createContext, useState, useContext, useMemo, useCallback } from 'react';
 import { ICONS } from '../components/icons';
-import { CURRENCIES, getCurrencySymbolByCode } from '../constants/currencies';
+import { getCurrencySymbolByCode } from '../constants/currencies';
 
 const SettingsContext = createContext(null);
 
-export const SettingsProvider = ({ children }) => {
-  const defaultState = useMemo(() => ({
-    categories: {
-      income: [{ name: 'Зарплата', icon: 'DollarSign' }, { name: 'Фриланс', icon: 'Briefcase' }, { name: 'Инвестиции', icon: 'TrendingUp' }, { name: 'Подарки', icon: 'Gift' }, { name: 'С копилки', icon: 'PiggyBank' }, { name: 'Возврат долга', icon: 'Handshake' }, { name: 'Пополнение депозита', icon: 'Banknote' }, {name: 'Снятие с депозита', icon: 'Banknote'}],
-      expense: [{ name: 'Продукты', icon: 'ShoppingBag' }, { name: 'Транспорт', icon: 'Car' }, { name: 'Развлечения', icon: 'Film' }, { name: 'Коммунальные услуги', icon: 'Building' }, { name: 'Одежда', icon: 'Shirt' }, { name: 'Здоровье', icon: 'Heart' }, { name: 'В копилку', icon: 'PiggyBank' }, { name: 'Отдача долга', icon: 'Handshake' }, { name: 'Погашение кредита', icon: 'MinusCircle' }, {name: 'Пополнение депозита', icon: 'Banknote'}]
-    },
-    accounts: [
-      { id: 1, name: 'Основной', type: 'bank', iconName: 'CreditCard', color: '#3b82f6' },
-      { id: 2, name: 'Карта Сбер', type: 'bank', iconName: 'CreditCard', color: '#22c55e' },
-      { id: 3, name: 'Наличные', type: 'cash', iconName: 'DollarSign', color: '#f59e0b' }
-    ],
-    userProfile: {
-      name: 'Пользователь',
-      email: 'user@example.com',
-      avatar: '👤',
-      avatarColor: '#3b82f6',
-      creationDate: new Date().toISOString().split('T')[0],
-    },
-    isDarkMode: false,
-    currencyCode: 'RUB',
-  }), []);
-
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [currencyCode, setCurrencyCode] = useState('RUB');
-  const [userProfile, setUserProfile] = useState({});
-  const [accounts, setAccounts] = useState([]);
-  const [categories, setCategories] = useState({
-    income: [],
-    expense: []
-  });
+export const SettingsProvider = ({ children, settings, setSettings }) => {
+  const isDarkMode = settings.isDarkMode;
+  const setIsDarkMode = useCallback((value) => setSettings(prev => ({ ...prev, isDarkMode: value })), [setSettings]);
+  
+  const currencyCode = settings.currencyCode;
+  const setCurrencyCode = useCallback((value) => setSettings(prev => ({ ...prev, currencyCode: value })), [setSettings]);
+  
+  const userProfile = settings.userProfile;
+  const setUserProfile = useCallback((value) => setSettings(prev => ({ ...prev, userProfile: value })), [setSettings]);
+  
+  const accounts = settings.accounts;
+  const setAccounts = useCallback((value) => setSettings(prev => ({ ...prev, accounts: value })), [setSettings]);
+  
+  const categories = settings.categories;
+  const setCategories = useCallback((value) => setSettings(prev => ({ ...prev, categories: value })), [setSettings]);
+  
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-
+  
   const getAccountByName = useCallback((name) => {
     const account = accounts.find(acc => acc.name === name) || accounts[0];
     const iconComponent = ICONS[account?.iconName] || ICONS.CreditCard;
@@ -72,22 +58,11 @@ export const SettingsProvider = ({ children }) => {
     getAccountByName,
     currencySymbol,
     daysActive,
-    defaultState,
   }), [
-    isDarkMode, setIsDarkMode,
-    currencyCode, setCurrencyCode,
-    userProfile, setUserProfile,
-    accounts, setAccounts,
-    categories, setCategories,
-    showEditProfileModal, setShowEditProfileModal,
-    showAddAccountModal, setShowAddAccountModal,
-    editingAccount, setEditingAccount,
-    showAddCategoryModal, setShowAddCategoryModal,
-    editingCategory, setEditingCategory,
-    getAccountByName,
-    currencySymbol,
-    daysActive,
-    defaultState
+    isDarkMode, currencyCode, userProfile, accounts, categories,
+    showEditProfileModal, showAddAccountModal, editingAccount,
+    showAddCategoryModal, editingCategory, getAccountByName, currencySymbol, daysActive,
+    setIsDarkMode, setCurrencyCode, setUserProfile, setAccounts, setCategories
   ]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

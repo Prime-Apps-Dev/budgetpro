@@ -4,11 +4,18 @@ import { useSettings } from './useSettings';
 
 const TransactionsContext = createContext(null);
 
-export const TransactionsProvider = ({ children }) => {
-  const { currencySymbol, defaultState } = useSettings();
-  const [transactions, setTransactions] = useState([]);
-  const [loanTransactions, setLoanTransactions] = useState([]);
-  const [depositTransactions, setDepositTransactions] = useState([]);
+export const TransactionsProvider = ({ children, transactionsState, setTransactionsState }) => {
+  const { currencySymbol } = useSettings();
+  
+  const transactions = transactionsState.transactions;
+  const setTransactions = useCallback((value) => setTransactionsState(prev => ({ ...prev, transactions: value })), [setTransactionsState]);
+  
+  const loanTransactions = transactionsState.loanTransactions;
+  const setLoanTransactions = useCallback((value) => setTransactionsState(prev => ({ ...prev, loanTransactions: value })), [setTransactionsState]);
+  
+  const depositTransactions = transactionsState.depositTransactions;
+  const setDepositTransactions = useCallback((value) => setTransactionsState(prev => ({ ...prev, depositTransactions: value })), [setTransactionsState]);
+  
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [newTransaction, setNewTransaction] = useState({
@@ -19,6 +26,7 @@ export const TransactionsProvider = ({ children }) => {
     date: new Date().toISOString().split('T')[0],
     description: ''
   });
+  const [prefilledTransaction, setPrefilledTransaction] = useState(null);
   const [transactionFilterType, setTransactionFilterType] = useState('all');
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
@@ -91,6 +99,7 @@ export const TransactionsProvider = ({ children }) => {
     showAddTransaction, setShowAddTransaction,
     editingTransaction, setEditingTransaction,
     newTransaction, setNewTransaction,
+    prefilledTransaction, setPrefilledTransaction,
     transactionFilterType, setTransactionFilterType,
     selectedPeriod, setSelectedPeriod,
     dateRange, setDateRange,
@@ -102,22 +111,11 @@ export const TransactionsProvider = ({ children }) => {
     currencySymbol,
     getMonthlyTransactionsCount,
   }), [
-    transactions, setTransactions,
-    loanTransactions, setLoanTransactions,
-    depositTransactions, setDepositTransactions,
-    showAddTransaction, setShowAddTransaction,
-    editingTransaction, setEditingTransaction,
-    newTransaction, setNewTransaction,
-    transactionFilterType, setTransactionFilterType,
-    selectedPeriod, setSelectedPeriod,
-    dateRange, setDateRange,
-    getFilteredTransactions,
-    filteredTransactions,
-    totalIncome,
-    totalExpenses,
-    totalBudget,
-    currencySymbol,
-    getMonthlyTransactionsCount,
+    transactions, loanTransactions, depositTransactions, showAddTransaction,
+    editingTransaction, newTransaction, prefilledTransaction, transactionFilterType, selectedPeriod,
+    dateRange, getFilteredTransactions, filteredTransactions, totalIncome,
+    totalExpenses, totalBudget, currencySymbol, getMonthlyTransactionsCount,
+    setTransactions, setLoanTransactions, setDepositTransactions
   ]);
 
   return <TransactionsContext.Provider value={value}>{children}</TransactionsContext.Provider>;

@@ -13,13 +13,6 @@ import ModalPortal from './components/modals/ModalPortal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeInOut } from './utils/motion';
 import { useAppContext } from './context/AppContext';
-import AlertModal from './components/modals/AlertModal';
-import { TransactionsProvider } from './context/useTransactions';
-import { FinancialProductsProvider } from './context/useFinancialProducts';
-import { DebtsProvider } from './context/useDebts';
-import { BudgetsProvider } from './context/useBudgets';
-import { GoalsProvider } from './context/useGoals';
-import { SettingsProvider } from './context/useSettings';
 
 
 // Динамический импорт всех компонентов для Code Splitting
@@ -43,6 +36,10 @@ const GoalTransactionsModal = lazy(() => import('./components/modals/GoalTransac
 const DebtTransactionsModal = lazy(() => import('./components/modals/DebtTransactionsModal'));
 // NEW: Import the new AddLoanDepositTransactionModal
 const AddLoanDepositTransactionModal = lazy(() => import('./components/modals/AddLoanDepositTransactionModal'));
+import AlertModal from './components/modals/AlertModal';
+// NEW: Import the new BudgetTransactionsModal
+const BudgetTransactionsModal = lazy(() => import('./components/modals/BudgetTransactionsModal'));
+
 
 /**
  * Основной компонент-контейнер приложения, содержащий логику рендеринга
@@ -54,7 +51,6 @@ const App = () => {
     activeTab,
     currentScreen,
     isDarkMode,
-    isDataLoaded,
     showAddTransaction,
     editingTransaction,
     selectedFinancialItem,
@@ -80,6 +76,9 @@ const App = () => {
     // NEW: state for loan/deposit transaction modal
     showLoanDepositTransactionModal,
     selectedLoanDepositForTransaction,
+    // NEW: state for budget transactions modal
+    showBudgetTransactionsModal,
+    selectedBudgetForTransactions,
   } = useAppContext();
 
   /**
@@ -102,7 +101,7 @@ const App = () => {
       case 'debts':
         return <DebtsScreen />;
       case 'my-financial-products':
-        return <MyFinancialProductsScreen />;
+        return <MyFinancialProductsScreen activeTab="all" />;
       case 'loans-list':
         return <MyFinancialProductsScreen activeTab="loans" />;
       case 'deposits-list':
@@ -132,16 +131,6 @@ const App = () => {
         }
     }
   };
-
-  if (!isDataLoaded) {
-    return (
-      <div className={`max-w-md mx-auto min-h-screen relative flex items-center justify-center ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-100'}`}>
-        <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-          Загрузка...
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={`max-w-md mx-auto min-h-screen relative overflow-hidden ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-100'}`}>
@@ -222,6 +211,11 @@ const App = () => {
           {showLoanDepositTransactionModal && selectedLoanDepositForTransaction && (
             <Suspense fallback={null}>
               <AddLoanDepositTransactionModal key="add-loan-deposit-transaction-modal" />
+            </Suspense>
+          )}
+          {showBudgetTransactionsModal && selectedBudgetForTransactions && (
+            <Suspense fallback={null}>
+              <BudgetTransactionsModal key="budget-transactions-modal" />
             </Suspense>
           )}
         </AnimatePresence>

@@ -4,10 +4,15 @@ import { useTransactions } from './useTransactions';
 
 const FinancialProductsContext = createContext(null);
 
-export const FinancialProductsProvider = ({ children }) => {
+export const FinancialProductsProvider = ({ children, financialProducts, setFinancialProducts }) => {
   const { loanTransactions, depositTransactions } = useTransactions();
-  const [loans, setLoans] = useState([]);
-  const [deposits, setDeposits] = useState([]);
+  
+  const loans = financialProducts.loans;
+  const setLoans = useCallback((value) => setFinancialProducts(prev => ({ ...prev, loans: value })), [setFinancialProducts]);
+  
+  const deposits = financialProducts.deposits;
+  const setDeposits = useCallback((value) => setFinancialProducts(prev => ({ ...prev, deposits: value })), [setFinancialProducts]);
+  
   const [showAddFinancialItemModal, setShowAddFinancialItemModal] = useState(false);
   const [editingFinancialItem, setEditingFinancialItem] = useState(null);
   const [selectedFinancialItem, setSelectedFinancialItem] = useState(null);
@@ -60,15 +65,10 @@ export const FinancialProductsProvider = ({ children }) => {
     showLoanDepositTransactionModal, setShowLoanDepositTransactionModal,
     selectedLoanDepositForTransaction, setSelectedLoanDepositForTransaction,
   }), [
-    loans, setLoans,
-    deposits, setDeposits,
-    showAddFinancialItemModal, setShowAddFinancialItemModal,
-    editingFinancialItem, setEditingFinancialItem,
-    selectedFinancialItem, setSelectedFinancialItem,
-    loansWithBalance,
-    depositsWithBalance,
-    showLoanDepositTransactionModal, setShowLoanDepositTransactionModal,
-    selectedLoanDepositForTransaction, setSelectedLoanDepositForTransaction,
+    loans, deposits, showAddFinancialItemModal, editingFinancialItem,
+    selectedFinancialItem, loansWithBalance, depositsWithBalance,
+    showLoanDepositTransactionModal, selectedLoanDepositForTransaction,
+    setLoans, setDeposits
   ]);
 
   return <FinancialProductsContext.Provider value={value}>{children}</FinancialProductsContext.Provider>;
