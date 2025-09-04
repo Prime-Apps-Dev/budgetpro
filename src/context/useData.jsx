@@ -1,7 +1,8 @@
 // src/context/useData.jsx
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { CURRENCIES } from '../constants/currencies';
-import { ICONS } from '../components/icons';
+import { supabase } from '../lib/supabaseClient';
+import { fetchAllUserData, saveItem, deleteItem } from '../services/supabaseService';
+import deepEqual from 'deep-equal';
 
 const LS_PREFIX = 'financialAppState_';
 
@@ -40,57 +41,165 @@ const getDefaultState = () => ({
   goals: []
 });
 
-export const useData = () => {
+const debounce = (func, delay) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+};
+
+export const useData = ({ user, session }) => {
   const [data, setData] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [lastSync, setLastSync] = useState(null);
+  const [cloudData, setCloudData] = useState(null);
+  const [showSyncConflictModal, setShowSyncConflictModal] = useState(false);
+  const [syncConflictData, setSyncConflictData] = useState(null);
 
-  // Load data from localStorage on initial render
-  useEffect(() => {
+  const syncCategories = useMemo(() => ['settings', 'transactions', 'financialProducts', 'debts', 'budgets', 'goals'], []);
+  
+  const handleResolveConflict = useCallback((category, version) => {
+    if (!syncConflictData) return;
+    
+    let resolvedData = { ...data };
+
+    if (category === 'all') {
+      resolvedData = version === 'local' ? syncConflictData.local : syncConflictData.cloud;
+    } else {
+      resolvedData[category] = version === 'local' ? syncConflictData.local[category] : syncConflictData.cloud[category];
+    }
+    
+    setData(resolvedData);
+    setShowSyncConflictModal(false);
+    setSyncConflictData(null);
+    
+    const syncData = async () => {
+        if (user && resolvedData) {
+            await saveToSupabase(resolvedData);
+        }
+    };
+    syncData();
+    
+  }, [syncConflictData, data, user]);
+
+  const saveToSupabase = useCallback(async (currentData) => {
+    if (!user) return;
+    
+    console.log('☁️ Синхронизация данных с Supabase...');
+    
+    const saveData = async (table, items) => {
+        for (const item of items) {
+            await saveItem(table, item);
+        }
+    };
+    
     try {
-      const savedSettings = JSON.parse(localStorage.getItem(LS_PREFIX + 'settings'));
-      const savedTransactions = JSON.parse(localStorage.getItem(LS_PREFIX + 'transactions'));
-      const savedProducts = JSON.parse(localStorage.getItem(LS_PREFIX + 'products'));
-      const savedDebts = JSON.parse(localStorage.getItem(LS_PREFIX + 'debts'));
-      const savedBudgets = JSON.parse(localStorage.getItem(LS_PREFIX + 'budgets'));
-      const savedGoals = JSON.parse(localStorage.getItem(LS_PREFIX + 'goals'));
-      
-      const defaultState = getDefaultState();
-
-      setData({
-        settings: savedSettings || defaultState.settings,
-        transactions: savedTransactions || defaultState.transactions,
-        financialProducts: savedProducts || defaultState.financialProducts,
-        debts: savedDebts || defaultState.debts,
-        budgets: savedBudgets || defaultState.budgets,
-        goals: savedGoals || defaultState.goals,
-      });
+        await saveItem('settings', { id: user.id, data: currentData.settings });
+        await saveData('transactions', currentData.transactions.transactions);
+        await saveData('financialProducts', [...currentData.financialProducts.loans, ...currentData.financialProducts.deposits]);
+        await saveData('debts', currentData.debts);
+        await saveData('budgets', currentData.budgets);
+        await saveData('goals', currentData.goals);
+        setLastSync(new Date());
+        console.log('☁️ Синхронизация завершена!');
     } catch (error) {
-      console.error("Failed to load data from localStorage:", error);
-      setData(getDefaultState());
-    } finally {
+        console.error('Ошибка синхронизации с Supabase:', error);
+    }
+    
+  }, [user]);
+
+  const loadData = useCallback(async () => {
+    let loadedData = {};
+    if (user) {
+      try {
+        console.log('🔄 Загрузка данных из Supabase...');
+        const fetchedData = await fetchAllUserData(user.id);
+        
+        const settingsRecord = fetchedData.settings.records[0];
+        const settingsData = settingsRecord ? settingsRecord.data : getDefaultState().settings;
+
+        loadedData = {
+          settings: settingsData,
+          transactions: {
+            transactions: fetchedData.transactions.records,
+            loanTransactions: [],
+            depositTransactions: []
+          },
+          financialProducts: {
+            loans: fetchedData.financialProducts.records.filter(item => item.data.type === 'loan'),
+            deposits: fetchedData.financialProducts.records.filter(item => item.data.type === 'deposit')
+          },
+          debts: fetchedData.debts.records,
+          budgets: fetchedData.budgets.records,
+          goals: fetchedData.goals.records
+        };
+        
+        setCloudData(loadedData);
+        
+        const localData = JSON.parse(localStorage.getItem(LS_PREFIX + 'data'));
+        if (localData) {
+          const conflicts = {};
+          syncCategories.forEach(key => {
+            if (!deepEqual(localData[key], loadedData[key])) {
+              conflicts[key] = true;
+            }
+          });
+          if (Object.keys(conflicts).length > 0) {
+            setSyncConflictData({
+              local: localData,
+              cloud: loadedData,
+              conflicts: conflicts,
+            });
+            setShowSyncConflictModal(true);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки данных из Supabase:', error);
+        loadedData = JSON.parse(localStorage.getItem(LS_PREFIX + 'data')) || getDefaultState();
+      }
+    } else {
+      console.log('🔄 Загрузка данных из localStorage...');
+      loadedData = JSON.parse(localStorage.getItem(LS_PREFIX + 'data')) || getDefaultState();
+    }
+    
+    setData(loadedData);
+    setIsDataLoaded(true);
+    setLastSync(new Date());
+  }, [user, syncCategories]);
+
+  useEffect(() => {
+    if (session) {
+      loadData();
+    } else {
+      setData(JSON.parse(localStorage.getItem(LS_PREFIX + 'data')) || getDefaultState());
       setIsDataLoaded(true);
     }
-  }, []);
+  }, [session, loadData]);
 
-  // Sync data with localStorage whenever it changes
+  const debouncedSaveToSupabase = useMemo(() => debounce(saveToSupabase, 2000), [saveToSupabase]);
+
   useEffect(() => {
     if (data) {
       try {
-        localStorage.setItem(LS_PREFIX + 'settings', JSON.stringify(data.settings));
-        localStorage.setItem(LS_PREFIX + 'transactions', JSON.stringify(data.transactions));
-        localStorage.setItem(LS_PREFIX + 'products', JSON.stringify(data.financialProducts));
-        localStorage.setItem(LS_PREFIX + 'debts', JSON.stringify(data.debts));
-        localStorage.setItem(LS_PREFIX + 'budgets', JSON.stringify(data.budgets));
-        localStorage.setItem(LS_PREFIX + 'goals', JSON.stringify(data.goals));
+        localStorage.setItem(LS_PREFIX + 'data', JSON.stringify(data));
+        if (user && !showSyncConflictModal) {
+            debouncedSaveToSupabase(data);
+        }
       } catch (error) {
         console.error("Failed to save data to localStorage:", error);
       }
     }
-  }, [data]);
+  }, [data, user, debouncedSaveToSupabase, showSyncConflictModal]);
   
   return { 
     data, 
     setData,
     isDataLoaded,
+    showSyncConflictModal,
+    setShowSyncConflictModal,
+    syncConflictData,
+    handleResolveConflict
   };
 };

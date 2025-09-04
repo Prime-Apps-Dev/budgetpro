@@ -4,6 +4,7 @@ import { ICONS } from '../components/icons';
 import { motion } from 'framer-motion';
 import { whileTap, whileHover, spring, zoomInOut } from '../utils/motion';
 import { useAppContext } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext'; // NEW
 
 /**
  * Переработанный компонент экрана профиля в стиле главной страницы.
@@ -20,8 +21,12 @@ const ProfileScreen = () => {
     totalIncome,
     totalExpenses,
     getMonthlyTransactionsCount,
-    daysActive
+    daysActive,
+    setShowAuthModal, // NEW
+    navigateToTab,
   } = useAppContext();
+  
+  const { user, signOut } = useAuth(); // NEW
 
   /**
    * Обновленная функция для смены экрана, которая также закрывает модальные окна.
@@ -31,6 +36,23 @@ const ProfileScreen = () => {
     closeAllModals();
     navigateToScreen(screenName);
   };
+  
+  const handleSignOut = async () => {
+    closeAllModals();
+    await signOut();
+    // Optional: navigate to home page or login screen after sign out
+    navigateToTab('home');
+  };
+  
+  const handleSignIn = () => {
+    closeAllModals();
+    setShowAuthModal(true);
+  };
+  
+  const displayName = user?.user_metadata?.full_name || userProfile?.name;
+  const displayEmail = user?.email || userProfile?.email;
+  const displayAvatar = userProfile?.avatar;
+  const displayAvatarColor = userProfile?.avatarColor;
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32">
@@ -45,16 +67,16 @@ const ProfileScreen = () => {
           <div className="flex items-center mb-6">
             <div
               className="w-20 h-20 rounded-3xl flex items-center justify-center text-white text-3xl font-bold mr-6"
-              style={{ backgroundColor: userProfile?.avatarColor }}
+              style={{ backgroundColor: displayAvatarColor }}
             >
-              {userProfile?.avatar}
+              {displayAvatar}
             </div>
             <div className="flex-1">
               <div className="flex flex-col gap-1">
                 <h1 className="text-2xl leading-5 font-bold text-gray-900 dark:text-gray-100">
-                  {userProfile?.name}
+                  {displayName}
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400">{userProfile?.email}</p>
+                <p className="text-gray-600 dark:text-gray-400">{displayEmail}</p>
               </div>
               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2" />
@@ -63,18 +85,41 @@ const ProfileScreen = () => {
             </div>
           </div>
 
-          <motion.button
-            onClick={() => {
-              console.log('Нажата кнопка "Редактировать профиль"');
-              setShowEditProfileModal(true);
-            }}
-            className="w-full bg-gray-100 text-gray-800 p-4 rounded-2xl font-medium hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-            whileTap={whileTap}
-            whileHover={{ scale: 1.02 }}
-            transition={spring}
-          >
-            Редактировать профиль
-          </motion.button>
+          {user ? (
+            <div className="grid grid-cols-2 gap-3">
+              <motion.button
+                onClick={() => {
+                  console.log('Нажата кнопка "Редактировать профиль"');
+                  setShowEditProfileModal(true);
+                }}
+                className="w-full bg-gray-100 text-gray-800 p-4 rounded-2xl font-medium hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                whileTap={whileTap}
+                whileHover={{ scale: 1.02 }}
+                transition={spring}
+              >
+                Редактировать
+              </motion.button>
+              <motion.button
+                onClick={handleSignOut}
+                className="w-full bg-red-500 text-white p-4 rounded-2xl font-medium hover:bg-red-600"
+                whileTap={whileTap}
+                whileHover={{ scale: 1.02 }}
+                transition={spring}
+              >
+                Выйти
+              </motion.button>
+            </div>
+          ) : (
+            <motion.button
+              onClick={handleSignIn}
+              className="w-full bg-blue-600 text-white p-4 rounded-2xl font-medium hover:bg-blue-700"
+              whileTap={whileTap}
+              whileHover={{ scale: 1.02 }}
+              transition={spring}
+            >
+              Войти
+            </motion.button>
+          )}
         </motion.div>
       </div>
 

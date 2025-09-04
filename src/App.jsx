@@ -13,6 +13,9 @@ import ModalPortal from './components/modals/ModalPortal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeInOut } from './utils/motion';
 import { useAppContext } from './context/AppContext';
+import { useAuth } from './context/AuthContext';
+import AuthModal from './components/modals/AuthModal';
+import SyncConflictModal from './components/modals/SyncConflictModal';
 
 
 // Динамический импорт всех компонентов для Code Splitting
@@ -79,7 +82,24 @@ const App = () => {
     // NEW: state for budget transactions modal
     showBudgetTransactionsModal,
     selectedBudgetForTransactions,
+    // Auth state
+    showAuthModal,
+    setShowAuthModal,
+    // Sync state (NEW)
+    showSyncConflictModal,
   } = useAppContext();
+  
+  const { session, loading: authLoading } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className={`max-w-md mx-auto min-h-screen relative flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+        <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+          Загрузка...
+        </div>
+      </div>
+    );
+  }
 
   /**
    * Определяет, какой экран должен быть отрендерен,
@@ -112,6 +132,8 @@ const App = () => {
         return <CurrencyScreen />;
       case 'profile':
         return <ProfileScreen />;
+      case 'auth':
+        return null;
       case 'add-financial-item':
       case 'edit-financial-item':
         // Эти экраны не рендерятся напрямую, а управляются модальным окном
@@ -216,6 +238,16 @@ const App = () => {
           {showBudgetTransactionsModal && selectedBudgetForTransactions && (
             <Suspense fallback={null}>
               <BudgetTransactionsModal key="budget-transactions-modal" />
+            </Suspense>
+          )}
+          {showAuthModal && (
+            <Suspense fallback={null}>
+              <AuthModal key="auth-modal" handleClose={() => setShowAuthModal(false)} />
+            </Suspense>
+          )}
+          {showSyncConflictModal && (
+            <Suspense fallback={null}>
+              <SyncConflictModal key="sync-conflict-modal" />
             </Suspense>
           )}
         </AnimatePresence>
